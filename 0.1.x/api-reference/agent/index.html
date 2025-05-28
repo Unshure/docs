@@ -3,23 +3,24 @@
 <html lang="en" class="no-js">
   <head>
     
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
-      
-      
-      
-      
-        <link rel="prev" href="../../examples/python/mcp_calculator/">
-      
-      
-        <link rel="next" href="../event-loop/">
-      
-      
-      <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     
+      <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
+    
+    
+    
+    
+      <link rel="prev" href="../../examples/python/mcp_calculator/">
+    
+    
+      <link rel="next" href="../event-loop/">
+    
+    
+    <link rel="icon" href="../../assets/logo-light.png" sizes="any">
+    <link rel="icon" href="../../assets/logo-auto.svg" type="image/svg+xml">
+    <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+
     
       
         <title>Agent - Strands Agents SDK</title>
@@ -69,7 +70,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -99,9 +100,10 @@
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="Strands Agents SDK" class="md-header__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -131,7 +133,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -141,7 +143,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -327,9 +329,10 @@
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="Strands Agents SDK" class="md-nav__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     Strands Agents SDK
@@ -886,6 +889,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/concepts/model-providers/llamaapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    LlamaAPI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -909,12 +935,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/concepts/model-providers/llamaapi/" class="md-nav__link">
+      <a href="../../user-guide/concepts/model-providers/openai/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    LlamaAPI
+    OpenAI
     
   </span>
   
@@ -3014,7 +3040,7 @@ models and tools in the SDK.</p>
 <p>The Agent interface supports two complementary interaction patterns:</p>
 <ol>
 <li>Natural language for conversation: <code>agent("Analyze this data")</code></li>
-<li>Method-style for direct tool access: <code>agent.tool_name(param1="value")</code></li>
+<li>Method-style for direct tool access: <code>agent.tool.tool_name(param1="value")</code></li>
 </ol>
 
 
@@ -3567,7 +3593,42 @@ models and tools in the SDK.</p>
 <span class="normal">544</span>
 <span class="normal">545</span>
 <span class="normal">546</span>
-<span class="normal">547</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Agent</span><span class="p">:</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Agent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Core Agent interface.</span>
 
 <span class="sd">    An agent orchestrates the following workflow:</span>
@@ -3851,27 +3912,17 @@ models and tools in the SDK.</p>
 <span class="sd">                - metrics: Performance metrics from the event loop</span>
 <span class="sd">                - state: The final state of the event loop</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">model_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">start_agent_span</span><span class="p">(</span>
-            <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
-            <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span>
-            <span class="n">tools</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tool_names</span><span class="p">,</span>
-            <span class="n">system_prompt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">,</span>
-            <span class="n">custom_trace_attributes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_attributes</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_agent_trace_span</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Run the event loop and get the result</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_loop</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">end_agent_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">result</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">end_agent_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
 
             <span class="c1"># Re-raise the exception to preserve original behavior</span>
             <span class="k">raise</span>
@@ -3906,6 +3957,8 @@ models and tools in the SDK.</p>
 <span class="sd">                    yield event[&quot;data&quot;]</span>
 <span class="sd">            ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_agent_trace_span</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+
         <span class="n">_stop_event</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
 
         <span class="n">queue</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">Any</span><span class="p">]()</span>
@@ -3923,8 +3976,10 @@ models and tools in the SDK.</p>
             <span class="k">nonlocal</span> <span class="n">kwargs</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_run_loop</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">supplementary_callback_handler</span><span class="o">=</span><span class="n">queuing_callback_handler</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_loop</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">supplementary_callback_handler</span><span class="o">=</span><span class="n">queuing_callback_handler</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
                 <span class="n">enqueue</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="n">enqueue</span><span class="p">(</span><span class="n">_stop_event</span><span class="p">)</span>
@@ -3937,7 +3992,7 @@ models and tools in the SDK.</p>
                 <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="n">_stop_event</span><span class="p">:</span>
                     <span class="k">break</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="n">item</span>
                 <span class="k">yield</span> <span class="n">item</span>
         <span class="k">finally</span><span class="p">:</span>
@@ -3980,27 +4035,28 @@ models and tools in the SDK.</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            The result of the event loop cycle.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;system_prompt&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tool_execution_handler&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;event_loop_metrics&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;callback_handler&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tool_handler&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tool_config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="c1"># Extract parameters with fallbacks to instance values</span>
+        <span class="n">system_prompt</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;system_prompt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">tool_execution_handler</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tool_execution_handler&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread_pool_wrapper</span><span class="p">)</span>
+        <span class="n">event_loop_metrics</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;event_loop_metrics&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_loop_metrics</span><span class="p">)</span>
+        <span class="n">callback_handler_override</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;callback_handler&quot;</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">)</span>
+        <span class="n">tool_handler</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tool_handler&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tool_handler</span><span class="p">)</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>
+        <span class="n">tool_config</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;tool_config&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tool_config</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;agent&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Remove agent to avoid conflicts</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Execute the main event loop cycle</span>
             <span class="n">stop_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">event_loop_cycle</span><span class="p">(</span>
-                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-                <span class="n">system_prompt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">,</span>
-                <span class="n">messages</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span>  <span class="c1"># will be modified by event_loop_cycle</span>
-                <span class="n">tool_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tool_config</span><span class="p">,</span>
-                <span class="n">callback_handler</span><span class="o">=</span><span class="n">callback_handler</span><span class="p">,</span>
-                <span class="n">tool_handler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tool_handler</span><span class="p">,</span>
-                <span class="n">tool_execution_handler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thread_pool_wrapper</span><span class="p">,</span>
-                <span class="n">event_loop_metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_loop_metrics</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span>
+                <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>  <span class="c1"># will be modified by event_loop_cycle</span>
+                <span class="n">tool_config</span><span class="o">=</span><span class="n">tool_config</span><span class="p">,</span>
+                <span class="n">callback_handler</span><span class="o">=</span><span class="n">callback_handler_override</span><span class="p">,</span>
+                <span class="n">tool_handler</span><span class="o">=</span><span class="n">tool_handler</span><span class="p">,</span>
+                <span class="n">tool_execution_handler</span><span class="o">=</span><span class="n">tool_execution_handler</span><span class="p">,</span>
+                <span class="n">event_loop_metrics</span><span class="o">=</span><span class="n">event_loop_metrics</span><span class="p">,</span>
                 <span class="n">agent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
                 <span class="n">event_loop_parent_span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -4011,8 +4067,8 @@ models and tools in the SDK.</p>
         <span class="k">except</span> <span class="n">ContextWindowOverflowException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="c1"># Try reducing the context size and retrying</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">conversation_manager</span><span class="o">.</span><span class="n">reduce_context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_event_loop_cycle</span><span class="p">(</span><span class="n">callback_handler</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conversation_manager</span><span class="o">.</span><span class="n">reduce_context</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">e</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_event_loop_cycle</span><span class="p">(</span><span class="n">callback_handler_override</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_record_tool_execution</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -4038,7 +4094,7 @@ models and tools in the SDK.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Create user message describing the tool call</span>
         <span class="n">user_msg_content</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;agent.</span><span class="si">{</span><span class="n">tool</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> direct tool call</span><span class="se">\n</span><span class="s2">Input parameters: </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tool</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">])</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)}</span>
+            <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;agent.tool.</span><span class="si">{</span><span class="n">tool</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> direct tool call.</span><span class="se">\n</span><span class="s2">Input parameters: </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tool</span><span class="p">[</span><span class="s1">&#39;input&#39;</span><span class="p">])</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)}</span>
         <span class="p">]</span>
 
         <span class="c1"># Add override message if provided</span>
@@ -4068,6 +4124,46 @@ models and tools in the SDK.</p>
         <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tool_use_msg</span><span class="p">)</span>
         <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tool_result_msg</span><span class="p">)</span>
         <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">assistant_msg</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_start_agent_trace_span</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Starts a trace span for the agent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prompt: The natural language prompt from the user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">start_agent_span</span><span class="p">(</span>
+            <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+            <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tool_names</span><span class="p">,</span>
+            <span class="n">system_prompt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">,</span>
+            <span class="n">custom_trace_attributes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_attributes</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_end_agent_trace_span</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">response</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AgentResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ends a trace span for the agent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            span: The span to end.</span>
+<span class="sd">            response: Response to record as a trace attribute.</span>
+<span class="sd">            error: Error to record as a trace attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">:</span>
+            <span class="n">trace_attributes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;span&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">response</span><span class="p">:</span>
+                <span class="n">trace_attributes</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response</span>
+            <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+                <span class="n">trace_attributes</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">end_agent_span</span><span class="p">(</span><span class="o">**</span><span class="n">trace_attributes</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4996,17 +5092,7 @@ the conversation history, processes it through the model, executes any tool call
 <span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span><span class="p">:</span>
+<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a natural language prompt through the agent&#39;s event loop.</span>
 
 <span class="sd">    This method implements the conversational interface (e.g., `agent(&quot;hello!&quot;)`). It adds the user&#39;s prompt to</span>
@@ -5024,27 +5110,17 @@ the conversation history, processes it through the model, executes any tool call
 <span class="sd">            - metrics: Performance metrics from the event loop</span>
 <span class="sd">            - state: The final state of the event loop</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">model_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">start_agent_span</span><span class="p">(</span>
-        <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
-        <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span>
-        <span class="n">tools</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tool_names</span><span class="p">,</span>
-        <span class="n">system_prompt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">,</span>
-        <span class="n">custom_trace_attributes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_attributes</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_start_agent_trace_span</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Run the event loop and get the result</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_loop</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">end_agent_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">result</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">end_agent_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_span</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
 
         <span class="c1"># Re-raise the exception to preserve original behavior</span>
         <span class="k">raise</span>
@@ -5705,7 +5781,17 @@ async environments.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/agent/agent.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">356</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
 <span class="normal">357</span>
 <span class="normal">358</span>
 <span class="normal">359</span>
@@ -5764,13 +5850,7 @@ async environments.</p>
 <span class="normal">412</span>
 <span class="normal">413</span>
 <span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="normal">415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a natural language prompt and yield events as an async iterator.</span>
 
 <span class="sd">    This method provides an asynchronous interface for streaming agent events, allowing</span>
@@ -5800,6 +5880,8 @@ async environments.</p>
 <span class="sd">                yield event[&quot;data&quot;]</span>
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_start_agent_trace_span</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+
     <span class="n">_stop_event</span> <span class="o">=</span> <span class="n">uuid4</span><span class="p">()</span>
 
     <span class="n">queue</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span><span class="p">[</span><span class="n">Any</span><span class="p">]()</span>
@@ -5817,8 +5899,10 @@ async environments.</p>
         <span class="k">nonlocal</span> <span class="n">kwargs</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_run_loop</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">supplementary_callback_handler</span><span class="o">=</span><span class="n">queuing_callback_handler</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_loop</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">supplementary_callback_handler</span><span class="o">=</span><span class="n">queuing_callback_handler</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_end_agent_trace_span</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
             <span class="n">enqueue</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">enqueue</span><span class="p">(</span><span class="n">_stop_event</span><span class="p">)</span>
@@ -5831,7 +5915,7 @@ async environments.</p>
             <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="n">_stop_event</span><span class="p">:</span>
                 <span class="k">break</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">item</span>
             <span class="k">yield</span> <span class="n">item</span>
     <span class="k">finally</span><span class="p">:</span>
@@ -7045,7 +7129,9 @@ invalid window states.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/agent/conversation_manager/sliding_window_conversation_manager.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 39</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
 <span class="normal"> 40</span>
 <span class="normal"> 41</span>
 <span class="normal"> 42</span>
@@ -7154,36 +7240,7 @@ invalid window states.</p>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SlidingWindowConversationManager</span><span class="p">(</span><span class="n">ConversationManager</span><span class="p">):</span>
+<span class="normal">148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SlidingWindowConversationManager</span><span class="p">(</span><span class="n">ConversationManager</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a sliding window strategy for managing conversation history.</span>
 
 <span class="sd">    This class handles the logic of maintaining a conversation window that preserves tool usage pairs and avoids</span>
@@ -7257,8 +7314,9 @@ invalid window states.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">reduce_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Trim the oldest messages to reduce the conversation context size.</span>
 
-<span class="sd">        The method handles special cases where tool results need to be converted to regular content blocks to maintain</span>
-<span class="sd">        conversation coherence after trimming.</span>
+<span class="sd">        The method handles special cases where trimming the messages leads to:</span>
+<span class="sd">         - toolResult with no corresponding toolUse</span>
+<span class="sd">         - toolUse with no corresponding toolResult</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            messages: The messages to reduce.</span>
@@ -7273,55 +7331,27 @@ invalid window states.</p>
         <span class="c1"># If the number of messages is less than the window_size, then we default to 2, otherwise, trim to window size</span>
         <span class="n">trim_index</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span>
 
-        <span class="c1"># Throw if we cannot trim any messages from the conversation</span>
-        <span class="k">if</span> <span class="n">trim_index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">(</span><span class="s2">&quot;Unable to trim conversation context!&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-
-        <span class="c1"># If the message at the cut index has ToolResultContent, then we map that to ContentBlock. This gets around the</span>
-        <span class="c1"># limitation of needing ToolUse and ToolResults to be paired.</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_tool_result_content</span><span class="p">(</span>
-                    <span class="n">cast</span><span class="p">(</span><span class="n">ToolResult</span><span class="p">,</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;toolResult&quot;</span><span class="p">])</span>
+        <span class="c1"># Find the next valid trim_index</span>
+        <span class="k">while</span> <span class="n">trim_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="c1"># Oldest message cannot be a toolResult because it needs a toolUse preceding it</span>
+                <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
+                <span class="ow">or</span> <span class="p">(</span>
+                    <span class="c1"># Oldest message can be a toolUse only if a toolResult immediately follows it.</span>
+                    <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolUse&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
+                    <span class="ow">and</span> <span class="n">trim_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
                 <span class="p">)</span>
-
-            <span class="c1"># If there is more content than just one ToolResultContent, then we cannot cut at this index.</span>
+            <span class="p">):</span>
+                <span class="n">trim_index</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">(</span><span class="s2">&quot;Unable to trim conversation context!&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If we didn&#39;t find a valid trim_index, then we throw</span>
+            <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">(</span><span class="s2">&quot;Unable to trim conversation context!&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
         <span class="c1"># Overwrite message history</span>
         <span class="n">messages</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">:]</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_map_tool_result_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_result</span><span class="p">:</span> <span class="n">ToolResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ContentBlock</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a ToolResult to a list of standard ContentBlocks.</span>
-
-<span class="sd">        This method transforms tool result content into standard content blocks that can be preserved when trimming the</span>
-<span class="sd">        conversation history.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            tool_result: The ToolResult to convert.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A list of content blocks representing the tool result.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">contents</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">text_content</span> <span class="o">=</span> <span class="s2">&quot;Tool Result Status: &quot;</span> <span class="o">+</span> <span class="n">tool_result</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">tool_result</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-
-        <span class="k">for</span> <span class="n">tool_result_content</span> <span class="ow">in</span> <span class="n">tool_result</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">tool_result_content</span><span class="p">:</span>
-                <span class="n">text_content</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Tool Result Text Content: &quot;</span> <span class="o">+</span> <span class="n">tool_result_content</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">text_content</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">elif</span> <span class="s2">&quot;json&quot;</span> <span class="ow">in</span> <span class="n">tool_result_content</span><span class="p">:</span>
-                <span class="n">text_content</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Tool Result JSON Content: &quot;</span> <span class="o">+</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tool_result_content</span><span class="p">[</span><span class="s2">&quot;json&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">text_content</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-            <span class="k">elif</span> <span class="s2">&quot;image&quot;</span> <span class="ow">in</span> <span class="n">tool_result_content</span><span class="p">:</span>
-                <span class="n">contents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ContentBlock</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">tool_result_content</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]))</span>
-            <span class="k">elif</span> <span class="s2">&quot;document&quot;</span> <span class="ow">in</span> <span class="n">tool_result_content</span><span class="p">:</span>
-                <span class="n">contents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ContentBlock</span><span class="p">(</span><span class="n">document</span><span class="o">=</span><span class="n">tool_result_content</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">]))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;unsupported content type&quot;</span><span class="p">)</span>
-        <span class="n">contents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ContentBlock</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text_content</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">contents</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -7385,14 +7415,14 @@ Defaults to 40 messages.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/agent/conversation_manager/sliding_window_conversation_manager.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
 <span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">):</span>
+<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">40</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the sliding window conversation manager.</span>
 
 <span class="sd">    Args:</span>
@@ -7464,7 +7494,9 @@ This list is modified in-place.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/agent/conversation_manager/sliding_window_conversation_manager.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
 <span class="normal">56</span>
 <span class="normal">57</span>
 <span class="normal">58</span>
@@ -7484,9 +7516,7 @@ This list is modified in-place.</p>
 <span class="normal">72</span>
 <span class="normal">73</span>
 <span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">apply_management</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">apply_management</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply the sliding window to the messages array to maintain a manageable history size.</span>
 
 <span class="sd">    This method is called after every event loop cycle, as the messages array may have been modified with tool</span>
@@ -7527,9 +7557,15 @@ This list is modified in-place.</p>
     <div class="doc doc-contents ">
 
         <p>Trim the oldest messages to reduce the conversation context size.</p>
-<p>The method handles special cases where tool results need to be converted to regular content blocks to maintain
-conversation coherence after trimming.</p>
 
+
+<details class="the-method-handles-special-cases-where-trimming-the-messages-leads-to" open>
+  <summary>The method handles special cases where trimming the messages leads to</summary>
+  <ul>
+<li>toolResult with no corresponding toolUse</li>
+<li>toolUse with no corresponding toolResult</li>
+</ul>
+</details>
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <table>
@@ -7610,7 +7646,9 @@ converted.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/agent/conversation_manager/sliding_window_conversation_manager.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">110</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
 <span class="normal">113</span>
@@ -7646,11 +7684,14 @@ converted.</p>
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
-<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reduce_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reduce_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Trim the oldest messages to reduce the conversation context size.</span>
 
-<span class="sd">    The method handles special cases where tool results need to be converted to regular content blocks to maintain</span>
-<span class="sd">    conversation coherence after trimming.</span>
+<span class="sd">    The method handles special cases where trimming the messages leads to:</span>
+<span class="sd">     - toolResult with no corresponding toolUse</span>
+<span class="sd">     - toolUse with no corresponding toolResult</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        messages: The messages to reduce.</span>
@@ -7665,21 +7706,24 @@ converted.</p>
     <span class="c1"># If the number of messages is less than the window_size, then we default to 2, otherwise, trim to window size</span>
     <span class="n">trim_index</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_size</span>
 
-    <span class="c1"># Throw if we cannot trim any messages from the conversation</span>
-    <span class="k">if</span> <span class="n">trim_index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">(</span><span class="s2">&quot;Unable to trim conversation context!&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-
-    <span class="c1"># If the message at the cut index has ToolResultContent, then we map that to ContentBlock. This gets around the</span>
-    <span class="c1"># limitation of needing ToolUse and ToolResults to be paired.</span>
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_tool_result_content</span><span class="p">(</span>
-                <span class="n">cast</span><span class="p">(</span><span class="n">ToolResult</span><span class="p">,</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;toolResult&quot;</span><span class="p">])</span>
+    <span class="c1"># Find the next valid trim_index</span>
+    <span class="k">while</span> <span class="n">trim_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="c1"># Oldest message cannot be a toolResult because it needs a toolUse preceding it</span>
+            <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="c1"># Oldest message can be a toolUse only if a toolResult immediately follows it.</span>
+                <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolUse&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
+                <span class="ow">and</span> <span class="n">trim_index</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
             <span class="p">)</span>
-
-        <span class="c1"># If there is more content than just one ToolResultContent, then we cannot cut at this index.</span>
+        <span class="p">):</span>
+            <span class="n">trim_index</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">(</span><span class="s2">&quot;Unable to trim conversation context!&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If we didn&#39;t find a valid trim_index, then we throw</span>
+        <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">(</span><span class="s2">&quot;Unable to trim conversation context!&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="c1"># Overwrite message history</span>
     <span class="n">messages</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="n">trim_index</span><span class="p">:]</span>
@@ -7768,16 +7812,16 @@ converted.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/agent/conversation_manager/sliding_window_conversation_manager.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">27</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
 <span class="normal">30</span>
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_assistant_message</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_assistant_message</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a message is from an assistant.</span>
 
 <span class="sd">    Args:</span>
@@ -7863,16 +7907,16 @@ converted.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/agent/conversation_manager/sliding_window_conversation_manager.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">15</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
 <span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_user_message</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_user_message</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if a message is from a user.</span>
 
 <span class="sd">    Args:</span>

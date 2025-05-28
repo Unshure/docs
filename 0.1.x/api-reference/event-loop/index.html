@@ -3,23 +3,24 @@
 <html lang="en" class="no-js">
   <head>
     
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
-      
-      
-      
-      
-        <link rel="prev" href="../agent/">
-      
-      
-        <link rel="next" href="../handlers/">
-      
-      
-      <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     
+      <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
+    
+    
+    
+    
+      <link rel="prev" href="../agent/">
+    
+    
+      <link rel="next" href="../handlers/">
+    
+    
+    <link rel="icon" href="../../assets/logo-light.png" sizes="any">
+    <link rel="icon" href="../../assets/logo-auto.svg" type="image/svg+xml">
+    <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+
     
       
         <title>Event Loop - Strands Agents SDK</title>
@@ -69,7 +70,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -99,9 +100,10 @@
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="Strands Agents SDK" class="md-header__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -131,7 +133,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -141,7 +143,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -327,9 +329,10 @@
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="Strands Agents SDK" class="md-nav__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     Strands Agents SDK
@@ -886,6 +889,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/concepts/model-providers/llamaapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    LlamaAPI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -909,12 +935,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/concepts/model-providers/llamaapi/" class="md-nav__link">
+      <a href="../../user-guide/concepts/model-providers/openai/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    LlamaAPI
+    OpenAI
     
   </span>
   
@@ -2901,7 +2927,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
                 <code>callback_handler</code>
             </td>
             <td>
-                  <code><span title="typing.Any">Any</span></code>
+                  <code><span title="typing.Callable">Callable</span>[..., <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3044,11 +3070,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 53</span>
 <span class="normal"> 54</span>
 <span class="normal"> 55</span>
 <span class="normal"> 56</span>
@@ -3255,57 +3277,12 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="normal">257</span>
 <span class="normal">258</span>
 <span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">event_loop_cycle</span><span class="p">(</span>
+<span class="normal">260</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">event_loop_cycle</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
     <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
     <span class="n">tool_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolConfig</span><span class="p">],</span>
-    <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">tool_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolHandler</span><span class="p">],</span>
     <span class="n">tool_execution_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ParallelToolExecutorInterface</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -3384,13 +3361,9 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
     <span class="n">stop_reason</span><span class="p">:</span> <span class="n">StopReason</span>
     <span class="n">usage</span><span class="p">:</span> <span class="n">Any</span>
     <span class="n">metrics</span><span class="p">:</span> <span class="n">Metrics</span>
-    <span class="n">max_attempts</span> <span class="o">=</span> <span class="mi">6</span>
-    <span class="n">initial_delay</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="n">max_delay</span> <span class="o">=</span> <span class="mi">240</span>  <span class="c1"># 4 minutes</span>
-    <span class="n">current_delay</span> <span class="o">=</span> <span class="n">initial_delay</span>
 
     <span class="c1"># Retry loop for handling throttling exceptions</span>
-    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">MAX_ATTEMPTS</span><span class="p">):</span>
         <span class="n">model_id</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">model_invoke_span</span> <span class="o">=</span> <span class="n">tracer</span><span class="o">.</span><span class="n">start_model_invoke_span</span><span class="p">(</span>
             <span class="n">parent_span</span><span class="o">=</span><span class="n">cycle_span</span><span class="p">,</span>
@@ -3431,7 +3404,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
             <span class="c1"># Handle throttling errors with exponential backoff</span>
             <span class="n">should_retry</span><span class="p">,</span> <span class="n">current_delay</span> <span class="o">=</span> <span class="n">handle_throttling_error</span><span class="p">(</span>
-                <span class="n">e</span><span class="p">,</span> <span class="n">attempt</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">,</span> <span class="n">current_delay</span><span class="p">,</span> <span class="n">max_delay</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">kwargs</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">attempt</span><span class="p">,</span> <span class="n">MAX_ATTEMPTS</span><span class="p">,</span> <span class="n">INITIAL_DELAY</span><span class="p">,</span> <span class="n">MAX_DELAY</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">kwargs</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">should_retry</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -3458,80 +3431,35 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
         <span class="c1"># If the model is requesting to use tools</span>
         <span class="k">if</span> <span class="n">stop_reason</span> <span class="o">==</span> <span class="s2">&quot;tool_use&quot;</span><span class="p">:</span>
-            <span class="n">tool_uses</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ToolUse</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">tool_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ToolResult</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">invalid_tool_use_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
-            <span class="c1"># Extract and validate tools</span>
-            <span class="n">validate_and_prepare_tools</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">tool_uses</span><span class="p">,</span> <span class="n">tool_results</span><span class="p">,</span> <span class="n">invalid_tool_use_ids</span><span class="p">)</span>
-
-            <span class="c1"># Check if tools are available for execution</span>
-            <span class="k">if</span> <span class="n">tool_uses</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">tool_handler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;toolUse present but tool handler not set&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">tool_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;toolUse present but tool config not set&quot;</span><span class="p">)</span>
-
-                <span class="c1"># Create the tool handler process callable</span>
-                <span class="n">tool_handler_process</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ToolUse</span><span class="p">],</span> <span class="n">ToolResult</span><span class="p">]</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
-                    <span class="n">tool_handler</span><span class="o">.</span><span class="n">process</span><span class="p">,</span>
-                    <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>
-                    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-                    <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span>
-                    <span class="n">tool_config</span><span class="o">=</span><span class="n">tool_config</span><span class="p">,</span>
-                    <span class="n">callback_handler</span><span class="o">=</span><span class="n">callback_handler</span><span class="p">,</span>
-                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_handler</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">EventLoopException</span><span class="p">(</span>
+                    <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model requested tool use but no tool handler provided&quot;</span><span class="p">),</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">],</span>
                 <span class="p">)</span>
 
-                <span class="c1"># Execute tools (parallel or sequential)</span>
-                <span class="n">run_tools</span><span class="p">(</span>
-                    <span class="n">handler</span><span class="o">=</span><span class="n">tool_handler_process</span><span class="p">,</span>
-                    <span class="n">tool_uses</span><span class="o">=</span><span class="n">tool_uses</span><span class="p">,</span>
-                    <span class="n">event_loop_metrics</span><span class="o">=</span><span class="n">event_loop_metrics</span><span class="p">,</span>
-                    <span class="n">request_state</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]),</span>
-                    <span class="n">invalid_tool_use_ids</span><span class="o">=</span><span class="n">invalid_tool_use_ids</span><span class="p">,</span>
-                    <span class="n">tool_results</span><span class="o">=</span><span class="n">tool_results</span><span class="p">,</span>
-                    <span class="n">cycle_trace</span><span class="o">=</span><span class="n">cycle_trace</span><span class="p">,</span>
-                    <span class="n">parent_span</span><span class="o">=</span><span class="n">cycle_span</span><span class="p">,</span>
-                    <span class="n">parallel_tool_executor</span><span class="o">=</span><span class="n">tool_execution_handler</span><span class="p">,</span>
+            <span class="k">if</span> <span class="n">tool_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">EventLoopException</span><span class="p">(</span>
+                    <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model requested tool use but no tool config provided&quot;</span><span class="p">),</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">],</span>
                 <span class="p">)</span>
 
-                <span class="c1"># Update state for the next cycle</span>
-                <span class="n">kwargs</span> <span class="o">=</span> <span class="n">prepare_next_cycle</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">event_loop_metrics</span><span class="p">)</span>
-
-                <span class="c1"># Create the tool result message</span>
-                <span class="n">tool_result_message</span><span class="p">:</span> <span class="n">Message</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;toolResult&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">}</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">tool_results</span><span class="p">],</span>
-                <span class="p">}</span>
-                <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tool_result_message</span><span class="p">)</span>
-                <span class="n">callback_handler</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">tool_result_message</span><span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">cycle_span</span><span class="p">:</span>
-                    <span class="n">tracer</span><span class="o">.</span><span class="n">end_event_loop_cycle_span</span><span class="p">(</span>
-                        <span class="n">span</span><span class="o">=</span><span class="n">cycle_span</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">tool_result_message</span><span class="o">=</span><span class="n">tool_result_message</span>
-                    <span class="p">)</span>
-
-                <span class="c1"># Check if we should stop the event loop</span>
-                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stop_event_loop&quot;</span><span class="p">):</span>
-                    <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">end_cycle</span><span class="p">(</span><span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="p">(</span>
-                        <span class="n">stop_reason</span><span class="p">,</span>
-                        <span class="n">message</span><span class="p">,</span>
-                        <span class="n">event_loop_metrics</span><span class="p">,</span>
-                        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">],</span>
-                    <span class="p">)</span>
-
-                <span class="c1"># Recursive call to continue the conversation</span>
-                <span class="k">return</span> <span class="n">recurse_event_loop</span><span class="p">(</span>
-                    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-                    <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span>
-                    <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>
-                    <span class="n">tool_config</span><span class="o">=</span><span class="n">tool_config</span><span class="p">,</span>
-                    <span class="n">callback_handler</span><span class="o">=</span><span class="n">callback_handler</span><span class="p">,</span>
-                    <span class="n">tool_handler</span><span class="o">=</span><span class="n">tool_handler</span><span class="p">,</span>
-                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="c1"># Handle tool execution</span>
+            <span class="k">return</span> <span class="n">_handle_tool_execution</span><span class="p">(</span>
+                <span class="n">stop_reason</span><span class="p">,</span>
+                <span class="n">message</span><span class="p">,</span>
+                <span class="n">model</span><span class="p">,</span>
+                <span class="n">system_prompt</span><span class="p">,</span>
+                <span class="n">messages</span><span class="p">,</span>
+                <span class="n">tool_config</span><span class="p">,</span>
+                <span class="n">tool_handler</span><span class="p">,</span>
+                <span class="n">callback_handler</span><span class="p">,</span>
+                <span class="n">tool_execution_handler</span><span class="p">,</span>
+                <span class="n">event_loop_metrics</span><span class="p">,</span>
+                <span class="n">cycle_trace</span><span class="p">,</span>
+                <span class="n">cycle_span</span><span class="p">,</span>
+                <span class="n">cycle_start_time</span><span class="p">,</span>
+                <span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="c1"># End the cycle and return results</span>
         <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">end_cycle</span><span class="p">(</span><span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span><span class="p">)</span>
@@ -3635,11 +3563,7 @@ provided keyword arguments.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">36</span>
 <span class="normal">37</span>
 <span class="normal">38</span>
 <span class="normal">39</span>
@@ -3649,7 +3573,11 @@ provided keyword arguments.</p>
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
-<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_state</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_state</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the request state if not present.</span>
 
 <span class="sd">    Creates an empty request_state dictionary if one doesn&#39;t already exist in the</span>
@@ -3763,24 +3691,24 @@ cycle ID for the next cycle. This maintains the parent-child relationship betwee
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span>
-<span class="normal">371</span>
-<span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_next_cycle</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">event_loop_metrics</span><span class="p">:</span> <span class="n">EventLoopMetrics</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_next_cycle</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">event_loop_metrics</span><span class="p">:</span> <span class="n">EventLoopMetrics</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare state for the next event loop cycle.</span>
 
 <span class="sd">    Updates the keyword arguments with the current event loop metrics and stores the current cycle ID as the parent</span>
@@ -3900,58 +3828,58 @@ cycle ID for the next cycle. This maintains the parent-child relationship betwee
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">308</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
 <span class="normal">311</span>
 <span class="normal">312</span>
 <span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">recurse_event_loop</span><span class="p">(</span>
+<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">recurse_event_loop</span><span class="p">(</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StopReason</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">EventLoopMetrics</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a recursive call to event_loop_cycle with the current state.</span>
@@ -4064,7 +3992,7 @@ like exponential backoff for throttling and message truncation for context windo
 
         <p>Handle 'Input is too long' errors by truncating tool results.</p>
 <p>When a context window overflow exception occurs (input too long for the model), this function attempts to recover
-by finding and truncating the most recent tool results in the conversation history. If trunction is successful, the
+by finding and truncating the most recent tool results in the conversation history. If truncation is successful, the
 function will make a call to the event loop.</p>
 
 
@@ -4342,7 +4270,7 @@ function will make a call to the event loop.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle &#39;Input is too long&#39; errors by truncating tool results.</span>
 
 <span class="sd">    When a context window overflow exception occurs (input too long for the model), this function attempts to recover</span>
-<span class="sd">    by finding and truncating the most recent tool results in the conversation history. If trunction is successful, the</span>
+<span class="sd">    by finding and truncating the most recent tool results in the conversation history. If truncation is successful, the</span>
 <span class="sd">    function will make a call to the event loop.</span>
 
 <span class="sd">    Args:</span>

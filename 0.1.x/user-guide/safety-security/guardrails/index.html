@@ -3,23 +3,24 @@
 <html lang="en" class="no-js">
   <head>
     
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
-      
-      
-      
-      
-        <link rel="prev" href="../responsible-ai/">
-      
-      
-        <link rel="next" href="../prompt-engineering/">
-      
-      
-      <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     
+      <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
+    
+    
+    
+    
+      <link rel="prev" href="../responsible-ai/">
+    
+    
+      <link rel="next" href="../prompt-engineering/">
+    
+    
+    <link rel="icon" href="../../../assets/logo-light.png" sizes="any">
+    <link rel="icon" href="../../../assets/logo-auto.svg" type="image/svg+xml">
+    <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+
     
       
         <title>Guardrails - Strands Agents SDK</title>
@@ -69,7 +70,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -99,9 +100,10 @@
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../.." title="Strands Agents SDK" class="md-header__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -131,7 +133,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -141,7 +143,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -327,9 +329,10 @@
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../.." title="Strands Agents SDK" class="md-nav__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     Strands Agents SDK
@@ -894,6 +897,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../concepts/model-providers/llamaapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    LlamaAPI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -917,12 +943,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/model-providers/llamaapi/" class="md-nav__link">
+      <a href="../../concepts/model-providers/openai/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    LlamaAPI
+    OpenAI
     
   </span>
   
@@ -2381,7 +2407,7 @@
 <h2 id="guardrails-in-different-model-providers">Guardrails in Different Model Providers<a class="headerlink" href="#guardrails-in-different-model-providers" title="Permanent link">&para;</a></h2>
 <p>Strands Agents SDK allows integration with different model providers, which implement guardrails differently.</p>
 <h3 id="amazon-bedrock">Amazon Bedrock<a class="headerlink" href="#amazon-bedrock" title="Permanent link">&para;</a></h3>
-<p>Amazon Bedrock provides a <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html">built-in guardrails framework</a> that integrates directly with Strands Agents SDK. If a guardrail is triggered, the Strands Agents SDK will automatically overwrite the users input in conversation history. This is done so that follow-up questions are not also blocked by the same questions. This can be configured with the <code>guardrail_redact_input</code> boolean, and the <code>guardrail_redact_input_message</code> string to chage the overwrite message. Additionally, the same functionality is built for the model's output, but this is disabled by default. You can enable this with the <code>guardrail_redact_output</code> boolean, and change the overwrite message with the <code>guardrail_redact_output_message</code> string. Below is an example of how to leverage Bedrock guardrails in your code:</p>
+<p>Amazon Bedrock provides a <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html">built-in guardrails framework</a> that integrates directly with Strands Agents SDK. If a guardrail is triggered, the Strands Agents SDK will automatically overwrite the user's input in the conversation history. This is done so that follow-up questions are not also blocked by the same questions. This can be configured with the <code>guardrail_redact_input</code> boolean, and the <code>guardrail_redact_input_message</code> string to change the overwrite message. Additionally, the same functionality is built for the model's output, but this is disabled by default. You can enable this with the <code>guardrail_redact_output</code> boolean, and change the overwrite message with the <code>guardrail_redact_output_message</code> string. Below is an example of how to leverage Bedrock guardrails in your code:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">strands.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">BedrockModel</span>
@@ -2396,7 +2422,8 @@
 
 <span class="c1"># Create agent with the guardrail-protected model</span>
 <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
-    <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;You are a helpful assistant.&quot;</span>
+    <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;You are a helpful assistant.&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">bedrock_model</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Use the protected agent for conversations</span>

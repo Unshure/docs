@@ -3,23 +3,24 @@
 <html lang="en" class="no-js">
   <head>
     
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
-      
-      
-      
-      
-        <link rel="prev" href="../../tools/example-tools-package/">
-      
-      
-        <link rel="next" href="../anthropic/">
-      
-      
-      <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     
+      <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
+    
+    
+    
+    
+      <link rel="prev" href="../../tools/example-tools-package/">
+    
+    
+      <link rel="next" href="../anthropic/">
+    
+    
+    <link rel="icon" href="../../../../assets/logo-light.png" sizes="any">
+    <link rel="icon" href="../../../../assets/logo-auto.svg" type="image/svg+xml">
+    <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+
     
       
         <title>Amazon Bedrock - Strands Agents SDK</title>
@@ -69,7 +70,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -99,9 +100,10 @@
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../.." title="Strands Agents SDK" class="md-header__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -131,7 +133,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -141,7 +143,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -327,9 +329,10 @@
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../../.." title="Strands Agents SDK" class="md-nav__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     Strands Agents SDK
@@ -1191,6 +1194,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../llamaapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    LlamaAPI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../ollama/" class="md-nav__link">
         
   
@@ -1214,12 +1240,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../llamaapi/" class="md-nav__link">
+      <a href="../openai/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    LlamaAPI
+    OpenAI
     
   </span>
   
@@ -2778,28 +2804,26 @@
 <ol>
 <li><strong>AWS Account</strong>: You need an AWS account with access to Amazon Bedrock</li>
 <li><strong>Model Access</strong>: Request access to your desired models in the Amazon Bedrock console</li>
-<li><strong>AWS Credentials</strong>: Configure AWS credentials with appropriate permissions, including <code>bedrock-runtime:InvokeModelWithResponseStream</code></li>
+<li><strong>AWS Credentials</strong>: Configure AWS credentials with appropriate permissions, including <code>bedrock:InvokeModelWithResponseStream</code></li>
 </ol>
 <h4 id="required-iam-permissions">Required IAM Permissions<a class="headerlink" href="#required-iam-permissions" title="Permanent link">&para;</a></h4>
 <p>To use Amazon Bedrock with Strands, your IAM user or role needs the following permissions:</p>
 <ul>
-<li><code>bedrock-runtime:InvokeModelWithResponseStream</code></li>
+<li><code>bedrock:InvokeModelWithResponseStream</code></li>
 </ul>
 <p>Here's a sample IAM policy that grants the necessary permissions:</p>
-<p><div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="s2">&quot;bedrock-runtime:InvokeModelWithResponseStream&quot;</span>
-<span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;bedrock:InvokeModelWithResponseStream&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-For production environments, it's recommended to scope down the <code>Resource</code> to specific model ARNs.</p>
+<p>For production environments, it's recommended to scope down the <code>Resource</code> to specific model ARNs.</p>
 <h4 id="requesting-access-to-bedrock-models">Requesting Access to Bedrock Models<a class="headerlink" href="#requesting-access-to-bedrock-models" title="Permanent link">&para;</a></h4>
 <p>Before you can use a model in Amazon Bedrock, you need to request access to it:</p>
 <ol>
@@ -2816,15 +2840,15 @@ For production environments, it's recommended to scope down the <code>Resource</
 <h4 id="setting-up-aws-credentials-region">Setting Up AWS Credentials &amp; Region<a class="headerlink" href="#setting-up-aws-credentials-region" title="Permanent link">&para;</a></h4>
 <p>Strands uses <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/index.html">boto3</a> (the AWS SDK for Python) to make calls to Amazon Bedrock. Boto3 has its own credential resolution system that determines which credentials to use when making requests to AWS.</p>
 <p>For development environments, configure credentials using one of these methods:</p>
-<p><strong>Option 1: AWS CLI</strong>
+<p><strong>Option 1: AWS CLI</strong></p>
 <div class="highlight"><pre><span></span><code>aws<span class="w"> </span>configure
-</code></pre></div></p>
-<p><strong>Option 2: Environment Variables</strong>
+</code></pre></div>
+<p><strong>Option 2: Environment Variables</strong></p>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>your_access_key
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>your_secret_key
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SESSION_TOKEN</span><span class="o">=</span>your_session_token<span class="w">  </span><span class="c1"># If using temporary credentials</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_REGION</span><span class="o">=</span><span class="s2">&quot;us-west-2&quot;</span><span class="w">  </span><span class="c1"># Used if a custom Boto3 Session is not provided</span>
-</code></pre></div></p>
+</code></pre></div>
 <p><strong>Option 3: Custom Boto3 Session</strong>
 You can configure a custom <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/core/session.html">boto3 Session</a> and pass it to the <a href="../../../../api-reference/models/#strands.models.bedrock"><code>BedrockModel</code></a>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
@@ -2851,28 +2875,26 @@ You can configure a custom <a href="https://boto3.amazonaws.com/v1/documentation
 <ol>
 <li><strong>AWS Account</strong>: You need an AWS account with access to Amazon Bedrock</li>
 <li><strong>Model Access</strong>: Request access to your desired models in the Amazon Bedrock console</li>
-<li><strong>AWS Credentials</strong>: Configure AWS credentials with appropriate permissions, including <code>bedrock-runtime:InvokeModelWithResponseStream</code></li>
+<li><strong>AWS Credentials</strong>: Configure AWS credentials with appropriate permissions, including <code>bedrock:InvokeModelWithResponseStream</code></li>
 </ol>
 <h4 id="required-iam-permissions_1">Required IAM Permissions<a class="headerlink" href="#required-iam-permissions_1" title="Permanent link">&para;</a></h4>
 <p>To use Amazon Bedrock with Strands, your IAM user or role needs the following permissions:</p>
 <ul>
-<li><code>bedrock-runtime:InvokeModelWithResponseStream</code></li>
+<li><code>bedrock:InvokeModelWithResponseStream</code></li>
 </ul>
 <p>Here's a sample IAM policy that grants the necessary permissions:</p>
-<p><div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="s2">&quot;bedrock-runtime:InvokeModelWithResponseStream&quot;</span>
-<span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;bedrock:InvokeModelWithResponseStream&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
-For production environments, it's recommended to scope down the <code>Resource</code> to specific model ARNs.</p>
+<p>For production environments, it's recommended to scope down the <code>Resource</code> to specific model ARNs.</p>
 <h4 id="requesting-access-to-bedrock-models_1">Requesting Access to Bedrock Models<a class="headerlink" href="#requesting-access-to-bedrock-models_1" title="Permanent link">&para;</a></h4>
 <p>Before you can use a model in Amazon Bedrock, you need to request access to it:</p>
 <ol>
@@ -2889,14 +2911,14 @@ For production environments, it's recommended to scope down the <code>Resource</
 <h4 id="setting-up-aws-credentials">Setting Up AWS Credentials<a class="headerlink" href="#setting-up-aws-credentials" title="Permanent link">&para;</a></h4>
 <p>Strands uses <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/index.html">boto3</a> (the AWS SDK for Python) to make calls to Amazon Bedrock. Boto3 has its own credential resolution system that determines which credentials to use when making requests to AWS.</p>
 <p>For development environments, configure credentials using one of these methods:</p>
-<p><strong>Option 1: AWS CLI</strong>
+<p><strong>Option 1: AWS CLI</strong></p>
 <div class="highlight"><pre><span></span><code>aws<span class="w"> </span>configure
-</code></pre></div></p>
-<p><strong>Option 2: Environment Variables</strong>
+</code></pre></div>
+<p><strong>Option 2: Environment Variables</strong></p>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>your_access_key
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>your_secret_key
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SESSION_TOKEN</span><span class="o">=</span>your_session_token<span class="w">  </span><span class="c1"># If using temporary credentials</span>
-</code></pre></div></p>
+</code></pre></div>
 <p><strong>Option 3: Custom Boto3 Session</strong>
 You can configure a custom <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/core/session.html">boto3 Session</a> and pass it to the <a href="../../../../api-reference/models/#strands.models.bedrock"><code>BedrockModel</code></a>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
@@ -3191,8 +3213,8 @@ You can configure a custom <a href="https://boto3.amazonaws.com/v1/documentation
 <span class="c1"># Create an agent with the model</span>
 <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="n">bedrock_model</span><span class="p">,</span>
-    <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;You are a helpful assistant that provides concise answers. &quot;</span> <span class="o">+</span> 
-                 <span class="s2">&quot;This is a long system prompt with detailed instructions... &quot;</span> 
+    <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;You are a helpful assistant that provides concise answers. &quot;</span> <span class="o">+</span>
+                 <span class="s2">&quot;This is a long system prompt with detailed instructions... &quot;</span>
                  <span class="c1"># Add enough text to reach the minimum token requirement for your model</span>
 <span class="p">)</span>
 

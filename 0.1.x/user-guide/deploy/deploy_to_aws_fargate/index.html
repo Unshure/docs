@@ -3,23 +3,24 @@
 <html lang="en" class="no-js">
   <head>
     
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
-      
-      
-      
-      
-        <link rel="prev" href="../deploy_to_aws_lambda/">
-      
-      
-        <link rel="next" href="../deploy_to_amazon_ec2/">
-      
-      
-      <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     
+      <meta name="description" content="Documentation for Strands Agents, a simple-to-use, code-first, lightweight library for building AI agents">
+    
+    
+    
+    
+      <link rel="prev" href="../deploy_to_aws_lambda/">
+    
+    
+      <link rel="next" href="../deploy_to_amazon_ec2/">
+    
+    
+    <link rel="icon" href="../../../assets/logo-light.png" sizes="any">
+    <link rel="icon" href="../../../assets/logo-auto.svg" type="image/svg+xml">
+    <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+
     
       
         <title>AWS Fargate - Strands Agents SDK</title>
@@ -69,7 +70,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -99,9 +100,10 @@
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../.." title="Strands Agents SDK" class="md-header__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -131,7 +133,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -141,7 +143,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -327,9 +329,10 @@
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../.." title="Strands Agents SDK" class="md-nav__button md-logo" aria-label="Strands Agents SDK" data-md-component="logo">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+      <!-- Logo -->
+
+  <img src="../../../assets/logo-light.svg" alt="logo" class="logo-light" />
+  <img src="../../../assets/logo-dark.svg" alt="logo" class="logo-dark" />
 
     </a>
     Strands Agents SDK
@@ -894,6 +897,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../concepts/model-providers/llamaapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    LlamaAPI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -917,12 +943,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/model-providers/llamaapi/" class="md-nav__link">
+      <a href="../../concepts/model-providers/openai/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    LlamaAPI
+    OpenAI
     
   </span>
   
@@ -2482,7 +2508,7 @@
 </code></pre></div>
 <h3 id="streaming-responses">Streaming responses<a class="headerlink" href="#streaming-responses" title="Permanent link">&para;</a></h3>
 <p>Streaming responses can significantly improve the user experience by providing real-time responses back to the customer. This is especially valuable for longer responses.</p>
-<p>Python web-servers commonly implement streaming through the use of iterators and the Strands Agents SDK facilitates response streaming via the <code>stream_async(prompt)</code> api:</p>
+<p>Python web-servers commonly implement streaming through the use of iterators, and the Strands Agents SDK facilitates response streaming via the <code>stream_async(prompt)</code> function:</p>
 <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_weather_agent_and_stream_response</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="n">is_summarizing</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -2521,7 +2547,7 @@
 </code></pre></div>
 <p>The implementation above employs a <a href="../../concepts/tools/python-tools/#python-tool-decorators">custom tool</a> to mark the boundary between information gathering and summary generation phases. This approach ensures that only the final, user-facing content is streamed to the client, maintaining consistency with the non-streaming endpoint while providing the benefits of incremental response delivery.</p>
 <h2 id="containerization">Containerization<a class="headerlink" href="#containerization" title="Permanent link">&para;</a></h2>
-<p>To deploy your agent to Fargate, you need to containerize it using Podman or Docker. The Dockerfile defines how your application is packaged and run.  Below is an example docker file that installs all needed dependencies, the application, and configures the FastAPI server to run via unicorn (<a href="https://github.com/strands-agents/docs/tree/main/docs/examples/cdk/deploy_to_fargate/docker/Dockerfile">Dockerfile</a>):</p>
+<p>To deploy your agent to Fargate, you need to containerize it using Podman or Docker. The Dockerfile defines how your application is packaged and run.  Below is an example Docker file that installs all needed dependencies, the application, and configures the FastAPI server to run via unicorn (<a href="https://github.com/strands-agents/docs/tree/main/docs/examples/cdk/deploy_to_fargate/docker/Dockerfile">Dockerfile</a>):</p>
 <div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">public.ecr.aws/docker/library/python:3.12-slim</span>
 
 <span class="k">WORKDIR</span><span class="w"> </span><span class="s">/app</span>
@@ -2636,7 +2662,7 @@ follows standard Fargate deployment patterns, but the following code snippet hig
 <li>Outputs the load balancer DNS name for accessing your service</li>
 </ol>
 <h2 id="deploying-your-agent-testing">Deploying Your Agent &amp; Testing<a class="headerlink" href="#deploying-your-agent-testing" title="Permanent link">&para;</a></h2>
-<p>Assuming that Python &amp; Node dependencies are already installed, run the CDK and deploy which will also run the docker file for deployment:</p>
+<p>Assuming that Python &amp; Node dependencies are already installed, run the CDK and deploy which will also run the Docker file for deployment:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Bootstrap your AWS environment (if not already done)</span>
 npx<span class="w"> </span>cdk<span class="w"> </span>bootstrap
 
