@@ -941,63 +941,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#getting-started_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting Started
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Getting Started">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#prerequisites_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prerequisites
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Prerequisites">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#required-iam-permissions_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Required IAM Permissions
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#requesting-access-to-bedrock-models_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Requesting Access to Bedrock Models
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#setting-up-aws-credentials" class="md-nav__link">
-    <span class="md-ellipsis">
-      Setting Up AWS Credentials
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       Basic Usage
@@ -2579,63 +2522,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#getting-started_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Getting Started
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Getting Started">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#prerequisites_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prerequisites
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Prerequisites">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#required-iam-permissions_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Required IAM Permissions
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#requesting-access-to-bedrock-models_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Requesting Access to Bedrock Models
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#setting-up-aws-credentials" class="md-nav__link">
-    <span class="md-ellipsis">
-      Setting Up AWS Credentials
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       Basic Usage
@@ -2848,76 +2734,6 @@
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>your_secret_key
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SESSION_TOKEN</span><span class="o">=</span>your_session_token<span class="w">  </span><span class="c1"># If using temporary credentials</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_REGION</span><span class="o">=</span><span class="s2">&quot;us-west-2&quot;</span><span class="w">  </span><span class="c1"># Used if a custom Boto3 Session is not provided</span>
-</code></pre></div>
-<p><strong>Option 3: Custom Boto3 Session</strong>
-You can configure a custom <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/core/session.html">boto3 Session</a> and pass it to the <a href="../../../../api-reference/models/#strands.models.bedrock"><code>BedrockModel</code></a>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">BedrockModel</span>
-
-<span class="c1"># Create a custom boto3 session</span>
-<span class="n">session</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span>
-    <span class="n">aws_access_key_id</span><span class="o">=</span><span class="s1">&#39;your_access_key&#39;</span><span class="p">,</span>
-    <span class="n">aws_secret_access_key</span><span class="o">=</span><span class="s1">&#39;your_secret_key&#39;</span><span class="p">,</span>
-    <span class="n">aws_session_token</span><span class="o">=</span><span class="s1">&#39;your_session_token&#39;</span><span class="p">,</span>  <span class="c1"># If using temporary credentials</span>
-    <span class="n">region_name</span><span class="o">=</span><span class="s1">&#39;us-west-2&#39;</span><span class="p">,</span>
-    <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;your-profile&#39;</span>  <span class="c1"># Optional: Use a specific profile</span>
-<span class="p">)</span>
-
-<span class="c1"># Create a Bedrock model with the custom session</span>
-<span class="n">bedrock_model</span> <span class="o">=</span> <span class="n">BedrockModel</span><span class="p">(</span>
-    <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;us.anthropic.claude-3-7-sonnet-20250219-v1:0&quot;</span><span class="p">,</span>
-    <span class="n">boto_session</span><span class="o">=</span><span class="n">session</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>For complete details on credential configuration and resolution, see the <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials">boto3 credentials documentation</a>.</p>
-<h2 id="getting-started_1">Getting Started<a class="headerlink" href="#getting-started_1" title="Permanent link">&para;</a></h2>
-<h3 id="prerequisites_1">Prerequisites<a class="headerlink" href="#prerequisites_1" title="Permanent link">&para;</a></h3>
-<ol>
-<li><strong>AWS Account</strong>: You need an AWS account with access to Amazon Bedrock</li>
-<li><strong>Model Access</strong>: Request access to your desired models in the Amazon Bedrock console</li>
-<li><strong>AWS Credentials</strong>: Configure AWS credentials with appropriate permissions, including <code>bedrock:InvokeModelWithResponseStream</code></li>
-</ol>
-<h4 id="required-iam-permissions_1">Required IAM Permissions<a class="headerlink" href="#required-iam-permissions_1" title="Permanent link">&para;</a></h4>
-<p>To use Amazon Bedrock with Strands, your IAM user or role needs the following permissions:</p>
-<ul>
-<li><code>bedrock:InvokeModelWithResponseStream</code></li>
-</ul>
-<p>Here's a sample IAM policy that grants the necessary permissions:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2012-10-17&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;Statement&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;Effect&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Allow&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Action&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;bedrock:InvokeModelWithResponseStream&quot;</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">&quot;Resource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;*&quot;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre></div>
-<p>For production environments, it's recommended to scope down the <code>Resource</code> to specific model ARNs.</p>
-<h4 id="requesting-access-to-bedrock-models_1">Requesting Access to Bedrock Models<a class="headerlink" href="#requesting-access-to-bedrock-models_1" title="Permanent link">&para;</a></h4>
-<p>Before you can use a model in Amazon Bedrock, you need to request access to it:</p>
-<ol>
-<li>Sign in to the AWS Management Console and open the Amazon Bedrock console</li>
-<li>In the navigation pane, choose <strong>Model access</strong></li>
-<li>Choose <strong>Manage model access</strong></li>
-<li>Select the checkbox next to each model you want to access</li>
-<li>Choose <strong>Request model access</strong></li>
-<li>Review the terms and conditions, then select <strong>I accept these terms</strong></li>
-<li>Choose <strong>Request model access</strong></li>
-</ol>
-<p>The model access request is typically processed immediately. Once approved, the model status will change to "Access granted" in the console.</p>
-<p>For more details, see the <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html">Amazon Bedrock documentation on modifying model access</a>.</p>
-<h4 id="setting-up-aws-credentials">Setting Up AWS Credentials<a class="headerlink" href="#setting-up-aws-credentials" title="Permanent link">&para;</a></h4>
-<p>Strands uses <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/index.html">boto3</a> (the AWS SDK for Python) to make calls to Amazon Bedrock. Boto3 has its own credential resolution system that determines which credentials to use when making requests to AWS.</p>
-<p>For development environments, configure credentials using one of these methods:</p>
-<p><strong>Option 1: AWS CLI</strong></p>
-<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>configure
-</code></pre></div>
-<p><strong>Option 2: Environment Variables</strong></p>
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>your_access_key
-<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>your_secret_key
-<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SESSION_TOKEN</span><span class="o">=</span>your_session_token<span class="w">  </span><span class="c1"># If using temporary credentials</span>
 </code></pre></div>
 <p><strong>Option 3: Custom Boto3 Session</strong>
 You can configure a custom <a href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/core/session.html">boto3 Session</a> and pass it to the <a href="../../../../api-reference/models/#strands.models.bedrock"><code>BedrockModel</code></a>:</p>
