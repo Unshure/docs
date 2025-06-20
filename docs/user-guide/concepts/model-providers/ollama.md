@@ -233,6 +233,169 @@ response = agent("What's the square root of 144 plus the current time?")
     - If you encounter the error `ModuleNotFoundError: No module named 'ollama'`, this means you haven't installed the `ollama` dependency in your python environment
     - To fix, run `pip install 'strands-agents[ollama]'`
 
+## Structured Output
+
+Ollama supports structured output for models that have tool calling capabilities. When you use [`Agent.structured_output()`](../../../api-reference/agent.md#strands.agent.agent.Agent.structured_output), the Strands SDK converts your Pydantic models to tool specifications that compatible Ollama models can understand.
+
+### Supported Models
+
+Not all Ollama models support structured output. Models that support tool calling include:
+
+- **Llama 3.1 and 3.2 models**: `llama3.1:8b`, `llama3.1:70b`, `llama3.2:3b`
+- **Mistral models**: `mistral:7b`, `mistral-nemo:12b`
+- **Qwen models**: `qwen2.5:7b`, `qwen2.5:14b`
+- **Phi models**: `phi3:14b`
+
+Check the [Ollama models page](https://ollama.com/search?c=tools) for the latest list of tool-capable models.
+
+### Usage
+
+```python
+from pydantic import BaseModel, Field
+from strands import Agent
+from strands.models.ollama import OllamaModel
+
+class CodeAnalysis(BaseModel):
+    """Analyze code structure and quality."""
+    language: str = Field(description="Programming language")
+    complexity: str = Field(description="Code complexity: low, medium, high")
+    issues: List[str] = Field(description="Potential issues or improvements")
+    score: int = Field(description="Code quality score 1-10", ge=1, le=10)
+
+# Use a model that supports tool calling
+ollama_model = OllamaModel(
+    host="http://localhost:11434",
+    model_id="llama3.1:8b",  # Tool-capable model
+    temperature=0.1  # Low temperature for consistent structured output
+)
+
+agent = Agent(model=ollama_model)
+
+# Extract structured code analysis
+result = agent.structured_output(
+    CodeAnalysis,
+    """
+    Analyze this Python function:
+    
+    def calculate_fibonacci(n):
+        if n <= 1:
+            return n
+        return calculate_fibonacci(n-1) + calculate_fibonacci(n-2)
+    
+    This is a recursive implementation of the Fibonacci sequence.
+    """
+)
+
+print(f"Language: {result.language}")
+print(f"Complexity: {result.complexity}")
+print(f"Issues: {result.issues}")
+print(f"Score: {result.score}")
+```
+
+### Local Model Advantages
+
+Using Ollama for structured output offers unique benefits:
+
+```python
+from typing import List, Optional
+from pydantic import BaseModel, Field
+
+class LocalDataAnalysis(BaseModel):
+    """Analyze sensitive data locally without external API calls."""
+    data_type: str = Field(description="Type of data being analyzed")
+    patterns: List[str] = Field(description="Identified patterns")
+    anomalies: List[str] = Field(description="Unusual or anomalous entries")
+    privacy_score: int = Field(description="Privacy compliance score 1-10", ge=1, le=10)
+    recommendations: List[str] = Field(description="Recommendations for improvement")
+
+# Process sensitive data locally
+ollama_model = OllamaModel(
+    host="http://localhost:11434",
+    model_id="llama3.1:8b",
+    temperature=0.0
+)
+
+agent = Agent(model=ollama_model)
+
+# Analyze sensitive data without sending to external APIs
+result = agent.structured_output(
+    LocalDataAnalysis,
+    "Analyze this customer database for patterns and privacy compliance..."
+)
+```
+
+### Performance Considerations
+
+Local models have different performance characteristics:
+
+```python
+# Optimize for speed vs quality
+fast_model = OllamaModel(
+    host="http://localhost:11434",
+    model_id="llama3.2:3b",  # Smaller, faster model
+    temperature=0.0,
+    num_ctx=2048  # Smaller context for faster processing
+)
+
+# Optimize for quality
+quality_model = OllamaModel(
+    host="http://localhost:11434", 
+    model_id="llama3.1:70b",  # Larger, more capable model
+    temperature=0.1,
+    num_ctx=4096  # Larger context for complex tasks
+)
+```
+
+### Best Practices for Ollama Structured Output
+
+1. **Choose appropriate models**: Use tool-capable models like Llama 3.1/3.2 or Mistral
+2. **Optimize for hardware**: Smaller models (3B-8B) for limited resources, larger (70B+) for better quality
+3. **Use low temperature**: Set temperature to 0.0-0.2 for consistent structured output
+4. **Handle timeouts**: Local models may be slower than cloud APIs
+5. **Monitor resources**: Large models require significant RAM and compute
+6. **Test model capabilities**: Not all models handle complex schemas equally well
+
+### Error Handling
+
+```python
+from pydantic import ValidationError
+import requests
+
+try:
+    result = agent.structured_output(CodeAnalysis, "Analyze this code...")
+except ValidationError as e:
+    print(f"Structured output validation failed: {e}")
+    # The model's response didn't match the expected schema
+except requests.exceptions.ConnectionError:
+    print("Cannot connect to Ollama server. Is it running?")
+except requests.exceptions.Timeout:
+    print("Request timed out. Consider using a smaller model or increasing timeout.")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+### Model Recommendations
+
+**For Simple Structured Output:**
+- `llama3.2:3b` - Fast, good for basic extraction
+- `qwen2.5:7b` - Balanced speed and quality
+
+**For Complex Structured Output:**
+- `llama3.1:8b` - Good balance of capability and speed
+- `llama3.1:70b` - Best quality, requires significant resources
+
+**For Code Analysis:**
+- `mistral:7b` - Good at code understanding
+- `qwen2.5:14b` - Strong technical analysis capabilities
+
+### Limitations
+
+- **Model dependency**: Only models with tool calling support work with structured output
+- **Performance**: Local models are typically slower than cloud APIs
+- **Resource requirements**: Larger models need significant RAM and compute
+- **Quality variance**: Smaller models may produce less consistent structured output
+- **Schema complexity**: Very complex schemas may challenge smaller local models
+
 ## Related Resources
 
 - [Ollama Documentation](https://github.com/ollama/ollama/blob/main/README.md)

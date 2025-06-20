@@ -511,6 +511,214 @@ response = agent("If a train travels at 120 km/h and needs to cover 450 km, how 
 
 > **Note**: Not all models support structured reasoning output. Check the [inference reasoning documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-reasoning.html) for details on supported models.
 
+## Structured Output
+
+Amazon Bedrock models support structured output through their tool calling capabilities. When you use [`Agent.structured_output()`](../../../api-reference/agent.md#strands.agent.agent.Agent.structured_output), the Strands SDK converts your Pydantic models to Bedrock's tool specification format.
+
+### Usage
+
+```python
+from pydantic import BaseModel, Field
+from strands import Agent
+from strands.models import BedrockModel
+
+class ProductAnalysis(BaseModel):
+    """Analyze product information from text."""
+    name: str = Field(description="Product name")
+    category: str = Field(description="Product category")
+    price: float = Field(description="Price in USD")
+    features: List[str] = Field(description="Key product features")
+    rating: Optional[float] = Field(description="Customer rating 1-5", ge=1, le=5)
+
+bedrock_model = BedrockModel(
+    model_id="anthropic.claude-3-7-sonnet-20250219-v1:0",
+    params={
+        "max_tokens": 1000,
+        "temperature": 0.1  # Lower temperature for consistent structured output
+    }
+)
+
+agent = Agent(model=bedrock_model)
+
+# Extract structured product information
+result = agent.structured_output(
+    ProductAnalysis,
+    """
+    Analyze this product: The UltraBook Pro is a premium laptop computer
+    priced at $1,299. It features a 15-inch 4K display, 16GB RAM, 512GB SSD,
+    and 12-hour battery life. Customer reviews average 4.5 stars.
+    """
+)
+
+print(f"Product: {result.name}")
+print(f"Category: {result.category}")
+print(f"Price: ${result.price}")
+print(f"Features: {result.features}")
+print(f"Rating: {result.rating}")
+```
+
+### Multi-Modal Structured Output
+
+Bedrock models can extract structured information from images and documents:
+
+```python
+from typing import List
+from pydantic import BaseModel, Field
+
+class DocumentAnalysis(BaseModel):
+    """Extract structured information from documents."""
+    document_type: str = Field(description="Type of document")
+    key_entities: List[str] = Field(description="Important entities mentioned")
+    summary: str = Field(description="Brief document summary")
+    action_items: List[str] = Field(description="Action items or next steps")
+
+# Analyze document with image
+result = agent.structured_output(
+    DocumentAnalysis,
+    [
+        {"type": "text", "text": "Analyze this business document and extract key information:"},
+        {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": image_base64}}
+    ]
+)
+```
+
+### Model-Specific Structured Output
+
+Different Bedrock models have varying capabilities for structured output:
+
+#### Anthropic Claude Models
+
+```python
+# Claude 3.5 Sonnet - Best for complex structured analysis
+bedrock_model = BedrockModel(
+    model_id="anthropic.claude-3-7-sonnet-20250219-v1:0",
+    params={"max_tokens": 2000, "temperature": 0.0}
+)
+
+# Claude 3 Haiku - Fast structured extraction
+bedrock_model = BedrockModel(
+    model_id="anthropic.claude-3-haiku-20240307-v1:0",
+    params={"max_tokens": 1000, "temperature": 0.1}
+)
+```
+
+#### Amazon Titan Models
+
+```python
+# Titan Text models support basic structured output
+bedrock_model = BedrockModel(
+    model_id="amazon.titan-text-premier-v1:0",
+    params={"maxTokenCount": 1000, "temperature": 0.1}
+)
+```
+
+#### Meta Llama Models
+
+```python
+# Llama models with tool calling support
+bedrock_model = BedrockModel(
+    model_id="meta.llama3-2-90b-instruct-v1:0",
+    params={"max_gen_len": 1000, "temperature": 0.1}
+)
+```
+
+### Advanced Structured Output with Guardrails
+
+Combine structured output with Bedrock Guardrails for safe, validated responses:
+
+```python
+from pydantic import BaseModel, Field, validator
+
+class SafeContentAnalysis(BaseModel):
+    """Analyze content with safety considerations."""
+    topic: str = Field(description="Main topic")
+    sentiment: str = Field(description="Overall sentiment: positive, negative, or neutral")
+    safety_score: int = Field(description="Safety score 1-10", ge=1, le=10)
+    concerns: List[str] = Field(description="Any safety or content concerns")
+    
+    @validator('sentiment')
+    def validate_sentiment(cls, v):
+        if v.lower() not in ['positive', 'negative', 'neutral']:
+            raise ValueError('Sentiment must be positive, negative, or neutral')
+        return v.lower()
+
+bedrock_model = BedrockModel(
+    model_id="anthropic.claude-3-7-sonnet-20250219-v1:0",
+    guardrail_config={
+        "guardrailIdentifier": "your-guardrail-id",
+        "guardrailVersion": "1"
+    },
+    params={"max_tokens": 1000, "temperature": 0.2}
+)
+
+agent = Agent(model=bedrock_model)
+result = agent.structured_output(SafeContentAnalysis, "Analyze this content...")
+```
+
+### Best Practices for Bedrock Structured Output
+
+1. **Choose the right model**: Claude models generally perform best for complex structured output
+2. **Optimize parameters**: Use low temperature (0.0-0.3) for consistent results
+3. **Handle model limitations**: Not all Bedrock models support tool calling
+4. **Use guardrails**: Combine with Bedrock Guardrails for content safety
+5. **Monitor costs**: Structured output may use more tokens than simple text generation
+6. **Cache when possible**: Use prompt caching for repeated structured extractions
+
+### Supported Models for Structured Output
+
+Models that support tool calling and structured output:
+
+**Anthropic Claude Models:**
+- `anthropic.claude-3-7-sonnet-20250219-v1:0` ✅ (Recommended)
+- `anthropic.claude-3-5-haiku-20241022-v1:0` ✅
+- `anthropic.claude-3-opus-20240229-v1:0` ✅
+- `anthropic.claude-3-sonnet-20240229-v1:0` ✅
+- `anthropic.claude-3-haiku-20240307-v1:0` ✅
+
+**Meta Llama Models:**
+- `meta.llama3-2-90b-instruct-v1:0` ✅
+- `meta.llama3-2-11b-instruct-v1:0` ✅
+- `meta.llama3-1-70b-instruct-v1:0` ✅
+
+**Amazon Titan Models:**
+- `amazon.titan-text-premier-v1:0` ⚠️ (Limited support)
+
+**Cohere Models:**
+- `cohere.command-r-plus-v1:0` ✅
+- `cohere.command-r-v1:0` ✅
+
+> **Note**: Tool calling support varies by model. Check the [Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/tool-use.html) for the latest supported models.
+
+### Error Handling
+
+```python
+from pydantic import ValidationError
+from botocore.exceptions import ClientError
+
+try:
+    result = agent.structured_output(ProductAnalysis, "Analyze this product...")
+except ValidationError as e:
+    print(f"Structured output validation failed: {e}")
+    # Handle schema validation errors
+except ClientError as e:
+    error_code = e.response['Error']['Code']
+    if error_code == 'ValidationException':
+        print("Invalid request parameters")
+    elif error_code == 'ThrottlingException':
+        print("Request was throttled, retry with backoff")
+    else:
+        print(f"AWS error: {e}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+### Performance Optimization
+
+- **Batch requests**: Process multiple structured extractions together when possible
+- **Use caching**: Enable prompt caching for repeated patterns
+- **Right-size models**: Use smaller models (like Claude Haiku) for simple extractions
+- **Monitor usage**: Track token consumption and costs for structured output operations
+
 ## Related Resources
 
 - [Amazon Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)

@@ -330,3 +330,264 @@ The build in `get_config` and `update_config` methods allow for the model's conf
 - `get_config` exposes the current model config
 - `update_config` allows for at-runtime updates to the model config
   - For example, changing model_id with a tool call
+
+## Structured Output Support
+
+Structured output allows agents to receive type-safe, validated responses using [Pydantic](https://docs.pydantic.dev/latest/concepts/models/) models instead of raw text. When implementing a custom model provider, you need to ensure your provider can handle structured output requests properly.
+
+### How Structured Output Works
+
+When an agent calls [`Agent.structured_output()`](../../../api-reference/agent.md#strands.agent.agent.Agent.structured_output), the Strands SDK:
+
+1. Converts the Pydantic model to a tool specification
+2. Passes the tool specification to your model provider via the `tool_specs` parameter
+3. Expects the model to respond with a tool call that matches the schema
+4. Validates and returns the structured response
+
+### Implementation Requirements
+
+For your custom model provider to support structured output, ensure your implementation handles:
+
+#### 1. Tool Specification Processing
+
+Your `format_request()` method receives tool specifications that represent Pydantic models:
+
+```python
+@override
+def format_request(
+    self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+) -> dict[str, Any]:
+    """Format a Custom model request with structured output support."""
+    
+    # Convert Strands tool specs to your model's format
+    formatted_tools = None
+    if tool_specs:
+        formatted_tools = []
+        for tool_spec in tool_specs:
+            # Map ToolSpec to your model's tool format
+            formatted_tool = {
+                "name": tool_spec["name"],
+                "description": tool_spec["description"],
+                "input_schema": tool_spec["input_schema"]
+            }
+            formatted_tools.append(formatted_tool)
+    
+    return {
+        "messages": messages,
+        "tools": formatted_tools,  # Include tools in your request
+        "system_prompt": system_prompt,
+        **self.config,
+    }
+```
+
+#### 2. Tool Call Response Handling
+
+Your `format_chunk()` method must handle tool call responses properly:
+
+```python
+@override
+def format_chunk(self, event: Any) -> StreamEvent:
+    """Format model response events, including tool calls for structured output."""
+    
+    # Handle different event types from your model
+    if event["type"] == "tool_call_start":
+        return {
+            "contentBlockStart": {
+                "start": {
+                    "toolUse": {
+                        "name": event["tool_name"],
+                        "toolUseId": event["tool_call_id"]
+                    }
+                }
+            }
+        }
+    
+    elif event["type"] == "tool_call_delta":
+        return {
+            "contentBlockDelta": {
+                "delta": {
+                    "toolUse": {
+                        "input": event["partial_input"]  # Partial JSON string
+                    }
+                }
+            }
+        }
+    
+    elif event["type"] == "tool_call_end":
+        return {
+            "contentBlockStop": {}
+        }
+    
+    # Handle other event types...
+    return {...}
+```
+
+### Example Implementation
+
+Here's a complete example showing structured output support in a custom model provider:
+
+```python
+from typing import Any, Iterable, Optional, TypedDict
+from typing_extensions import Unpack
+from pydantic import BaseModel
+
+from strands.types.models import Model
+from strands.types.content import Messages
+from strands.types.streaming import StreamEvent
+from strands.types.tools import ToolSpec
+
+class PersonInfo(BaseModel):
+    """Example Pydantic model for structured output."""
+    name: str
+    age: int
+    occupation: str
+
+class CustomModel(Model):
+    # ... (previous implementation) ...
+    
+    @override
+    def format_request(
+        self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+    ) -> dict[str, Any]:
+        """Format request with structured output support."""
+        request = {
+            "messages": self._format_messages(messages),
+            "system_prompt": system_prompt,
+            **self.config,
+        }
+        
+        # Add tools if provided (for structured output)
+        if tool_specs:
+            request["tools"] = [
+                {
+                    "name": spec["name"],
+                    "description": spec["description"],
+                    "input_schema": spec["input_schema"]
+                }
+                for spec in tool_specs
+            ]
+        
+        return request
+    
+    @override
+    def format_chunk(self, event: Any) -> StreamEvent:
+        """Format response events including tool calls."""
+        event_type = event.get("type")
+        
+        if event_type == "message_start":
+            return {"messageStart": {"role": "assistant"}}
+        
+        elif event_type == "content_block_start":
+            if event.get("content_block", {}).get("type") == "tool_use":
+                return {
+                    "contentBlockStart": {
+                        "start": {
+                            "toolUse": {
+                                "name": event["content_block"]["name"],
+                                "toolUseId": event["content_block"]["id"]
+                            }
+                        }
+                    }
+                }
+            else:
+                return {"contentBlockStart": {"start": {}}}
+        
+        elif event_type == "content_block_delta":
+            delta = event.get("delta", {})
+            if delta.get("type") == "tool_use":
+                return {
+                    "contentBlockDelta": {
+                        "delta": {
+                            "toolUse": {
+                                "input": delta.get("partial_json", "")
+                            }
+                        }
+                    }
+                }
+            else:
+                return {
+                    "contentBlockDelta": {
+                        "delta": {
+                            "text": delta.get("text", "")
+                        }
+                    }
+                }
+        
+        elif event_type == "content_block_stop":
+            return {"contentBlockStop": {}}
+        
+        elif event_type == "message_stop":
+            return {"messageStop": {"stopReason": event.get("stop_reason", "end_turn")}}
+        
+        # Handle other events...
+        return {}
+
+# Usage example
+custom_model = CustomModel(
+    api_key="your-api-key",
+    model_id="your-model-id"
+)
+
+agent = Agent(model=custom_model)
+
+# Use structured output
+result = agent.structured_output(
+    PersonInfo,
+    "Extract information: John Smith is a 30-year-old software engineer"
+)
+
+print(f"Name: {result.name}")      # "John Smith"
+print(f"Age: {result.age}")        # 30
+print(f"Job: {result.occupation}") # "software engineer"
+```
+
+### Testing Structured Output
+
+Test your structured output implementation:
+
+```python
+def test_structured_output():
+    """Test structured output with your custom model."""
+    from pydantic import BaseModel
+    from strands import Agent
+    
+    class TestModel(BaseModel):
+        field1: str
+        field2: int
+    
+    agent = Agent(model=your_custom_model)
+    
+    try:
+        result = agent.structured_output(
+            TestModel,
+            "Generate test data with field1 as 'test' and field2 as 42"
+        )
+        assert result.field1 == "test"
+        assert result.field2 == 42
+        print("Structured output test passed!")
+    except Exception as e:
+        print(f"Structured output test failed: {e}")
+
+test_structured_output()
+```
+
+### Provider-Specific Considerations
+
+When implementing structured output support:
+
+1. **Tool Call Format**: Ensure your model's tool calling format matches what Strands expects
+2. **JSON Schema**: Your model should understand and respect JSON schema constraints
+3. **Streaming**: Handle partial tool call responses properly in streaming mode
+4. **Error Handling**: Gracefully handle malformed tool calls or schema violations
+5. **Model Capabilities**: Not all models support tool calling - document limitations clearly
+
+### Troubleshooting
+
+Common issues when implementing structured output:
+
+- **Tool calls not recognized**: Check that your `format_request()` properly converts `ToolSpec` objects
+- **Invalid JSON responses**: Ensure your model generates valid JSON that matches the schema
+- **Streaming issues**: Verify that partial tool call responses are handled correctly
+- **Schema validation errors**: Make sure your model respects the provided JSON schema constraints
+
+For more information about structured output usage, see the [Structured Output documentation](../../agents/structured-output.md) and [examples](../../../../examples/python/structured_output.md).
