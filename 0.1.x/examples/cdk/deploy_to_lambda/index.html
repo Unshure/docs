@@ -10,6 +10,8 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/examples/cdk/deploy_to_lambda/">
+    
     
     
     
@@ -551,12 +553,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/concepts/agents/sessions-state/" class="md-nav__link">
+      <a href="../../../user-guide/concepts/agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -580,6 +582,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/concepts/agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -906,6 +931,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../user-guide/concepts/model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../user-guide/concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -1115,6 +1163,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/concepts/multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1629,6 +1700,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../user-guide/deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../user-guide/deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -1854,6 +1948,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2316,7 +2433,7 @@ python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </s
 <span class="c1"># Install Python dependencies for the local development</span>
 pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 <span class="c1"># Install Python dependencies for lambda with correct architecture</span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span>--platform<span class="w"> </span>manylinux2014_aarch64<span class="w"> </span>--target<span class="w"> </span>./packaging/_dependencies<span class="w"> </span>--only-binary<span class="o">=</span>:all:
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span>--python-version<span class="w"> </span><span class="m">3</span>.12<span class="w"> </span>--platform<span class="w"> </span>manylinux2014_aarch64<span class="w"> </span>--target<span class="w"> </span>./packaging/_dependencies<span class="w"> </span>--only-binary<span class="o">=</span>:all:
 </code></pre></div>
 <ol>
 <li>Package the lambda:</li>
@@ -2426,7 +2543,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
       <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

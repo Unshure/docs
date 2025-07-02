@@ -10,6 +10,8 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/observability-evaluation/traces/">
+    
     
       <link rel="prev" href="../metrics/">
     
@@ -565,12 +567,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/agents/sessions-state/" class="md-nav__link">
+      <a href="../../concepts/agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -594,6 +596,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -920,6 +945,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../concepts/model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -1129,6 +1177,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1887,6 +1958,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -2112,6 +2206,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2740,28 +2857,40 @@
 <li><strong>Auto-instrumentation</strong>: Trace creation is handled automatically when you enable tracing</li>
 </ol>
 <h2 id="enabling-tracing">Enabling Tracing<a class="headerlink" href="#enabling-tracing" title="Permanent link">&para;</a></h2>
-<p>You can enable tracing either through environment variables or through code:</p>
+<div class="admonition warning">
+<p class="admonition-title">To enable OTEL exporting, install Strands Agents with <code>otel</code> extra dependencies: <code>pip install strands-agents[otel]</code></p>
+</div>
 <h3 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Specify custom OTLP endpoint if set will enable OTEL by default</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://collector.example.com:4318&quot;</span>
-
-<span class="c1"># Enable Console debugging</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">STRANDS_OTEL_ENABLE_CONSOLE_EXPORT</span><span class="o">=</span><span class="nb">true</span>
 
 <span class="c1"># Set Default OTLP Headers</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_HEADERS</span><span class="o">=</span><span class="s2">&quot;key1=value1,key2=value2&quot;</span>
 </code></pre></div>
 <h3 id="code-configuration">Code Configuration<a class="headerlink" href="#code-configuration" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands.telemetry.tracer</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_tracer</span>
 
-<span class="c1"># Configure the tracer</span>
-<span class="n">tracer</span> <span class="o">=</span> <span class="n">get_tracer</span><span class="p">(</span>
-    <span class="n">service_name</span><span class="o">=</span><span class="s2">&quot;my-agent-service&quot;</span><span class="p">,</span>
-    <span class="n">otlp_endpoint</span><span class="o">=</span><span class="s2">&quot;http://localhost:4318&quot;</span><span class="p">,</span>
-    <span class="n">otlp_headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer TOKEN&quot;</span><span class="p">},</span>
-    <span class="n">enable_console_export</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Helpful for development</span>
+<span class="c1"># Option 1: Skip StrandsTelemetry if global tracer provider is already configured</span>
+<span class="c1"># (your existing OpenTelemetry setup will be used automatically)</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;us.anthropic.claude-3-7-sonnet-20250219-v1:0&quot;</span><span class="p">,</span>
+    <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;You are a helpful AI assistant&quot;</span>
 <span class="p">)</span>
+
+<span class="c1"># Option 2: Use StrandsTelemetry to handle complete OpenTelemetry setup</span>
+<span class="c1"># (Creates new tracer provider and sets it as global)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.telemetry</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrandsTelemetry</span>
+
+<span class="n">strands_telemetry</span> <span class="o">=</span> <span class="n">StrandsTelemetry</span><span class="p">()</span>
+<span class="n">strands_telemetry</span><span class="o">.</span><span class="n">setup_otlp_exporter</span><span class="p">()</span>     <span class="c1"># Send traces to OTLP endpoint</span>
+<span class="n">strands_telemetry</span><span class="o">.</span><span class="n">setup_console_exporter</span><span class="p">()</span>  <span class="c1"># Print traces to console</span>
+
+<span class="c1"># Option 3: Use StrandsTelemetry with your own tracer provider</span>
+<span class="c1"># (Keeps your tracer provider, adds Strands exporters without setting global)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.telemetry</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrandsTelemetry</span>
+
+<span class="n">strands_telemetry</span> <span class="o">=</span> <span class="n">StrandsTelemetry</span><span class="p">(</span><span class="n">tracer_provider</span><span class="o">=</span><span class="n">user_tracer_provider</span><span class="p">)</span>
+<span class="n">strands_telemetry</span><span class="o">.</span><span class="n">setup_otlp_exporter</span><span class="p">()</span><span class="o">.</span><span class="n">setup_console_exporter</span><span class="p">()</span>  <span class="c1"># Chaining supported</span>
 
 <span class="c1"># Create agent (tracing will be enabled automatically)</span>
 <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
@@ -3019,19 +3148,10 @@ docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </sp
 <span class="w">  </span>jaegertracing/all-in-one:latest
 </code></pre></div>
 <p>Then access the Jaeger UI at http://localhost:16686 to view your traces.</p>
-<p>You can also enable console export to inspect the spans:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># By enabling the environment variable</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;STRANDS_OTEL_ENABLE_CONSOLE_EXPORT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+<p>You can also setup console export to inspect the spans:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands.telemetry</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrandsTelemetry</span>
 
-<span class="c1"># or</span>
-
-<span class="c1"># Configure the tracer</span>
-<span class="n">tracer</span> <span class="o">=</span> <span class="n">get_tracer</span><span class="p">(</span>
-    <span class="n">service_name</span><span class="o">=</span><span class="s2">&quot;my-agent-service&quot;</span><span class="p">,</span>
-    <span class="n">otlp_endpoint</span><span class="o">=</span><span class="s2">&quot;http://localhost:4318&quot;</span><span class="p">,</span>
-    <span class="n">otlp_headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer TOKEN&quot;</span><span class="p">},</span>
-    <span class="n">enable_console_export</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Helpful for development</span>
-<span class="p">)</span>
+<span class="n">StrandsTelemetry</span><span class="p">()</span><span class="o">.</span><span class="n">setup_console_exporter</span><span class="p">()</span>
 </code></pre></div>
 <h2 id="advanced-configuration">Advanced Configuration<a class="headerlink" href="#advanced-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="sampling-control">Sampling Control<a class="headerlink" href="#sampling-control" title="Permanent link">&para;</a></h3>
@@ -3099,11 +3219,13 @@ docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </sp
 <h2 id="example-end-to-end-tracing">Example: End-to-End Tracing<a class="headerlink" href="#example-end-to-end-tracing" title="Permanent link">&para;</a></h2>
 <p>This example demonstrates capturing a complete trace of an agent interaction:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.telemetry</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrandsTelemetry</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="c1"># Enable tracing with console output for visibility</span>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OTEL_EXPORTER_OTLP_ENDPOINT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:4318&quot;</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;STRANDS_OTEL_ENABLE_CONSOLE_EXPORT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+<span class="n">strands_telemetry</span> <span class="o">=</span> <span class="n">StrandsTelemetry</span><span class="p">()</span>
+<span class="n">strands_telemetry</span><span class="o">.</span><span class="n">setup_otlp_exporter</span><span class="p">()</span>      <span class="c1"># Send traces to OTLP endpoint</span>
+<span class="n">strands_telemetry</span><span class="o">.</span><span class="n">setup_console_exporter</span><span class="p">()</span>   <span class="c1"># Print traces to console</span>
 
 <span class="c1"># Create agent</span>
 <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
@@ -3192,7 +3314,7 @@ docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </sp
       <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

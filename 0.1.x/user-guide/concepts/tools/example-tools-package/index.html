@@ -10,6 +10,8 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/tools/example-tools-package/">
+    
     
       <link rel="prev" href="../mcp-tools/">
     
@@ -567,12 +569,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/sessions-state/" class="md-nav__link">
+      <a href="../../agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -596,6 +598,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -905,6 +930,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#tool-consent-and-bypassing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tool Consent and Bypassing
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1047,6 +1081,29 @@
   
   <span class="md-ellipsis">
     LlamaAPI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
     
   </span>
   
@@ -1273,6 +1330,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1796,6 +1876,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -2021,6 +2124,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2464,6 +2590,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#tool-consent-and-bypassing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tool Consent and Bypassing
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2545,7 +2680,27 @@
 <li><a href="https://github.com/strands-agents/tools/blob/main/src/strands_tools/think.py"><code>think</code></a>: Perform deep thinking by creating parallel branches of agentic reasoning</li>
 <li><a href="https://github.com/strands-agents/tools/blob/main/src/strands_tools/use_llm.py"><code>use_llm</code></a>: Run a new AI event loop with custom prompts</li>
 <li><a href="https://github.com/strands-agents/tools/blob/main/src/strands_tools/workflow.py"><code>workflow</code></a>: Orchestrate sequenced workflows</li>
+<li><a href="https://github.com/strands-agents/tools/blob/main/src/strands_tools/batch.py"><code>batch</code></a>: Call multiple tools from a single model request</li>
 </ul>
+<h2 id="tool-consent-and-bypassing">Tool Consent and Bypassing<a class="headerlink" href="#tool-consent-and-bypassing" title="Permanent link">&para;</a></h2>
+<p>By default, certain tools that perform potentially sensitive operations (like file modifications, shell commands, or code execution) will prompt for user confirmation before executing. This safety feature ensures users maintain control over actions that could modify their system.</p>
+<p>To bypass these confirmation prompts, you can set the <code>BYPASS_TOOL_CONSENT</code> environment variable:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set this environment variable to bypass tool confirmation prompts</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">BYPASS_TOOL_CONSENT</span><span class="o">=</span><span class="nb">true</span>
+</code></pre></div>
+<p>Setting the environment variable within Python:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;BYPASS_TOOL_CONSENT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+</code></pre></div>
+<p>When this variable is set to <code>true</code>, tools will execute without asking for confirmation. This is particularly useful for:</p>
+<ul>
+<li>Automated workflows where user interaction isn't possible</li>
+<li>Development and testing environments</li>
+<li>CI/CD pipelines</li>
+<li>Situations where you've already validated the safety of operations</li>
+</ul>
+<p><strong>Note:</strong> Use this feature with caution in production environments, as it removes an important safety check.</p>
 
 
 
@@ -2617,7 +2772,7 @@
       <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

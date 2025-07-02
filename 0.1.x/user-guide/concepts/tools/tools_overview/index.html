@@ -10,6 +10,8 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/tools/tools_overview/">
+    
     
       <link rel="prev" href="../../agents/context-management/">
     
@@ -567,12 +569,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/sessions-state/" class="md-nav__link">
+      <a href="../../agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -596,6 +598,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -1109,6 +1134,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../model-providers/ollama/" class="md-nav__link">
         
   
@@ -1318,6 +1366,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1841,6 +1912,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -2066,6 +2160,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2611,7 +2728,7 @@
 </code></pre></div>
 <h2 id="using-tools">Using Tools<a class="headerlink" href="#using-tools" title="Permanent link">&para;</a></h2>
 <p>Tools can be invoked in two primary ways.</p>
-<p>Agents have context about tool calls and their results as part of conversation history. See <a href="../../agents/sessions-state/#tool-state">sessions &amp; state</a> for more information.</p>
+<p>Agents have context about tool calls and their results as part of conversation history. See <a href="../../agents/state-sessions/#using-state-in-tools">state &amp; sessions</a> for more information.</p>
 <h3 id="natural-language-invocation">Natural Language Invocation<a class="headerlink" href="#natural-language-invocation" title="Permanent link">&para;</a></h3>
 <p>The most common way agents use tools is through natural language requests. The agent determines when and how to invoke tools based on the user's input:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Agent decides when to use tools based on the request</span>
@@ -2621,6 +2738,10 @@
 <p>Every tool added to an agent also becomes a method accessible directly on the agent object. This is useful for programmatically invoking tools:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Directly invoke a tool as a method</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool</span><span class="o">.</span><span class="n">file_read</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/file.txt&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;view&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>If a tool name contains hyphens, you can invoke the tool using underscores instead:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Directly invoke a tool named &quot;read-all&quot;</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool</span><span class="o">.</span><span class="n">read_all</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/file.txt&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="building-loading-tools">Building &amp; Loading Tools<a class="headerlink" href="#building-loading-tools" title="Permanent link">&para;</a></h2>
 <h3 id="1-python-tools">1. Python Tools<a class="headerlink" href="#1-python-tools" title="Permanent link">&para;</a></h3>
@@ -2736,7 +2857,7 @@
 <span class="n">sse_mcp_client</span> <span class="o">=</span> <span class="n">MCPClient</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">sse_client</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/sse&quot;</span><span class="p">))</span>
 
 <span class="c1"># Create an agent with MCP tools</span>
-<span class="k">with</span> <span class="n">sse_mcp_server</span><span class="p">:</span>
+<span class="k">with</span> <span class="n">sse_mcp_client</span><span class="p">:</span>
     <span class="c1"># Get the tools from the MCP server</span>
     <span class="n">tools</span> <span class="o">=</span> <span class="n">sse_mcp_client</span><span class="o">.</span><span class="n">list_tools_sync</span><span class="p">()</span>
 
@@ -2748,7 +2869,7 @@
 </code></pre></div>
 <p>For more information on using MCP tools, see <a href="../mcp-tools/">MCP Tools</a>.</p>
 <h3 id="3-example-built-in-tools">3. Example Built-in Tools<a class="headerlink" href="#3-example-built-in-tools" title="Permanent link">&para;</a></h3>
-<p>For rapid prototyping and common tasks, Strands offers an optional <a href="https://github.com/strands-agents/tools/blob/main">example built-in tools package</a> with pre-built tools for development. These tools cover a wide variety of capabilities including File Operations, Shell &amp; Local System control, Web &amp; Network for API calls, and Agents &amp; Workflows for orchestration. </p>
+<p>For rapid prototyping and common tasks, Strands offers an optional <a href="https://github.com/strands-agents/tools/blob/main">example built-in tools package</a> with pre-built tools for development. These tools cover a wide variety of capabilities including File Operations, Shell &amp; Local System control, Web &amp; Network for API calls, and Agents &amp; Workflows for orchestration.</p>
 <p>For a complete list of available tools and their detailed descriptions, see <a href="../example-tools-package/">Example Built-in Tools</a>.</p>
 <h2 id="tool-design-best-practices">Tool Design Best Practices<a class="headerlink" href="#tool-design-best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="effective-tool-descriptions">Effective Tool Descriptions<a class="headerlink" href="#effective-tool-descriptions" title="Permanent link">&para;</a></h3>
@@ -2767,12 +2888,12 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Search the product database for items matching the query string.</span>
 
-<span class="sd">    Use this tool when you need to find detailed product information based on keywords, </span>
-<span class="sd">    product names, or categories. The search is case-insensitive and supports fuzzy </span>
+<span class="sd">    Use this tool when you need to find detailed product information based on keywords,</span>
+<span class="sd">    product names, or categories. The search is case-insensitive and supports fuzzy</span>
 <span class="sd">    matching to handle typos and variations in search terms.</span>
 
-<span class="sd">    This tool connects to the enterprise product catalog database and performs a semantic </span>
-<span class="sd">    search across all product fields, providing comprehensive results with all available </span>
+<span class="sd">    This tool connects to the enterprise product catalog database and performs a semantic</span>
+<span class="sd">    search across all product fields, providing comprehensive results with all available</span>
 <span class="sd">    product metadata.</span>
 
 <span class="sd">    Example response:</span>
@@ -2883,7 +3004,7 @@
       <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

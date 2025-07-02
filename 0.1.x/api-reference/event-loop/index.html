@@ -10,6 +10,8 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/api-reference/event-loop/">
+    
     
       <link rel="prev" href="../agent/">
     
@@ -557,12 +559,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/concepts/agents/sessions-state/" class="md-nav__link">
+      <a href="../../user-guide/concepts/agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -586,6 +588,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/concepts/agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -912,6 +937,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/concepts/model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -1121,6 +1169,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/concepts/multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1635,6 +1706,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -1860,6 +1954,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2117,60 +2234,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.event_loop.event_loop.initialize_state" class="md-nav__link">
-    <span class="md-ellipsis">
-      initialize_state
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.event_loop.prepare_next_cycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      prepare_next_cycle
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#strands.event_loop.event_loop.recurse_event_loop" class="md-nav__link">
     <span class="md-ellipsis">
       recurse_event_loop
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#strands.event_loop.error_handler" class="md-nav__link">
-    <span class="md-ellipsis">
-      error_handler
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="error_handler">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.error_handler.handle_input_too_long_error" class="md-nav__link">
-    <span class="md-ellipsis">
-      handle_input_too_long_error
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.error_handler.handle_throttling_error" class="md-nav__link">
-    <span class="md-ellipsis">
-      handle_throttling_error
     </span>
   </a>
   
@@ -2195,24 +2261,6 @@
   <a href="#strands.event_loop.message_processor.clean_orphaned_empty_tool_uses" class="md-nav__link">
     <span class="md-ellipsis">
       clean_orphaned_empty_tool_uses
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.message_processor.find_last_message_with_tool_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      find_last_message_with_tool_results
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.message_processor.truncate_tool_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      truncate_tool_results
     </span>
   </a>
   
@@ -2507,60 +2555,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.event_loop.event_loop.initialize_state" class="md-nav__link">
-    <span class="md-ellipsis">
-      initialize_state
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.event_loop.prepare_next_cycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      prepare_next_cycle
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#strands.event_loop.event_loop.recurse_event_loop" class="md-nav__link">
     <span class="md-ellipsis">
       recurse_event_loop
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#strands.event_loop.error_handler" class="md-nav__link">
-    <span class="md-ellipsis">
-      error_handler
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="error_handler">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.error_handler.handle_input_too_long_error" class="md-nav__link">
-    <span class="md-ellipsis">
-      handle_input_too_long_error
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.error_handler.handle_throttling_error" class="md-nav__link">
-    <span class="md-ellipsis">
-      handle_throttling_error
     </span>
   </a>
   
@@ -2585,24 +2582,6 @@
   <a href="#strands.event_loop.message_processor.clean_orphaned_empty_tool_uses" class="md-nav__link">
     <span class="md-ellipsis">
       clean_orphaned_empty_tool_uses
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.message_processor.find_last_message_with_tool_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      find_last_message_with_tool_results
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#strands.event_loop.message_processor.truncate_tool_results" class="md-nav__link">
-    <span class="md-ellipsis">
-      truncate_tool_results
     </span>
   </a>
   
@@ -3070,7 +3049,24 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 53</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
 <span class="normal"> 54</span>
 <span class="normal"> 55</span>
 <span class="normal"> 56</span>
@@ -3262,22 +3258,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">event_loop_cycle</span><span class="p">(</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">event_loop_cycle</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
     <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
@@ -3332,10 +3313,11 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
 
     <span class="n">event_loop_metrics</span><span class="p">:</span> <span class="n">EventLoopMetrics</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_loop_metrics&quot;</span><span class="p">,</span> <span class="n">EventLoopMetrics</span><span class="p">())</span>
-
     <span class="c1"># Initialize state and get cycle trace</span>
-    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">initialize_state</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span> <span class="o">=</span> <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">start_cycle</span><span class="p">()</span>
+    <span class="k">if</span> <span class="s2">&quot;request_state&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">))}</span>
+    <span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span> <span class="o">=</span> <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">start_cycle</span><span class="p">(</span><span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">)</span>
     <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_trace&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cycle_trace</span>
 
     <span class="n">callback_handler</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -3363,6 +3345,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
     <span class="n">metrics</span><span class="p">:</span> <span class="n">Metrics</span>
 
     <span class="c1"># Retry loop for handling throttling exceptions</span>
+    <span class="n">current_delay</span> <span class="o">=</span> <span class="n">INITIAL_DELAY</span>
     <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">MAX_ATTEMPTS</span><span class="p">):</span>
         <span class="n">model_id</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">model_invoke_span</span> <span class="o">=</span> <span class="n">tracer</span><span class="o">.</span><span class="n">start_model_invoke_span</span><span class="p">(</span>
@@ -3372,14 +3355,19 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
         <span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">stop_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stream_messages</span><span class="p">(</span>
-                <span class="n">model</span><span class="p">,</span>
-                <span class="n">system_prompt</span><span class="p">,</span>
-                <span class="n">messages</span><span class="p">,</span>
-                <span class="n">tool_config</span><span class="p">,</span>
-                <span class="n">callback_handler</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="c1"># TODO: As part of the migration to async-iterator, we will continue moving callback_handler calls up the</span>
+            <span class="c1">#       call stack. At this point, we converted all events that were previously passed to the handler in</span>
+            <span class="c1">#       `stream_messages` into yielded events that now have the &quot;callback&quot; key. To maintain backwards</span>
+            <span class="c1">#       compatability, we need to combine the event with kwargs before passing to the handler. This we will</span>
+            <span class="c1">#       revisit when migrating to strongly typed events.</span>
+            <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream_messages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s2">&quot;callback&quot;</span> <span class="ow">in</span> <span class="n">event</span><span class="p">:</span>
+                    <span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">],</span> <span class="o">**</span><span class="p">(</span><span class="n">kwargs</span> <span class="k">if</span> <span class="s2">&quot;delta&quot;</span> <span class="ow">in</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="p">{})}</span>
+                    <span class="n">callback_handler</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stop_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">metrics</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;request_state&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
             <span class="k">if</span> <span class="n">model_invoke_span</span><span class="p">:</span>
                 <span class="n">tracer</span><span class="o">.</span><span class="n">end_model_invoke_span</span><span class="p">(</span><span class="n">model_invoke_span</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
             <span class="k">break</span>  <span class="c1"># Success! Break out of retry loop</span>
@@ -3387,16 +3375,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
         <span class="k">except</span> <span class="n">ContextWindowOverflowException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">model_invoke_span</span><span class="p">:</span>
                 <span class="n">tracer</span><span class="o">.</span><span class="n">end_span_with_error</span><span class="p">(</span><span class="n">model_invoke_span</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">handle_input_too_long_error</span><span class="p">(</span>
-                <span class="n">e</span><span class="p">,</span>
-                <span class="n">messages</span><span class="p">,</span>
-                <span class="n">model</span><span class="p">,</span>
-                <span class="n">system_prompt</span><span class="p">,</span>
-                <span class="n">tool_config</span><span class="p">,</span>
-                <span class="n">callback_handler</span><span class="p">,</span>
-                <span class="n">tool_handler</span><span class="p">,</span>
-                <span class="n">kwargs</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
         <span class="k">except</span> <span class="n">ModelThrottledException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">model_invoke_span</span><span class="p">:</span>
@@ -3404,7 +3383,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
             <span class="c1"># Handle throttling errors with exponential backoff</span>
             <span class="n">should_retry</span><span class="p">,</span> <span class="n">current_delay</span> <span class="o">=</span> <span class="n">handle_throttling_error</span><span class="p">(</span>
-                <span class="n">e</span><span class="p">,</span> <span class="n">attempt</span><span class="p">,</span> <span class="n">MAX_ATTEMPTS</span><span class="p">,</span> <span class="n">INITIAL_DELAY</span><span class="p">,</span> <span class="n">MAX_DELAY</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">kwargs</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">attempt</span><span class="p">,</span> <span class="n">MAX_ATTEMPTS</span><span class="p">,</span> <span class="n">current_delay</span><span class="p">,</span> <span class="n">MAX_DELAY</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">kwargs</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">should_retry</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -3462,7 +3441,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
             <span class="p">)</span>
 
         <span class="c1"># End the cycle and return results</span>
-        <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">end_cycle</span><span class="p">(</span><span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span><span class="p">)</span>
+        <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">end_cycle</span><span class="p">(</span><span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cycle_span</span><span class="p">:</span>
             <span class="n">tracer</span><span class="o">.</span><span class="n">end_event_loop_cycle_span</span><span class="p">(</span>
                 <span class="n">span</span><span class="o">=</span><span class="n">cycle_span</span><span class="p">,</span>
@@ -3475,6 +3454,10 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
         <span class="c1"># Don&#39;t invoke the callback_handler or log the exception - we already did it when we</span>
         <span class="c1"># raised the exception and we don&#39;t need that duplication.</span>
         <span class="k">raise</span>
+    <span class="k">except</span> <span class="n">ContextWindowOverflowException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cycle_span</span><span class="p">:</span>
+            <span class="n">tracer</span><span class="o">.</span><span class="n">end_span_with_error</span><span class="p">(</span><span class="n">cycle_span</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">e</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">cycle_span</span><span class="p">:</span>
             <span class="n">tracer</span><span class="o">.</span><span class="n">end_span_with_error</span><span class="p">(</span><span class="n">cycle_span</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
@@ -3485,247 +3468,6 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
         <span class="k">raise</span> <span class="n">EventLoopException</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">])</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="k">return</span> <span class="n">stop_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">event_loop_metrics</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="strands.event_loop.event_loop.initialize_state" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">initialize_state</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
-
-<a href="#strands.event_loop.event_loop.initialize_state" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Initialize the request state if not present.</p>
-<p>Creates an empty request_state dictionary if one doesn't already exist in the
-provided keyword arguments.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Keyword arguments that may contain a request_state.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The updated kwargs dictionary with request_state initialized if needed.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">initialize_state</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the request state if not present.</span>
-
-<span class="sd">    Creates an empty request_state dictionary if one doesn&#39;t already exist in the</span>
-<span class="sd">    provided keyword arguments.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        **kwargs: Keyword arguments that may contain a request_state.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The updated kwargs dictionary with request_state initialized if needed.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="s2">&quot;request_state&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">return</span> <span class="n">kwargs</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="strands.event_loop.event_loop.prepare_next_cycle" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">prepare_next_cycle</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">event_loop_metrics</span><span class="p">)</span></code>
-
-<a href="#strands.event_loop.event_loop.prepare_next_cycle" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Prepare state for the next event loop cycle.</p>
-<p>Updates the keyword arguments with the current event loop metrics and stores the current cycle ID as the parent
-cycle ID for the next cycle. This maintains the parent-child relationship between cycles for tracing and metrics.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Current keyword arguments containing event loop state.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>event_loop_metrics</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="EventLoopMetrics
-
-
-  
-      dataclass
-   (strands.telemetry.metrics.EventLoopMetrics)" href="../telemetry/#strands.telemetry.metrics.EventLoopMetrics">EventLoopMetrics</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The metrics object tracking event loop execution.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Updated keyword arguments ready for the next cycle.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_next_cycle</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">event_loop_metrics</span><span class="p">:</span> <span class="n">EventLoopMetrics</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare state for the next event loop cycle.</span>
-
-<span class="sd">    Updates the keyword arguments with the current event loop metrics and stores the current cycle ID as the parent</span>
-<span class="sd">    cycle ID for the next cycle. This maintains the parent-child relationship between cycles for tracing and metrics.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        kwargs: Current keyword arguments containing event loop state.</span>
-<span class="sd">        event_loop_metrics: The metrics object tracking event loop execution.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Updated keyword arguments ready for the next cycle.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Store parent cycle ID</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_metrics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event_loop_metrics</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_parent_cycle_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">kwargs</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3828,7 +3570,22 @@ cycle ID for the next cycle. This maintains the parent-child relationship betwee
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
 <span class="normal">266</span>
@@ -3864,22 +3621,7 @@ cycle ID for the next cycle. This maintains the parent-child relationship betwee
 <span class="normal">296</span>
 <span class="normal">297</span>
 <span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">recurse_event_loop</span><span class="p">(</span>
+<span class="normal">299</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">recurse_event_loop</span><span class="p">(</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StopReason</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">EventLoopMetrics</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a recursive call to event_loop_cycle with the current state.</span>
@@ -3931,645 +3673,6 @@ cycle ID for the next cycle. This maintains the parent-child relationship betwee
         <span class="n">recursive_event_loop_metrics</span><span class="p">,</span>
         <span class="n">recursive_request_state</span><span class="p">,</span>
     <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-module">
-
-
-
-<h2 id="strands.event_loop.error_handler" class="doc doc-heading">
-            <code>strands.event_loop.error_handler</code>
-
-
-<a href="#strands.event_loop.error_handler" class="headerlink" title="Permanent link">&para;</a></h2>
-
-    <div class="doc doc-contents first">
-
-        <p>This module provides specialized error handlers for common issues that may occur during event loop execution.</p>
-<p>Examples include throttling exceptions and context window overflow errors. These handlers implement recovery strategies
-like exponential backoff for throttling and message truncation for context window limitations.</p>
-
-
-
-
-
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="strands.event_loop.error_handler.handle_input_too_long_error" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">handle_input_too_long_error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">tool_handler</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></code>
-
-<a href="#strands.event_loop.error_handler.handle_input_too_long_error" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Handle 'Input is too long' errors by truncating tool results.</p>
-<p>When a context window overflow exception occurs (input too long for the model), this function attempts to recover
-by finding and truncating the most recent tool results in the conversation history. If truncation is successful, the
-function will make a call to the event loop.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>e</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ContextWindowOverflowException (strands.types.exceptions.ContextWindowOverflowException)" href="../types/#strands.types.exceptions.ContextWindowOverflowException">ContextWindowOverflowException</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The ContextWindowOverflowException that occurred.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>messages</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Messages = List[Message]
-
-  
-      module-attribute
-   (strands.types.content.Messages)" href="../types/#strands.types.content.Messages">Messages</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The conversation message history.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>model</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Model (strands.types.models.Model)" href="../types/#strands.types.models.Model">Model</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Model provider for running inference.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>system_prompt</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>System prompt for the model.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool_config</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Tool configuration for the conversation.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>callback_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Callback for processing events as they happen.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Handler for tool execution.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional arguments for the event loop.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.Tuple">Tuple</span>[<a class="autorefs autorefs-internal" title="StopReason = Literal['content_filtered', 'end_turn', 'guardrail_intervened', 'max_tokens', 'stop_sequence', 'tool_use']
-
-  
-      module-attribute
-   (strands.types.streaming.StopReason)" href="../types/#strands.types.event_loop.StopReason">StopReason</a>, <a class="autorefs autorefs-internal" title="Message (strands.types.content.Message)" href="../types/#strands.types.content.Message">Message</a>, <a class="autorefs autorefs-internal" title="EventLoopMetrics
-
-
-  
-      dataclass
-   (strands.telemetry.metrics.EventLoopMetrics)" href="../telemetry/#strands.telemetry.metrics.EventLoopMetrics">EventLoopMetrics</a>, <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The results from the event loop call if successful.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ContextWindowOverflowException (strands.types.exceptions.ContextWindowOverflowException)" href="../types/#strands.types.exceptions.ContextWindowOverflowException">ContextWindowOverflowException</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If messages cannot be truncated.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>strands/event_loop/error_handler.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_input_too_long_error</span><span class="p">(</span>
-    <span class="n">e</span><span class="p">:</span> <span class="n">ContextWindowOverflowException</span><span class="p">,</span>
-    <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
-    <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">tool_config</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="n">tool_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StopReason</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">EventLoopMetrics</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle &#39;Input is too long&#39; errors by truncating tool results.</span>
-
-<span class="sd">    When a context window overflow exception occurs (input too long for the model), this function attempts to recover</span>
-<span class="sd">    by finding and truncating the most recent tool results in the conversation history. If truncation is successful, the</span>
-<span class="sd">    function will make a call to the event loop.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        e: The ContextWindowOverflowException that occurred.</span>
-<span class="sd">        messages: The conversation message history.</span>
-<span class="sd">        model: Model provider for running inference.</span>
-<span class="sd">        system_prompt: System prompt for the model.</span>
-<span class="sd">        tool_config: Tool configuration for the conversation.</span>
-<span class="sd">        callback_handler: Callback for processing events as they happen.</span>
-<span class="sd">        tool_handler: Handler for tool execution.</span>
-<span class="sd">        kwargs: Additional arguments for the event loop.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The results from the event loop call if successful.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ContextWindowOverflowException: If messages cannot be truncated.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.event_loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">recurse_event_loop</span>  <span class="c1"># Import here to avoid circular imports</span>
-
-    <span class="c1"># Find the last message with tool results</span>
-    <span class="n">last_message_with_tool_results</span> <span class="o">=</span> <span class="n">find_last_message_with_tool_results</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-
-    <span class="c1"># If we found a message with toolResult</span>
-    <span class="k">if</span> <span class="n">last_message_with_tool_results</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;message_index=&lt;</span><span class="si">%s</span><span class="s2">&gt; | found message with tool results at index&quot;</span><span class="p">,</span> <span class="n">last_message_with_tool_results</span><span class="p">)</span>
-
-        <span class="c1"># Truncate the tool results in this message</span>
-        <span class="n">truncate_tool_results</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">last_message_with_tool_results</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">recurse_event_loop</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span>
-            <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>
-            <span class="n">tool_config</span><span class="o">=</span><span class="n">tool_config</span><span class="p">,</span>
-            <span class="n">callback_handler</span><span class="o">=</span><span class="n">callback_handler</span><span class="p">,</span>
-            <span class="n">tool_handler</span><span class="o">=</span><span class="n">tool_handler</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="c1"># If we can&#39;t handle this error, pass it up</span>
-    <span class="n">callback_handler</span><span class="p">(</span><span class="n">force_stop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force_stop_reason</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;an exception occurred in event_loop_cycle | </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">()</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="strands.event_loop.error_handler.handle_throttling_error" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">handle_throttling_error</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">attempt</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">,</span> <span class="n">current_delay</span><span class="p">,</span> <span class="n">max_delay</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></code>
-
-<a href="#strands.event_loop.error_handler.handle_throttling_error" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Handle throttling exceptions from the model provider with exponential backoff.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>e</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ModelThrottledException (strands.types.exceptions.ModelThrottledException)" href="../types/#strands.types.exceptions.ModelThrottledException">ModelThrottledException</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The exception that occurred during model invocation.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>attempt</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Number of times event loop has attempted model invocation.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>max_attempts</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Maximum number of retry attempts allowed.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>current_delay</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Current delay in seconds before retrying.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>max_delay</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Maximum delay in seconds (cap for exponential growth).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>callback_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Callback for processing events as they happen.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional arguments to pass to the callback handler.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.Tuple">Tuple</span>[<span title="bool">bool</span>, <span title="int">int</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A tuple containing:
-- bool: True if retry should be attempted, False otherwise
-- int: The new delay to use for the next retry attempt</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>strands/event_loop/error_handler.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
-<span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_throttling_error</span><span class="p">(</span>
-    <span class="n">e</span><span class="p">:</span> <span class="n">ModelThrottledException</span><span class="p">,</span>
-    <span class="n">attempt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">current_delay</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">max_delay</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle throttling exceptions from the model provider with exponential backoff.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        e: The exception that occurred during model invocation.</span>
-<span class="sd">        attempt: Number of times event loop has attempted model invocation.</span>
-<span class="sd">        max_attempts: Maximum number of retry attempts allowed.</span>
-<span class="sd">        current_delay: Current delay in seconds before retrying.</span>
-<span class="sd">        max_delay: Maximum delay in seconds (cap for exponential growth).</span>
-<span class="sd">        callback_handler: Callback for processing events as they happen.</span>
-<span class="sd">        kwargs: Additional arguments to pass to the callback handler.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        A tuple containing:</span>
-<span class="sd">            - bool: True if retry should be attempted, False otherwise</span>
-<span class="sd">            - int: The new delay to use for the next retry attempt</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">max_attempts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Don&#39;t sleep on last attempt</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;retry_delay_seconds=&lt;</span><span class="si">%s</span><span class="s2">&gt;, max_attempts=&lt;</span><span class="si">%s</span><span class="s2">&gt;, current_attempt=&lt;</span><span class="si">%s</span><span class="s2">&gt; &quot;</span>
-            <span class="s2">&quot;| throttling exception encountered &quot;</span>
-            <span class="s2">&quot;| delaying before next retry&quot;</span><span class="p">,</span>
-            <span class="n">current_delay</span><span class="p">,</span>
-            <span class="n">max_attempts</span><span class="p">,</span>
-            <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">callback_handler</span><span class="p">(</span><span class="n">event_loop_throttled_delay</span><span class="o">=</span><span class="n">current_delay</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">current_delay</span><span class="p">)</span>
-        <span class="n">new_delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_delay</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">max_delay</span><span class="p">)</span>  <span class="c1"># Double delay each retry</span>
-        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">new_delay</span>
-
-    <span class="n">callback_handler</span><span class="p">(</span><span class="n">force_stop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force_stop_reason</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-    <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">current_delay</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4887,289 +3990,6 @@ toolUse.</p>
 
 </div>
 
-<div class="doc doc-object doc-function">
-
-
-<h3 id="strands.event_loop.message_processor.find_last_message_with_tool_results" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">find_last_message_with_tool_results</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span></code>
-
-<a href="#strands.event_loop.message_processor.find_last_message_with_tool_results" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Find the index of the last message containing tool results.</p>
-<p>This is useful for identifying messages that might need to be truncated to reduce context size.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>messages</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Messages = List[Message]
-
-  
-      module-attribute
-   (strands.types.content.Messages)" href="../types/#strands.types.content.Messages">Messages</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The conversation message history.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Index of the last message with tool results, or None if no such message exists.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>strands/event_loop/message_processor.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">find_last_message_with_tool_results</span><span class="p">(</span><span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the index of the last message containing tool results.</span>
-
-<span class="sd">    This is useful for identifying messages that might need to be truncated to reduce context size.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        messages: The conversation message history.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Index of the last message with tool results, or None if no such message exists.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Iterate backwards through all messages (from newest to oldest)</span>
-    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="c1"># Check if this message has any content with toolResult</span>
-        <span class="n">current_message</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
-        <span class="n">has_tool_result</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="k">for</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">current_message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="p">[]):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
-                <span class="n">has_tool_result</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="k">break</span>
-
-        <span class="k">if</span> <span class="n">has_tool_result</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">idx</span>
-
-    <span class="k">return</span> <span class="kc">None</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="strands.event_loop.message_processor.truncate_tool_results" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">truncate_tool_results</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">msg_idx</span><span class="p">)</span></code>
-
-<a href="#strands.event_loop.message_processor.truncate_tool_results" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Truncate tool results in a message to reduce context size.</p>
-<p>When a message contains tool results that are too large for the model's context window, this function replaces the
-content of those tool results with a simple error message.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>messages</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Messages = List[Message]
-
-  
-      module-attribute
-   (strands.types.content.Messages)" href="../types/#strands.types.content.Messages">Messages</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The conversation message history.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>msg_idx</code>
-            </td>
-            <td>
-                  <code><span title="int">int</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Index of the message containing tool results to truncate.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>True if any changes were made to the message, False otherwise.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>strands/event_loop/message_processor.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">truncate_tool_results</span><span class="p">(</span><span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">msg_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Truncate tool results in a message to reduce context size.</span>
-
-<span class="sd">    When a message contains tool results that are too large for the model&#39;s context window, this function replaces the</span>
-<span class="sd">    content of those tool results with a simple error message.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        messages: The conversation message history.</span>
-<span class="sd">        msg_idx: Index of the message containing tool results to truncate.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        True if any changes were made to the message, False otherwise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">msg_idx</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="ow">or</span> <span class="n">msg_idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-
-    <span class="n">message</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="n">msg_idx</span><span class="p">]</span>
-    <span class="n">changes_made</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="p">[])):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;toolResult&quot;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
-            <span class="c1"># Update status to error with informative message</span>
-            <span class="n">message</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;toolResult&quot;</span><span class="p">][</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
-            <span class="n">message</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;toolResult&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The tool result was too large!&quot;</span><span class="p">}]</span>
-            <span class="n">changes_made</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="k">return</span> <span class="n">changes_made</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
 
 
   </div>
@@ -5266,7 +4086,7 @@ content of those tool results with a simple error message.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Tuple">Tuple</span>[<a class="autorefs autorefs-internal" title="Usage (strands.types.streaming.Usage)" href="../types/#strands.types.event_loop.Usage">Usage</a>, <a class="autorefs autorefs-internal" title="Metrics (strands.types.streaming.Metrics)" href="../types/#strands.types.event_loop.Metrics">Metrics</a>]</code>
+                  <code><span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="Usage (strands.types.streaming.Usage)" href="../types/#strands.types.event_loop.Usage">Usage</a>, <a class="autorefs autorefs-internal" title="Metrics (strands.types.streaming.Metrics)" href="../types/#strands.types.event_loop.Metrics">Metrics</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5280,7 +4100,9 @@ content of those tool results with a simple error message.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/streaming.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
@@ -5290,9 +4112,7 @@ content of those tool results with a simple error message.</p>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_usage_metrics</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">MetadataEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Usage</span><span class="p">,</span> <span class="n">Metrics</span><span class="p">]:</span>
+<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_usage_metrics</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">MetadataEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Usage</span><span class="p">,</span> <span class="n">Metrics</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts usage metrics from the metadata chunk.</span>
 
 <span class="sd">    Args:</span>
@@ -5315,7 +4135,7 @@ content of those tool results with a simple error message.</p>
 
 
 <h3 id="strands.event_loop.streaming.handle_content_block_delta" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">handle_content_block_delta</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">handle_content_block_delta</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span></code>
 
 <a href="#strands.event_loop.streaming.handle_content_block_delta" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -5357,7 +4177,7 @@ content of those tool results with a simple error message.</p>
                 <code>state</code>
             </td>
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5366,38 +4186,6 @@ content of those tool results with a simple error message.</p>
             </td>
             <td>
                 <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>callback_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Callback for processing events as they happen.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional keyword arguments to pass to the callback handler.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
             </td>
           </tr>
       </tbody>
@@ -5415,7 +4203,7 @@ content of those tool results with a simple error message.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  <code><span title="tuple">tuple</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>], <span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5479,34 +4267,32 @@ content of those tool results with a simple error message.</p>
 <span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_content_block_delta</span><span class="p">(</span>
-    <span class="n">event</span><span class="p">:</span> <span class="n">ContentBlockDeltaEvent</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_content_block_delta</span><span class="p">(</span>
+    <span class="n">event</span><span class="p">:</span> <span class="n">ContentBlockDeltaEvent</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handles content block delta updates by appending text, tool input, or reasoning content to the state.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        event: Delta event.</span>
 <span class="sd">        state: The current state of message processing.</span>
-<span class="sd">        callback_handler: Callback for processing events as they happen.</span>
-<span class="sd">        **kwargs: Additional keyword arguments to pass to the callback handler.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Updated state with appended text or tool input.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">delta_content</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;delta&quot;</span><span class="p">]</span>
 
+    <span class="n">callback_event</span> <span class="o">=</span> <span class="p">{}</span>
+
     <span class="k">if</span> <span class="s2">&quot;toolUse&quot;</span> <span class="ow">in</span> <span class="n">delta_content</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;input&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_tool_use&quot;</span><span class="p">]:</span>
             <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_tool_use&quot;</span><span class="p">][</span><span class="s2">&quot;input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
         <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_tool_use&quot;</span><span class="p">][</span><span class="s2">&quot;input&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;toolUse&quot;</span><span class="p">][</span><span class="s2">&quot;input&quot;</span><span class="p">]</span>
-        <span class="n">callback_handler</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="n">delta_content</span><span class="p">,</span> <span class="n">current_tool_use</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_tool_use&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">callback_event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="n">delta_content</span><span class="p">,</span> <span class="s2">&quot;current_tool_use&quot;</span><span class="p">:</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_tool_use&quot;</span><span class="p">]}</span>
 
     <span class="k">elif</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">delta_content</span><span class="p">:</span>
         <span class="n">state</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span>
-        <span class="n">callback_handler</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">],</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta_content</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">callback_event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">],</span> <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="n">delta_content</span><span class="p">}</span>
 
     <span class="k">elif</span> <span class="s2">&quot;reasoningContent&quot;</span> <span class="ow">in</span> <span class="n">delta_content</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">]:</span>
@@ -5514,26 +4300,24 @@ content of those tool results with a simple error message.</p>
                 <span class="n">state</span><span class="p">[</span><span class="s2">&quot;reasoningText&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
             <span class="n">state</span><span class="p">[</span><span class="s2">&quot;reasoningText&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">][</span><span class="s2">&quot;text&quot;</span><span class="p">]</span>
-            <span class="n">callback_handler</span><span class="p">(</span>
-                <span class="n">reasoningText</span><span class="o">=</span><span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">][</span><span class="s2">&quot;text&quot;</span><span class="p">],</span>
-                <span class="n">delta</span><span class="o">=</span><span class="n">delta_content</span><span class="p">,</span>
-                <span class="n">reasoning</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">callback_event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;reasoningText&quot;</span><span class="p">:</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">][</span><span class="s2">&quot;text&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="n">delta_content</span><span class="p">,</span>
+                <span class="s2">&quot;reasoning&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="p">}</span>
 
         <span class="k">elif</span> <span class="s2">&quot;signature&quot;</span> <span class="ow">in</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="s2">&quot;signature&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
                 <span class="n">state</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
             <span class="n">state</span><span class="p">[</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">][</span><span class="s2">&quot;signature&quot;</span><span class="p">]</span>
-            <span class="n">callback_handler</span><span class="p">(</span>
-                <span class="n">reasoning_signature</span><span class="o">=</span><span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">][</span><span class="s2">&quot;signature&quot;</span><span class="p">],</span>
-                <span class="n">delta</span><span class="o">=</span><span class="n">delta_content</span><span class="p">,</span>
-                <span class="n">reasoning</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">callback_event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;reasoning_signature&quot;</span><span class="p">:</span> <span class="n">delta_content</span><span class="p">[</span><span class="s2">&quot;reasoningContent&quot;</span><span class="p">][</span><span class="s2">&quot;signature&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;delta&quot;</span><span class="p">:</span> <span class="n">delta_content</span><span class="p">,</span>
+                <span class="s2">&quot;reasoning&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="p">}</span>
 
-    <span class="k">return</span> <span class="n">state</span>
+    <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">callback_event</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5596,7 +4380,7 @@ content of those tool results with a simple error message.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5628,7 +4412,7 @@ content of those tool results with a simple error message.</p>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
-<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_content_block_start</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">ContentBlockStartEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_content_block_start</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">ContentBlockStartEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handles the start of a content block by extracting tool usage information if any.</span>
 
 <span class="sd">    Args:</span>
@@ -5683,7 +4467,7 @@ content of those tool results with a simple error message.</p>
                 <code>state</code>
             </td>
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5709,7 +4493,7 @@ content of those tool results with a simple error message.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5723,7 +4507,9 @@ content of those tool results with a simple error message.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/streaming.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
@@ -5773,9 +4559,7 @@ content of those tool results with a simple error message.</p>
 <span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_content_block_stop</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">209</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_content_block_stop</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handles the end of a content block by finalizing tool usage, text content, or reasoning content.</span>
 
 <span class="sd">    Args:</span>
@@ -5784,7 +4568,7 @@ content of those tool results with a simple error message.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Updated state with finalized content block.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">content</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ContentBlock</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ContentBlock</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
 
     <span class="n">current_tool_use</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_tool_use&quot;</span><span class="p">]</span>
     <span class="n">text</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span>
@@ -6023,16 +4807,16 @@ content of those tool results with a simple error message.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/streaming.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
 <span class="normal">219</span>
 <span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_message_stop</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">MessageStopEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StopReason</span><span class="p">:</span>
+<span class="normal">221</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_message_stop</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">MessageStopEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StopReason</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handles the end of a message by returning the stop reason.</span>
 
 <span class="sd">    Args:</span>
@@ -6114,7 +4898,7 @@ content of those tool results with a simple error message.</p>
                 <code>state</code>
             </td>
             <td>
-                  <code><span title="typing.Dict">Dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -6131,7 +4915,9 @@ content of those tool results with a simple error message.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/streaming.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
@@ -6141,9 +4927,7 @@ content of those tool results with a simple error message.</p>
 <span class="normal">233</span>
 <span class="normal">234</span>
 <span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_redact_content</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">RedactContentEvent</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">handle_redact_content</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">RedactContentEvent</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handles redacting content from the input or output.</span>
 
 <span class="sd">    Args:</span>
@@ -6166,7 +4950,7 @@ content of those tool results with a simple error message.</p>
 
 
 <h3 id="strands.event_loop.streaming.process_stream" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">process_stream</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">process_stream</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">messages</span><span class="p">)</span></code>
 
 <a href="#strands.event_loop.streaming.process_stream" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -6205,22 +4989,6 @@ content of those tool results with a simple error message.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>callback_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Callback for processing events as they happen.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
                 <code>messages</code>
             </td>
             <td>
@@ -6239,23 +5007,6 @@ content of those tool results with a simple error message.</p>
                 <em>required</em>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional keyword arguments that will be passed to the callback handler.
-And also returned in the request_state.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
       </tbody>
     </table>
 
@@ -6271,15 +5022,11 @@ And also returned in the request_state.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Tuple">Tuple</span>[<a class="autorefs autorefs-internal" title="StopReason = Literal['content_filtered', 'end_turn', 'guardrail_intervened', 'max_tokens', 'stop_sequence', 'tool_use']
-
-  
-      module-attribute
-   (strands.types.streaming.StopReason)" href="../types/#strands.types.event_loop.StopReason">StopReason</a>, <a class="autorefs autorefs-internal" title="Message (strands.types.content.Message)" href="../types/#strands.types.content.Message">Message</a>, <a class="autorefs autorefs-internal" title="Usage (strands.types.streaming.Usage)" href="../types/#strands.types.event_loop.Usage">Usage</a>, <a class="autorefs autorefs-internal" title="Metrics (strands.types.streaming.Metrics)" href="../types/#strands.types.event_loop.Metrics">Metrics</a>, <span title="typing.Any">Any</span>]</code>
+                  <code>None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The reason for stopping, the constructed message, the usage metrics, and the updated request state.</p>
+                <p>The reason for stopping, the constructed message, and the usage metrics.</p>
               </div>
             </td>
           </tr>
@@ -6289,7 +5036,9 @@ And also returned in the request_state.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/streaming.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
 <span class="normal">259</span>
@@ -6333,36 +5082,22 @@ And also returned in the request_state.</p>
 <span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_stream</span><span class="p">(</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_stream</span><span class="p">(</span>
     <span class="n">chunks</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">],</span>
-    <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StopReason</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Usage</span><span class="p">,</span> <span class="n">Metrics</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Processes the response stream from the API, constructing the final message and extracting usage metrics.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        chunks: The chunks of the response stream from the model.</span>
-<span class="sd">        callback_handler: Callback for processing events as they happen.</span>
 <span class="sd">        messages: The agents messages.</span>
-<span class="sd">        **kwargs: Additional keyword arguments that will be passed to the callback handler.</span>
-<span class="sd">            And also returned in the request_state.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The reason for stopping, the constructed message, the usage metrics, and the updated request state.</span>
+<span class="sd">        The reason for stopping, the constructed message, and the usage metrics.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stop_reason</span><span class="p">:</span> <span class="n">StopReason</span> <span class="o">=</span> <span class="s2">&quot;end_turn&quot;</span>
 
-    <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[]},</span>
         <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;current_tool_use&quot;</span><span class="p">:</span> <span class="p">{},</span>
@@ -6374,18 +5109,16 @@ And also returned in the request_state.</p>
     <span class="n">usage</span><span class="p">:</span> <span class="n">Usage</span> <span class="o">=</span> <span class="n">Usage</span><span class="p">(</span><span class="n">inputTokens</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">outputTokens</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">totalTokens</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">metrics</span><span class="p">:</span> <span class="n">Metrics</span> <span class="o">=</span> <span class="n">Metrics</span><span class="p">(</span><span class="n">latencyMs</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;request_state&quot;</span><span class="p">,</span> <span class="p">{})</span>
-
     <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
-        <span class="c1"># Callback handler call here allows each event to be visible to the caller</span>
-        <span class="n">callback_handler</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;event&quot;</span><span class="p">:</span> <span class="n">chunk</span><span class="p">}}</span>
 
         <span class="k">if</span> <span class="s2">&quot;messageStart&quot;</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
             <span class="n">state</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">handle_message_start</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;messageStart&quot;</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="s2">&quot;contentBlockStart&quot;</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
             <span class="n">state</span><span class="p">[</span><span class="s2">&quot;current_tool_use&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">handle_content_block_start</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;contentBlockStart&quot;</span><span class="p">])</span>
         <span class="k">elif</span> <span class="s2">&quot;contentBlockDelta&quot;</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">handle_content_block_delta</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;contentBlockDelta&quot;</span><span class="p">],</span> <span class="n">state</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">,</span> <span class="n">callback_event</span> <span class="o">=</span> <span class="n">handle_content_block_delta</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;contentBlockDelta&quot;</span><span class="p">],</span> <span class="n">state</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">callback_event</span>
         <span class="k">elif</span> <span class="s2">&quot;contentBlockStop&quot;</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">handle_content_block_stop</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
         <span class="k">elif</span> <span class="s2">&quot;messageStop&quot;</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
@@ -6395,7 +5128,7 @@ And also returned in the request_state.</p>
         <span class="k">elif</span> <span class="s2">&quot;redactContent&quot;</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
             <span class="n">handle_redact_content</span><span class="p">(</span><span class="n">chunk</span><span class="p">[</span><span class="s2">&quot;redactContent&quot;</span><span class="p">],</span> <span class="n">messages</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">stop_reason</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">],</span> <span class="n">usage</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span>
+    <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">stop_reason</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">],</span> <span class="n">usage</span><span class="p">,</span> <span class="n">metrics</span><span class="p">)}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6569,7 +5302,7 @@ And also returned in the request_state.</p>
 
 
 <h3 id="strands.event_loop.streaming.stream_messages" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">stream_messages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">stream_messages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">)</span></code>
 
 <a href="#strands.event_loop.streaming.stream_messages" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -6658,39 +5391,6 @@ And also returned in the request_state.</p>
                 <em>required</em>
             </td>
           </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>callback_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Callback for processing events as they happen.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional keyword arguments that will be passed to the callback handler.
-And also returned in the request_state.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
       </tbody>
     </table>
 
@@ -6706,15 +5406,11 @@ And also returned in the request_state.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="typing.Tuple">Tuple</span>[<a class="autorefs autorefs-internal" title="StopReason = Literal['content_filtered', 'end_turn', 'guardrail_intervened', 'max_tokens', 'stop_sequence', 'tool_use']
-
-  
-      module-attribute
-   (strands.types.streaming.StopReason)" href="../types/#strands.types.event_loop.StopReason">StopReason</a>, <a class="autorefs autorefs-internal" title="Message (strands.types.content.Message)" href="../types/#strands.types.content.Message">Message</a>, <a class="autorefs autorefs-internal" title="Usage (strands.types.streaming.Usage)" href="../types/#strands.types.event_loop.Usage">Usage</a>, <a class="autorefs autorefs-internal" title="Metrics (strands.types.streaming.Metrics)" href="../types/#strands.types.event_loop.Metrics">Metrics</a>, <span title="typing.Any">Any</span>]</code>
+                  <code>None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The reason for stopping, the final message, the usage metrics, and updated request state.</p>
+                <p>The reason for stopping, the final message, and the usage metrics</p>
               </div>
             </td>
           </tr>
@@ -6724,7 +5420,16 @@ And also returned in the request_state.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/streaming.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -6738,28 +5443,12 @@ And also returned in the request_state.</p>
 <span class="normal">323</span>
 <span class="normal">324</span>
 <span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stream_messages</span><span class="p">(</span>
+<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stream_messages</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
     <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
     <span class="n">tool_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolConfig</span><span class="p">],</span>
-    <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StopReason</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">Usage</span><span class="p">,</span> <span class="n">Metrics</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Streams messages to the model and processes the response.</span>
 
 <span class="sd">    Args:</span>
@@ -6767,12 +5456,9 @@ And also returned in the request_state.</p>
 <span class="sd">        system_prompt: The system prompt to send.</span>
 <span class="sd">        messages: List of messages to send.</span>
 <span class="sd">        tool_config: Configuration for the tools to use.</span>
-<span class="sd">        callback_handler: Callback for processing events as they happen.</span>
-<span class="sd">        **kwargs: Additional keyword arguments that will be passed to the callback handler.</span>
-<span class="sd">            And also returned in the request_state.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The reason for stopping, the final message, the usage metrics, and updated request state.</span>
+<span class="sd">        The reason for stopping, the final message, and the usage metrics</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;model=&lt;</span><span class="si">%s</span><span class="s2">&gt; | streaming messages&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
 
@@ -6780,7 +5466,7 @@ And also returned in the request_state.</p>
     <span class="n">tool_specs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool</span><span class="p">[</span><span class="s2">&quot;toolSpec&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tool_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tools&quot;</span><span class="p">,</span> <span class="p">[])]</span> <span class="ow">or</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">tool_config</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="n">chunks</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">converse</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tool_specs</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">process_stream</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">callback_handler</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">process_stream</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">messages</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6865,7 +5551,7 @@ And also returned in the request_state.</p>
       <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

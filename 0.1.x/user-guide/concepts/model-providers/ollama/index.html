@@ -10,8 +10,10 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/model-providers/ollama/">
     
-      <link rel="prev" href="../llamaapi/">
+    
+      <link rel="prev" href="../mistral/">
     
     
       <link rel="next" href="../openai/">
@@ -567,12 +569,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/sessions-state/" class="md-nav__link">
+      <a href="../../agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -596,6 +598,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -921,6 +946,29 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1079,6 +1127,15 @@
   <a href="#using-different-models" class="md-nav__link">
     <span class="md-ellipsis">
       Using Different Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structured-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Structured Output
     </span>
   </a>
   
@@ -1333,6 +1390,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1856,6 +1936,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -2081,6 +2184,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2537,6 +2663,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#structured-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Structured Output
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2814,6 +2949,41 @@ available models here: https://ollama.com/search</p>
 <span class="n">creative_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">creative_model</span><span class="p">)</span>
 <span class="n">factual_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">factual_model</span><span class="p">)</span>
 </code></pre></div>
+<h3 id="structured-output">Structured Output<a class="headerlink" href="#structured-output" title="Permanent link">&para;</a></h3>
+<p>Ollama supports structured output for models that have tool calling capabilities. When you use <a href="../../../../api-reference/agent/#strands.agent.agent.Agent.structured_output"><code>Agent.structured_output()</code></a>, the Strands SDK converts your Pydantic models to tool specifications that compatible Ollama models can understand.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.models.ollama</span><span class="w"> </span><span class="kn">import</span> <span class="n">OllamaModel</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BookAnalysis</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Analyze a book&#39;s key information.&quot;&quot;&quot;</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The book&#39;s title&quot;</span><span class="p">)</span>
+    <span class="n">author</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The book&#39;s author&quot;</span><span class="p">)</span>
+    <span class="n">genre</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Primary genre or category&quot;</span><span class="p">)</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Brief summary of the book&quot;</span><span class="p">)</span>
+    <span class="n">rating</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Rating from 1-10&quot;</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">ollama_model</span> <span class="o">=</span> <span class="n">OllamaModel</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;http://localhost:11434&quot;</span><span class="p">,</span>
+    <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;llama3&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">ollama_model</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">structured_output</span><span class="p">(</span>
+    <span class="n">BookAnalysis</span><span class="p">,</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Analyze this book: &quot;The Hitchhiker&#39;s Guide to the Galaxy&quot; by Douglas Adams.</span>
+<span class="sd">    It&#39;s a science fiction comedy about Arthur Dent&#39;s adventures through space</span>
+<span class="sd">    after Earth is destroyed. It&#39;s widely considered a classic of humorous sci-fi.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Title: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Author: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">author</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Genre: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">genre</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rating: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">rating</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="tool-support">Tool Support<a class="headerlink" href="#tool-support" title="Permanent link">&para;</a></h2>
 <p><a href="https://ollama.com/search?c=tools">Ollama models that support tool use</a> can use tools through Strands's tool system:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
@@ -2938,7 +3108,7 @@ available models here: https://ollama.com/search</p>
       <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

@@ -10,11 +10,13 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/agents/prompts/">
     
-      <link rel="prev" href="../sessions-state/">
+    
+      <link rel="prev" href="../state-sessions/">
     
     
-      <link rel="next" href="../context-management/">
+      <link rel="next" href="../structured-output/">
     
     
     <link rel="icon" href="../../../../assets/logo-light.png" sizes="any">
@@ -569,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../sessions-state/" class="md-nav__link">
+      <a href="../state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -698,6 +700,29 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1019,6 +1044,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../model-providers/ollama/" class="md-nav__link">
         
   
@@ -1228,6 +1276,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1751,6 +1822,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -1976,6 +2070,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2418,7 +2535,7 @@
 <p>For programmatic control, you can call tools directly:</p>
 <div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool</span><span class="o">.</span><span class="n">current_time</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="s2">&quot;US/Pacific&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>This bypasses the natural language interface and directly executes the tool with the specified parameters. By default, direct tool calls are added to the <a href="../sessions-state/">session state</a> but can be optionally not included by specifying <code>record_direct_tool_call=False</code>.</p>
+<p>This bypasses the natural language interface and directly executes the tool with the specified parameters. By default, direct tool calls are added to the <a href="../state-sessions/">session state</a> but can be optionally not included by specifying <code>record_direct_tool_call=False</code>.</p>
 <h2 id="prompt-engineering">Prompt Engineering<a class="headerlink" href="#prompt-engineering" title="Permanent link">&para;</a></h2>
 <p>For guidance on how to write safe and responsible prompts, please refer to our <a href="../../../safety-security/prompt-engineering/">Safety &amp; Security - Prompt Engineering</a> documentation.</p>
 <p>Further resources:</p>
@@ -2500,7 +2617,7 @@
       <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

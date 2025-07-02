@@ -10,11 +10,13 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/multi-agent/agent-to-agent/">
     
-      <link rel="prev" href="../agent-loop/">
+    
+      <link rel="prev" href="../../streaming/callback-handlers/">
     
     
-      <link rel="next" href="../prompts/">
+      <link rel="next" href="../agents-as-tools/">
     
     
     <link rel="icon" href="../../../../assets/logo-light.png" sizes="any">
@@ -23,7 +25,7 @@
 
     
       
-        <title>Sessions & State - Strands Agents SDK</title>
+        <title>Agent2Agent (A2A) - Strands Agents SDK</title>
       
     
     
@@ -79,7 +81,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#sessions-state" class="md-skip">
+        <a href="#agent-to-agent-a2a-protocol" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Sessions & State
+              Agent2Agent (A2A)
             
           </span>
         </div>
@@ -498,8 +500,6 @@
                 
   
   
-    
-  
   
   
     
@@ -512,11 +512,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_3_1" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_3_1" >
         
           
           <label class="md-nav__link" for="__nav_1_3_1" id="__nav_1_3_1_label" tabindex="0">
@@ -532,7 +532,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1_3_1">
             <span class="md-nav__icon md-icon"></span>
             Agents
@@ -546,7 +546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agent-loop/" class="md-nav__link">
+      <a href="../../agents/agent-loop/" class="md-nav__link">
         
   
   
@@ -566,151 +566,20 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Sessions & State
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
 
       </a>
-      
-        
-
-  
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#conversation-history" class="md-nav__link">
-    <span class="md-ellipsis">
-      Conversation History
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conversation-manager" class="md-nav__link">
-    <span class="md-ellipsis">
-      Conversation Manager
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tool-state" class="md-nav__link">
-    <span class="md-ellipsis">
-      Tool State
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#request-state" class="md-nav__link">
-    <span class="md-ellipsis">
-      Request State
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#session-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Session Management
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Session Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-object-persistence" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Object Persistence
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-serialization-and-restoration" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Serialization and Restoration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-integrating-with-web-frameworks" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Integrating with Web Frameworks
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-conversation-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Custom Conversation Management
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -723,7 +592,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../prompts/" class="md-nav__link">
+      <a href="../../agents/prompts/" class="md-nav__link">
         
   
   
@@ -746,7 +615,30 @@
   
   
     <li class="md-nav__item">
-      <a href="../context-management/" class="md-nav__link">
+      <a href="../../agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agents/context-management/" class="md-nav__link">
         
   
   
@@ -1055,6 +947,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../model-providers/ollama/" class="md-nav__link">
         
   
@@ -1226,8 +1141,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -1238,11 +1155,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_3_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_3_5" checked>
         
           
           <label class="md-nav__link" for="__nav_1_3_5" id="__nav_1_3_5_label" tabindex="0">
@@ -1258,7 +1175,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_3_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1_3_5">
             <span class="md-nav__icon md-icon"></span>
             Multi-agent
@@ -1269,10 +1186,161 @@
                 
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-agent-to-agent-a2a" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is Agent-to-Agent (A2A)?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What is Agent-to-Agent (A2A)?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Cases
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Example
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Install Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-create-and-run-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Create and Run the Server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-create-and-run-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Create and Run the Client
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="../../multi-agent/agents-as-tools/" class="md-nav__link">
+      <a href="../agents-as-tools/" class="md-nav__link">
         
   
   
@@ -1295,7 +1363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../multi-agent/swarm/" class="md-nav__link">
+      <a href="../swarm/" class="md-nav__link">
         
   
   
@@ -1318,7 +1386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../multi-agent/graph/" class="md-nav__link">
+      <a href="../graph/" class="md-nav__link">
         
   
   
@@ -1341,7 +1409,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../multi-agent/workflow/" class="md-nav__link">
+      <a href="../workflow/" class="md-nav__link">
         
   
   
@@ -1787,6 +1855,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -2012,6 +2103,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2360,73 +2474,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#conversation-history" class="md-nav__link">
+  <a href="#what-is-agent-to-agent-a2a" class="md-nav__link">
     <span class="md-ellipsis">
-      Conversation History
+      What is Agent-to-Agent (A2A)?
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conversation-manager" class="md-nav__link">
-    <span class="md-ellipsis">
-      Conversation Manager
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tool-state" class="md-nav__link">
-    <span class="md-ellipsis">
-      Tool State
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#request-state" class="md-nav__link">
-    <span class="md-ellipsis">
-      Request State
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#session-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      Session Management
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Session Management">
+    <nav class="md-nav" aria-label="What is Agent-to-Agent (A2A)?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-object-persistence" class="md-nav__link">
+  <a href="#use-cases" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Object Persistence
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-serialization-and-restoration" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Serialization and Restoration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-integrating-with-web-frameworks" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Integrating with Web Frameworks
+      Use Cases
     </span>
   </a>
   
@@ -2438,9 +2498,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#custom-conversation-management" class="md-nav__link">
+  <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
-      Custom Conversation Management
+      Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#basic-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basic Example
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Install Dependencies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-create-and-run-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Create and Run the Server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-create-and-run-the-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Create and Run the Client
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
     </span>
   </a>
   
@@ -2465,239 +2576,110 @@
   
 
 
-<h1 id="sessions-state">Sessions &amp; State<a class="headerlink" href="#sessions-state" title="Permanent link">&para;</a></h1>
-<p>This document explains how Strands agents maintain conversation context, handle state management, and support persistent sessions across interactions.</p>
-<p>Strands agents maintain state in several forms:</p>
+<h1 id="agent-to-agent-a2a-protocol">Agent-to-Agent (A2A) Protocol<a class="headerlink" href="#agent-to-agent-a2a-protocol" title="Permanent link">&para;</a></h1>
+<p>Strands Agents provides experimental support for the <a href="https://a2aproject.github.io/A2A/latest/">Agent-to-Agent (A2A) protocol</a>, enabling seamless communication between AI agents across different platforms and implementations.</p>
+<div class="admonition warning">
+<p class="admonition-title">Experimental Feature</p>
+<p>A2A support in Strands is currently <strong>EXPERIMENTAL</strong>. APIs may change, and additional functionality will be added in future releases. If you encounter bugs or have feature requests, please <a href="https://github.com/strands-agents/sdk-python/issues/new/choose">report them on GitHub</a>.</p>
+</div>
+<h2 id="what-is-agent-to-agent-a2a">What is Agent-to-Agent (A2A)?<a class="headerlink" href="#what-is-agent-to-agent-a2a" title="Permanent link">&para;</a></h2>
+<p>The Agent-to-Agent protocol is an open standard that defines how AI agents can discover, communicate, and collaborate with each other.</p>
+<h3 id="use-cases">Use Cases<a class="headerlink" href="#use-cases" title="Permanent link">&para;</a></h3>
+<p>A2A protocol support enables several powerful use cases:</p>
+<ul>
+<li><strong>Multi-Agent Workflows</strong>: Chain multiple specialized agents together</li>
+<li><strong>Agent Marketplaces</strong>: Discover and use agents from different providers</li>
+<li><strong>Cross-Platform Integration</strong>: Connect Strands agents with other A2A-compatible systems</li>
+<li><strong>Distributed AI Systems</strong>: Build scalable, distributed agent architectures</li>
+</ul>
+<p>Learn more about the A2A protocol:</p>
+<ul>
+<li><a href="https://github.com/a2aproject/A2A">A2A GitHub Organization</a></li>
+<li><a href="https://github.com/a2aproject/a2a-python">A2A Python SDK</a></li>
+<li><a href="https://a2aproject.github.io/A2A/latest/">A2A Documentation</a></li>
+</ul>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<p>To use A2A functionality with Strands, install the package with the A2A extra:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>strands-agents<span class="o">[</span>a2a<span class="o">]</span>
+</code></pre></div>
+<p>This installs the core Strands SDK along with the necessary A2A protocol dependencies.</p>
+<h2 id="basic-example">Basic Example<a class="headerlink" href="#basic-example" title="Permanent link">&para;</a></h2>
+<p>Here's a simple example to get started with A2A communication:</p>
+<h3 id="step-1-install-dependencies">Step 1: Install Dependencies<a class="headerlink" href="#step-1-install-dependencies" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>strands-agents<span class="o">[</span>a2a<span class="o">]</span>
+</code></pre></div>
+<h3 id="step-2-create-and-run-the-server">Step 2: Create and Run the Server<a class="headerlink" href="#step-2-create-and-run-the-server" title="Permanent link">&para;</a></h3>
+<p>Create <code>server.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.multiagent.a2a</span><span class="w"> </span><span class="kn">import</span> <span class="n">A2AAgent</span>
+
+<span class="c1"># Create a basic agent</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;AI assistant&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;A helpful AI assistant&quot;</span><span class="p">)</span>
+
+<span class="c1"># Wrap it with A2A capabilities</span>
+<span class="n">a2a_agent</span> <span class="o">=</span> <span class="n">A2AAgent</span><span class="p">(</span><span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">)</span>
+
+<span class="c1"># Start the A2A server</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting A2A server on http://localhost:9000&quot;</span><span class="p">)</span>
+<span class="n">a2a_agent</span><span class="o">.</span><span class="n">serve</span><span class="p">()</span>
+</code></pre></div>
+<p>Run the server:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>server.py
+</code></pre></div>
+<h3 id="step-3-create-and-run-the-client">Step 3: Create and Run the Client<a class="headerlink" href="#step-3-create-and-run-the-client" title="Permanent link">&para;</a></h3>
+<p>Create <code>client.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">a2a.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">A2ACardResolver</span><span class="p">,</span> <span class="n">A2AClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">a2a.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MessageSendParams</span><span class="p">,</span> <span class="n">SendMessageRequest</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ask_agent</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">httpx_client</span><span class="p">:</span>
+        <span class="c1"># Connect to the agent</span>
+        <span class="n">resolver</span> <span class="o">=</span> <span class="n">A2ACardResolver</span><span class="p">(</span><span class="n">httpx_client</span><span class="o">=</span><span class="n">httpx_client</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:9000&quot;</span><span class="p">)</span>
+
+        <span class="n">agent_card</span> <span class="o">=</span> <span class="k">await</span> <span class="n">resolver</span><span class="o">.</span><span class="n">get_agent_card</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">agent_card</span><span class="p">)</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">A2AClient</span><span class="p">(</span><span class="n">httpx_client</span><span class="o">=</span><span class="n">httpx_client</span><span class="p">,</span> <span class="n">agent_card</span><span class="o">=</span><span class="n">agent_card</span><span class="p">)</span>
+
+        <span class="c1"># Send the message</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">SendMessageRequest</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">()),</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">MessageSendParams</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;parts&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">message</span><span class="p">}],</span>
+                    <span class="s2">&quot;messageId&quot;</span><span class="p">:</span> <span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+
+<span class="c1"># Example usage</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Tell me about agentic AI&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">ask_agent</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<p>Run the client (make sure your server is running first):</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>client.py
+</code></pre></div>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<p>If you encounter bugs or need to request features for A2A support:</p>
 <ol>
-<li><strong>Conversation History</strong>: The sequence of messages between the user and the agent</li>
-<li><strong>Tool State</strong>: Information about tool executions and results</li>
-<li><strong>Request State</strong>: Contextual information maintained within a single request</li>
+<li>Check the <a href="https://a2aproject.github.io/A2A/latest/">A2A documentation</a> for protocol-specific issues</li>
+<li>Report Strands-specific issues on <a href="https://github.com/strands-agents/sdk-python/issues/new/choose">GitHub</a></li>
+<li>Include relevant error messages and code samples in your reports</li>
 </ol>
-<p>Understanding how state works in Strands is essential for building agents that can maintain context across multi-turn interactions and workflows.</p>
-<h2 id="conversation-history">Conversation History<a class="headerlink" href="#conversation-history" title="Permanent link">&para;</a></h2>
-<p>The primary form of state in a Strands agent is the conversation history, directly accessible through the <code>agent.messages</code> property:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-
-<span class="c1"># Create an agent</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
-
-<span class="c1"># Send a message and get a response</span>
-<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>
-
-<span class="c1"># Access the conversation history</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>  <span class="c1"># Shows all messages exchanged so far</span>
-</code></pre></div>
-<p>The <code>agent.messages</code> list contains all user and assistant messages, including tool calls and tool results. This is the primary way to inspect what's happening in your agent's conversation.</p>
-<p>You can initialize an agent with existing messages to continue a conversation or pre-fill your Agent's context with information:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-
-<span class="c1"># Create an agent with initial messages</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="p">[</span>
-    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, my name is Strands!&quot;</span><span class="p">}]},</span>
-    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi there! How can I help you today?&quot;</span><span class="p">}]}</span>
-<span class="p">])</span>
-
-<span class="c1"># Continue the conversation</span>
-<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;What&#39;s my name?&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>Conversation history is automatically:</p>
-<ul>
-<li>Maintained between calls to the agent</li>
-<li>Passed to the model during each inference</li>
-<li>Used for tool execution context</li>
-<li>Managed to prevent context window overflow</li>
-</ul>
-<h2 id="conversation-manager">Conversation Manager<a class="headerlink" href="#conversation-manager" title="Permanent link">&para;</a></h2>
-<p>Strands uses a conversation manager to handle conversation history effectively. The default is the <a href="../../../../api-reference/agent/#strands.agent.conversation_manager.sliding_window_conversation_manager.SlidingWindowConversationManager"><code>SlidingWindowConversationManager</code></a>, which keeps recent messages and removes older ones when needed:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands.agent.conversation_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlidingWindowConversationManager</span>
-
-<span class="c1"># Create a conversation manager with custom window size</span>
-<span class="c1"># By default, SlidingWindowConversationManager is used even if not specified</span>
-<span class="n">conversation_manager</span> <span class="o">=</span> <span class="n">SlidingWindowConversationManager</span><span class="p">(</span>
-    <span class="n">window_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># Maximum number of message pairs to keep</span>
-<span class="p">)</span>
-
-<span class="c1"># Use the conversation manager with your agent</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">conversation_manager</span><span class="o">=</span><span class="n">conversation_manager</span><span class="p">)</span>
-</code></pre></div>
-<p>The sliding window conversation manager:</p>
-<ul>
-<li>Keeps the most recent N message pairs</li>
-<li>Removes the oldest messages when the window size is exceeded</li>
-<li>Handles context window overflow exceptions by reducing context</li>
-<li>Ensures conversations don't exceed model context limits</li>
-</ul>
-<h2 id="tool-state">Tool State<a class="headerlink" href="#tool-state" title="Permanent link">&para;</a></h2>
-<p>When an agent uses tools, the tool executions and results become part of the conversation state:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculator</span>
-
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">calculator</span><span class="p">])</span>
-
-<span class="c1"># Tool use is recorded in the conversation history</span>
-<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;What is 123 × 456?&quot;</span><span class="p">)</span>  <span class="c1"># Uses calculator tool and records result</span>
-
-<span class="c1"># You can examine the tool interactions in the conversation history</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>  <span class="c1"># Shows tool calls and results</span>
-</code></pre></div>
-<p>Tool state includes:</p>
-<ul>
-<li>Tool use requests from the model</li>
-<li>Tool execution parameters</li>
-<li>Tool execution results</li>
-<li>Any errors or exceptions that occurred</li>
-</ul>
-<p>Direct tool calls can also be recorded in the conversation history:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculator</span>
-
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">calculator</span><span class="p">])</span>
-
-<span class="c1"># Direct tool call with recording (default behavior)</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">tool</span><span class="o">.</span><span class="n">calculator</span><span class="p">(</span><span class="n">expression</span><span class="o">=</span><span class="s2">&quot;123 * 456&quot;</span><span class="p">)</span>
-
-<span class="c1"># Direct tool call without recording</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">tool</span><span class="o">.</span><span class="n">calculator</span><span class="p">(</span><span class="n">expression</span><span class="o">=</span><span class="s2">&quot;765 / 987&quot;</span><span class="p">,</span> <span class="n">record_direct_tool_call</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>
-</code></pre></div>
-<p>In this example we can see that the first <code>agent.tool.calculator()</code> call is recorded in the agent's conversation history.</p>
-<p>The second <code>agent.tool.calculator()</code> call is <strong>not</strong> recorded in the history because we specified the <code>record_direct_tool_call=False</code> argument.</p>
-<h2 id="request-state">Request State<a class="headerlink" href="#request-state" title="Permanent link">&para;</a></h2>
-<p>Each agent interaction maintains a request state dictionary that persists throughout the event loop cycles and is <strong>not</strong> included in the agent's context:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">custom_callback_handler</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="c1"># Access request state</span>
-    <span class="k">if</span> <span class="s2">&quot;request_state&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span>
-        <span class="c1"># Use or modify state as needed</span>
-        <span class="k">if</span> <span class="s2">&quot;counter&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
-            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;counter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;counter&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Callback handler event count: </span><span class="si">{</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;counter&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">callback_handler</span><span class="o">=</span><span class="n">custom_callback_handler</span><span class="p">)</span>
-
-<span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Hi there!&quot;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
-</code></pre></div>
-<p>The request state:</p>
-<ul>
-<li>Is initialized at the beginning of each agent call</li>
-<li>Persists through recursive event loop cycles</li>
-<li>Can be modified by tools and handlers</li>
-<li>Is returned in the AgentResult object</li>
-</ul>
-<h2 id="session-management">Session Management<a class="headerlink" href="#session-management" title="Permanent link">&para;</a></h2>
-<p>For applications requiring persistent sessions across separate interactions, Strands provides several approaches:</p>
-<h3 id="1-object-persistence">1. Object Persistence<a class="headerlink" href="#1-object-persistence" title="Permanent link">&para;</a></h3>
-<p>The simplest approach is to maintain the Agent object across requests:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-
-<span class="c1"># Create agent once</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
-
-<span class="c1"># Use in multiple requests</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_request</span><span class="p">(</span><span class="n">user_message</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">agent</span><span class="p">(</span><span class="n">user_message</span><span class="p">)</span>
-
-<span class="n">handle_request</span><span class="p">(</span><span class="s2">&quot;Tell me a fun fact&quot;</span><span class="p">)</span>
-<span class="n">handle_request</span><span class="p">(</span><span class="s2">&quot;Tell me a related fact&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="2-serialization-and-restoration">2. Serialization and Restoration<a class="headerlink" href="#2-serialization-and-restoration" title="Permanent link">&para;</a></h3>
-<p>For distributed systems or applications that can't maintain object references:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-
-<span class="c1"># Save agent state</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">save_agent_state</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;sessions&quot;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span>
-        <span class="s2">&quot;system_prompt&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">system_prompt</span>
-    <span class="p">}</span>
-    <span class="c1"># Store state (e.g., database, file system, cache)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sessions/</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-
-<span class="c1"># Restore agent state</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">restore_agent_state</span><span class="p">(</span><span class="n">session_id</span><span class="p">):</span>
-    <span class="c1"># Retrieve state</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sessions/</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-    <span class="c1"># Create agent with restored state</span>
-    <span class="k">return</span> <span class="n">Agent</span><span class="p">(</span>
-        <span class="n">messages</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">],</span>
-        <span class="n">system_prompt</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;system_prompt&quot;</span><span class="p">]</span>
-    <span class="p">)</span>
-
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;Talk like a pirate&quot;</span><span class="p">)</span>
-<span class="n">agent_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initial agent:&quot;</span><span class="p">)</span>
-<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Where are Octopus found? 🐙&quot;</span><span class="p">)</span>
-<span class="n">save_agent_state</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">)</span>
-
-<span class="c1"># Create a new Agent object with the previous agent&#39;s saved state</span>
-<span class="n">restored_agent</span> <span class="o">=</span> <span class="n">restore_agent_state</span><span class="p">(</span><span class="n">agent_id</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Restored agent:&quot;</span><span class="p">)</span>
-<span class="n">restored_agent</span><span class="p">(</span><span class="s2">&quot;What did we just talk about?&quot;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">restored_agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>  <span class="c1"># Both messages and responses are in the restored agent&#39;s conversation history</span>
-</code></pre></div>
-<h3 id="3-integrating-with-web-frameworks">3. Integrating with Web Frameworks<a class="headerlink" href="#3-integrating-with-web-frameworks" title="Permanent link">&para;</a></h3>
-<p>Strands agents can be integrated with web framework session management:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">session</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-
-<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-<span class="n">app</span><span class="o">.</span><span class="n">secret_key</span> <span class="o">=</span> <span class="s2">&quot;your-secret-key&quot;</span>
-
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/chat&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">():</span>
-    <span class="n">user_message</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
-
-    <span class="c1"># Initialize or restore agent conversation history from session</span>
-    <span class="k">if</span> <span class="s2">&quot;messages&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">session</span><span class="p">:</span>
-        <span class="n">session</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="c1"># Create agent with session state</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">])</span>
-
-    <span class="c1"># Process message</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="n">user_message</span><span class="p">)</span>
-
-    <span class="c1"># Update session with new messages</span>
-    <span class="n">session</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">messages</span>
-
-    <span class="c1"># Return the agent&#39;s final message</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="p">}</span>
-</code></pre></div>
-<h2 id="custom-conversation-management">Custom Conversation Management<a class="headerlink" href="#custom-conversation-management" title="Permanent link">&para;</a></h2>
-<p>For specialized requirements, you can implement your own conversation manager:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands.agent.conversation_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConversationManager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands.types.content</span><span class="w"> </span><span class="kn">import</span> <span class="n">Messages</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">CustomConversationManager</span><span class="p">(</span><span class="n">ConversationManager</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">apply_management</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply management strategies to the messages list.&quot;&quot;&quot;</span>
-        <span class="c1"># Implement your management strategy</span>
-        <span class="k">pass</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">reduce_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reduce context to handle overflow exceptions.&quot;&quot;&quot;</span>
-        <span class="c1"># Implement your reduction strategy</span>
-        <span class="k">pass</span>
-</code></pre></div>
 
 
 
@@ -2769,7 +2751,7 @@
       <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

@@ -10,8 +10,10 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/examples/python/multi_agent_example/multi_agent_example/">
     
-      <link rel="prev" href="../../knowledge_base_agent/">
+    
+      <link rel="prev" href="../../structured_output/">
     
     
       <link rel="next" href="../../meta_tooling/">
@@ -557,12 +559,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../user-guide/concepts/agents/sessions-state/" class="md-nav__link">
+      <a href="../../../../user-guide/concepts/agents/state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -586,6 +588,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../user-guide/concepts/agents/structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -912,6 +937,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../user-guide/concepts/model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../user-guide/concepts/model-providers/ollama/" class="md-nav__link">
         
   
@@ -1121,6 +1169,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../user-guide/concepts/multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1635,6 +1706,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../user-guide/deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../user-guide/deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -1865,6 +1959,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2567,11 +2684,13 @@
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error processing your mathematical query: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div>
-**Each specialized agent has a distinct system prompt, and tools in its inventory, and follows this general pattern.
-  - <a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/language_assistant.py">Language Assistant</a> specializes in queries related to translation into different languages.
-  - <a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/computer_science_assistant.py">Computer Scince Assistant</a> specializes in queries related to writing, editing, running, code and explaining computer science concepts.
-  - <a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/english_assistant.py">English Assistant</a> specializes in queries related to grammar, and english comprehension.
-  - <a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/no_expertise.py">General Assistant</a> is a no specialty agent that aims to answer queries outside of the specific domains the agents are specialized in.</p>
+Each specialized agent has a distinct system prompt, and tools in its inventory, and follows this general pattern.</p>
+<ul>
+<li><a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/language_assistant.py">Language Assistant</a> specializes in queries related to translation into different languages.</li>
+<li><a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/computer_science_assistant.py">Computer Scince Assistant</a> specializes in queries related to writing, editing, running, code and explaining computer science concepts.</li>
+<li><a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/english_assistant.py">English Assistant</a> specializes in queries related to grammar, and english comprehension.</li>
+<li><a href="https://github.com/strands-agents/docs/blob/main/docs/examples/python/multi_agent_example/no_expertise.py">General Assistant</a> is a no specialty agent that aims to answer queries outside of the specific domains the agents are specialized in.</li>
+</ul>
 <h3 id="3-tool-agent-pattern">3. Tool-Agent Pattern<a class="headerlink" href="#3-tool-agent-pattern" title="Permanent link">&para;</a></h3>
 <p>This example demonstrates the <a href="https://github.com/strands-agents/docs/blob/main/docs/user-guide/concepts/tools/python-tools.md#python-tool-decorators">"Tool-Agent Pattern"</a> where Strands agents are wrapped as tools using the <code>@tool</code> decorator. These tools are then provided to another agent (the Teacher's Assistant), creating a system where agents can use other agents as tools.</p>
 <h3 id="sample-interactions">Sample Interactions<a class="headerlink" href="#sample-interactions" title="Permanent link">&para;</a></h3>
@@ -2740,7 +2859,7 @@ If you&#39;re speaking to multiple people, you would say &quot;¿cómo están us
       <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       

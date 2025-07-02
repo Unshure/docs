@@ -10,11 +10,13 @@
     
     
     
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/agents/agent-loop/">
+    
     
       <link rel="prev" href="../../../quickstart/">
     
     
-      <link rel="next" href="../sessions-state/">
+      <link rel="next" href="../state-sessions/">
     
     
     <link rel="icon" href="../../../../assets/logo-light.png" sizes="any">
@@ -742,12 +744,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../sessions-state/" class="md-nav__link">
+      <a href="../state-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Sessions & State
+    State & Sessions
     
   </span>
   
@@ -771,6 +773,29 @@
   
   <span class="md-ellipsis">
     Prompts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structured-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -1097,6 +1122,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../model-providers/mistral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MistralAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../model-providers/ollama/" class="md-nav__link">
         
   
@@ -1306,6 +1354,29 @@
             Multi-agent
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multi-agent/agent-to-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Agent2Agent (A2A)
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1829,6 +1900,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../deploy/deploy_to_amazon_eks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Amazon EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../deploy/deploy_to_amazon_ec2/" class="md-nav__link">
         
   
@@ -2054,6 +2148,29 @@
   
   <span class="md-ellipsis">
     Knowledge-Base Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/structured_output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Structured Output
     
   </span>
   
@@ -2590,7 +2707,6 @@
     <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
     <span class="n">tool_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolConfig</span><span class="p">],</span>
-    <span class="n">callback_handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">tool_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolHandler</span><span class="p">],</span>
     <span class="n">tool_execution_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ParallelToolExecutorInterface</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -2605,7 +2721,7 @@
 <li><strong>Assistant messages</strong>: Responses from the model that may include tool requests</li>
 <li><strong>Tool result messages</strong>: Results from tool executions fed back to the model</li>
 </ol>
-<p>The SDK automatically formats these messages into the appropriate structure for model inputs and <a href="../sessions-state/">session state</a>.</p>
+<p>The SDK automatically formats these messages into the appropriate structure for model inputs and <a href="../state-sessions/">session state</a>.</p>
 <h3 id="tool-execution">Tool Execution<a class="headerlink" href="#tool-execution" title="Permanent link">&para;</a></h3>
 <p>The agent loop includes a tool execution system that:</p>
 <ol>
@@ -2779,7 +2895,7 @@
       <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.code.copy", "content.code.select", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
         <script src="../../../../assets/external/unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
       
