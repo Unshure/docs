@@ -732,27 +732,75 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-object-persistence" class="md-nav__link">
+  <a href="#built-in-session-persistence" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Object Persistence
+      Built-in Session Persistence
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Built-in Session Persistence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-filesessionmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using FileSessionManager
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-serialization-and-restoration" class="md-nav__link">
+  <a href="#using-s3sessionmanager" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Serialization and Restoration
+      Using S3SessionManager
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-session-persistence-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Session Persistence Works
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How Session Persistence Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-storage-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Storage Structure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-session-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Session Repositories
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-integrating-with-web-frameworks" class="md-nav__link">
+  <a href="#session-persistence-best-practices" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Integrating with Web Frameworks
+      Session Persistence Best Practices
     </span>
   </a>
   
@@ -2709,27 +2757,75 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-object-persistence" class="md-nav__link">
+  <a href="#built-in-session-persistence" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Object Persistence
+      Built-in Session Persistence
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Built-in Session Persistence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-filesessionmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using FileSessionManager
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-serialization-and-restoration" class="md-nav__link">
+  <a href="#using-s3sessionmanager" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Serialization and Restoration
+      Using S3SessionManager
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-session-persistence-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Session Persistence Works
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How Session Persistence Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-storage-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Storage Structure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-session-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Session Repositories
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-integrating-with-web-frameworks" class="md-nav__link">
+  <a href="#session-persistence-best-practices" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Integrating with Web Frameworks
+      Session Persistence Best Practices
     </span>
   </a>
   
@@ -2946,95 +3042,264 @@
 <li>Is returned in the AgentResult object</li>
 </ul>
 <h2 id="session-management">Session Management<a class="headerlink" href="#session-management" title="Permanent link">&para;</a></h2>
-<p>A session represents all of the stateful information that is needed by an agent to function. For applications requiring persistent sessions across separate interactions, Strands provides several approaches:</p>
-<h3 id="1-object-persistence">1. Object Persistence<a class="headerlink" href="#1-object-persistence" title="Permanent link">&para;</a></h3>
-<p>The simplest approach is to maintain the Agent object across requests:</p>
+<p>A session represents all of the stateful information that is needed by an agent to function. Strands provides built-in session persistence capabilities that allow agents to maintain state and conversation history across multiple interactions.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.session.file_session_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileSessionManager</span>
 
-<span class="c1"># Create agent once</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
+<span class="c1"># Create a session manager with a unique session ID</span>
+<span class="n">session_manager</span> <span class="o">=</span> <span class="n">FileSessionManager</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;test-session&quot;</span><span class="p">)</span>
 
-<span class="c1"># Use in multiple requests</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_request</span><span class="p">(</span><span class="n">user_message</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">agent</span><span class="p">(</span><span class="n">user_message</span><span class="p">)</span>
+<span class="c1"># Create an agent with the session manager</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">session_manager</span><span class="o">=</span><span class="n">session_manager</span><span class="p">)</span>
 
-<span class="n">handle_request</span><span class="p">(</span><span class="s2">&quot;Tell me a fun fact&quot;</span><span class="p">)</span>
-<span class="n">handle_request</span><span class="p">(</span><span class="s2">&quot;Tell me a related fact&quot;</span><span class="p">)</span>
+<span class="c1"># Use the agent - all messages and state are automatically persisted</span>
+<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>  <span class="c1"># This is persisted</span>
 </code></pre></div>
-<h3 id="2-serialization-and-restoration">2. Serialization and Restoration<a class="headerlink" href="#2-serialization-and-restoration" title="Permanent link">&para;</a></h3>
-<p>For distributed systems or applications that can't maintain object references:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<h3 id="built-in-session-persistence">Built-in Session Persistence<a class="headerlink" href="#built-in-session-persistence" title="Permanent link">&para;</a></h3>
+<p>Strands offers two built-in session managers for persisting agent state and conversation history:</p>
+<ol>
+<li><strong>FileSessionManager</strong>: Stores sessions in the local filesystem</li>
+<li><strong>S3SessionManager</strong>: Stores sessions in Amazon S3 buckets</li>
+</ol>
+<h4 id="using-filesessionmanager">Using FileSessionManager<a class="headerlink" href="#using-filesessionmanager" title="Permanent link">&para;</a></h4>
+<p>The <code>FileSessionManager</code> provides a simple way to persist agent sessions to the local filesystem:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.session.file_session_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileSessionManager</span>
+
+<span class="c1"># Create a session manager with a unique session ID</span>
+<span class="n">session_manager</span> <span class="o">=</span> <span class="n">FileSessionManager</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;user-123&quot;</span><span class="p">,</span>
+    <span class="n">storage_dir</span><span class="o">=</span><span class="s2">&quot;/path/to/sessions&quot;</span>  <span class="c1"># Optional, defaults to a temp directory</span>
+<span class="p">)</span>
+
+<span class="c1"># Create an agent with the session manager</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">session_manager</span><span class="o">=</span><span class="n">session_manager</span><span class="p">)</span>
+
+<span class="c1"># Use the agent normally - state and messages will be persisted automatically</span>
+<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Hello, I&#39;m a new user!&quot;</span><span class="p">)</span>
+
+<span class="c1"># Later, create a new agent instance with the same session manager</span>
+<span class="c1"># to continue the conversation where it left off</span>
+<span class="n">new_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">session_manager</span><span class="o">=</span><span class="n">session_manager</span><span class="p">)</span>
+<span class="n">new_agent</span><span class="p">(</span><span class="s2">&quot;Do you remember what I said earlier?&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="using-s3sessionmanager">Using S3SessionManager<a class="headerlink" href="#using-s3sessionmanager" title="Permanent link">&para;</a></h4>
+<p>For cloud-based persistence, especially in distributed environments, use the <code>S3SessionManager</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.session.s3_session_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">S3SessionManager</span>
+
+<span class="c1"># Create a session manager that stores data in S3</span>
+<span class="n">session_manager</span> <span class="o">=</span> <span class="n">S3SessionManager</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;user-456&quot;</span><span class="p">,</span>
+    <span class="n">bucket</span><span class="o">=</span><span class="s2">&quot;my-agent-sessions&quot;</span><span class="p">,</span>
+    <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;production/&quot;</span><span class="p">,</span>  <span class="c1"># Optional key prefix</span>
+    <span class="n">region_name</span><span class="o">=</span><span class="s2">&quot;us-west-2&quot;</span>  <span class="c1"># Optional AWS region</span>
+<span class="p">)</span>
+
+<span class="c1"># Create an agent with the session manager</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">session_manager</span><span class="o">=</span><span class="n">session_manager</span><span class="p">)</span>
+
+<span class="c1"># Use the agent normally - state and messages will be persisted to S3</span>
+<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Tell me about AWS S3&quot;</span><span class="p">)</span>
+
+<span class="c1"># Later, even on a different server, create a new agent instance</span>
+<span class="c1"># with the same session manager to continue the conversation</span>
+<span class="n">new_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">session_manager</span><span class="o">=</span><span class="n">session_manager</span><span class="p">)</span>
+<span class="n">new_agent</span><span class="p">(</span><span class="s2">&quot;Can you elaborate on what you told me about S3?&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="how-session-persistence-works">How Session Persistence Works<a class="headerlink" href="#how-session-persistence-works" title="Permanent link">&para;</a></h3>
+<p>The session persistence system:</p>
+<ol>
+<li>
+<p><strong>Automatically captures</strong>:</p>
+<ul>
+<li>Agent initialization events</li>
+<li>Message additions to conversation history</li>
+<li>Agent state changes</li>
+</ul>
+</li>
+<li>
+<p><strong>Stores data in a structured format</strong>:</p>
+<ul>
+<li><code>Session</code>: Top-level container with metadata</li>
+<li><code>SessionAgent</code>: Agent-specific data including state</li>
+<li><code>SessionMessage</code>: Individual messages with metadata</li>
+</ul>
+</li>
+<li>
+<p><strong>Handles serialization</strong>:</p>
+<ul>
+<li>Properly encodes/decodes complex data types</li>
+<li>Special handling for binary data using base64 encoding</li>
+<li>Maintains timestamps for creation and updates</li>
+</ul>
+</li>
+</ol>
+<h4 id="file-storage-structure">File Storage Structure<a class="headerlink" href="#file-storage-structure" title="Permanent link">&para;</a></h4>
+<p>When using <code>FileSessionManager</code>, sessions are stored in the following directory structure:</p>
+<p><div class="highlight"><pre><span></span><code>/&lt;sessions_dir&gt;/
+└── session_&lt;session_id&gt;/
+    ├── session.json                # Session metadata
+    └── agents/
+        └── agent_&lt;agent_id&gt;/
+            ├── agent.json          # Agent state
+            └── messages/
+                ├── message_&lt;id1&gt;.json
+                └── message_&lt;id2&gt;.json
+</code></pre></div>
+When using <code>S3SessionManager</code>, a similar structure is maintained using S3 object keys.</p>
+<h3 id="custom-session-repositories">Custom Session Repositories<a class="headerlink" href="#custom-session-repositories" title="Permanent link">&para;</a></h3>
+<p>For advanced use cases, you can implement your own session storage backend by creating a custom session repository:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.session.agent_session_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentSessionManager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.session.session_repository</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionRepository</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.types.session</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">SessionAgent</span><span class="p">,</span> <span class="n">SessionMessage</span>
 
-<span class="c1"># Save agent state</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">save_agent_state</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">session_id</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;sessions&quot;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomSessionRepository</span><span class="p">(</span><span class="n">SessionRepository</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom session repository implementation.&quot;&quot;&quot;</span>
 
-    <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span>
-        <span class="s2">&quot;system_prompt&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">system_prompt</span>
-    <span class="p">}</span>
-    <span class="c1"># Store state (e.g., database, file system, cache)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sessions/</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize with your custom storage backend.&quot;&quot;&quot;</span>
+        <span class="c1"># Initialize your storage backend (e.g., database connection)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">YourDatabaseClient</span><span class="p">()</span>
 
-<span class="c1"># Restore agent state</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">restore_agent_state</span><span class="p">(</span><span class="n">session_id</span><span class="p">):</span>
-    <span class="c1"># Retrieve state</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sessions/</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">state</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Session</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new session.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">session</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">session</span>
 
-    <span class="c1"># Create agent with restored state</span>
-    <span class="k">return</span> <span class="n">Agent</span><span class="p">(</span>
-        <span class="n">messages</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">],</span>
-        <span class="n">system_prompt</span><span class="o">=</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;system_prompt&quot;</span><span class="p">]</span>
-    <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Session</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a session by ID.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Session</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;Talk like a pirate&quot;</span><span class="p">)</span>
-<span class="n">agent_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_agent</span><span class="p">:</span> <span class="n">SessionAgent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Agent in a Session.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">agents</span><span class="o">.</span><span class="n">insert</span><span class="p">({</span>
+            <span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span>
+            <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="n">session_agent</span><span class="o">.</span><span class="n">agent_id</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">asdict</span><span class="p">(</span><span class="n">session_agent</span><span class="p">)</span>
+        <span class="p">})</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initial agent:&quot;</span><span class="p">)</span>
-<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Where are Octopus found? 🐙&quot;</span><span class="p">)</span>
-<span class="n">save_agent_state</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SessionAgent</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read an Agent.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">agents</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span> <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="n">agent_id</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SessionAgent</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
 
-<span class="c1"># Create a new Agent object with the previous agent&#39;s saved state</span>
-<span class="n">restored_agent</span> <span class="o">=</span> <span class="n">restore_agent_state</span><span class="p">(</span><span class="n">agent_id</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Restored agent:&quot;</span><span class="p">)</span>
-<span class="n">restored_agent</span><span class="p">(</span><span class="s2">&quot;What did we just talk about?&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_agent</span><span class="p">:</span> <span class="n">SessionAgent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update an Agent.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">agents</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span> <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="n">session_agent</span><span class="o">.</span><span class="n">agent_id</span><span class="p">},</span>
+            <span class="n">asdict</span><span class="p">(</span><span class="n">session_agent</span><span class="p">)</span>
+        <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">restored_agent</span><span class="o">.</span><span class="n">messages</span><span class="p">)</span>  <span class="c1"># Both messages and responses are in the restored agent&#39;s conversation history</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_message</span><span class="p">:</span> <span class="n">SessionMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Message for the Agent.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">insert</span><span class="p">({</span>
+            <span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span>
+            <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="n">agent_id</span><span class="p">,</span>
+            <span class="s2">&quot;message_id&quot;</span><span class="p">:</span> <span class="n">session_message</span><span class="o">.</span><span class="n">message_id</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">asdict</span><span class="p">(</span><span class="n">session_message</span><span class="p">)</span>
+        <span class="p">})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SessionMessage</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a Message.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">find_one</span><span class="p">({</span>
+            <span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span>
+            <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="n">agent_id</span><span class="p">,</span>
+            <span class="s2">&quot;message_id&quot;</span><span class="p">:</span> <span class="n">message_id</span>
+        <span class="p">})</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SessionMessage</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session_message</span><span class="p">:</span> <span class="n">SessionMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update a Message.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span>
+                <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="n">agent_id</span><span class="p">,</span>
+                <span class="s2">&quot;message_id&quot;</span><span class="p">:</span> <span class="n">session_message</span><span class="o">.</span><span class="n">message_id</span>
+            <span class="p">},</span>
+            <span class="n">asdict</span><span class="p">(</span><span class="n">session_message</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_messages</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SessionMessage</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List Messages from an Agent with pagination.&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;session_id&quot;</span><span class="p">:</span> <span class="n">session_id</span><span class="p">,</span> <span class="s2">&quot;agent_id&quot;</span><span class="p">:</span> <span class="n">agent_id</span><span class="p">}</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">&quot;created_at&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">SessionMessage</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">]</span>
+
+<span class="c1"># Use your custom repository with AgentSessionManager</span>
+<span class="n">custom_repo</span> <span class="o">=</span> <span class="n">CustomSessionRepository</span><span class="p">()</span>
+<span class="n">session_manager</span> <span class="o">=</span> <span class="n">AgentSessionManager</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="s2">&quot;user-789&quot;</span><span class="p">,</span>
+    <span class="n">session_repository</span><span class="o">=</span><span class="n">custom_repo</span>
+<span class="p">)</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">session_manager</span><span class="o">=</span><span class="n">session_manager</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="3-integrating-with-web-frameworks">3. Integrating with Web Frameworks<a class="headerlink" href="#3-integrating-with-web-frameworks" title="Permanent link">&para;</a></h3>
-<p>Strands agents can be integrated with web framework session management:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">session</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
-
-<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-<span class="n">app</span><span class="o">.</span><span class="n">secret_key</span> <span class="o">=</span> <span class="s2">&quot;your-secret-key&quot;</span>
-
-<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/chat&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;POST&quot;</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">():</span>
-    <span class="n">user_message</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span>
-
-    <span class="c1"># Initialize or restore agent conversation history from session</span>
-    <span class="k">if</span> <span class="s2">&quot;messages&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">session</span><span class="p">:</span>
-        <span class="n">session</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="c1"># Create agent with session state</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">])</span>
-
-    <span class="c1"># Process message</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="n">user_message</span><span class="p">)</span>
-
-    <span class="c1"># Update session with new messages</span>
-    <span class="n">session</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">messages</span>
-
-    <span class="c1"># Return the agent&#39;s final message</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="p">}</span>
-</code></pre></div>
+<p>This approach allows you to store session data in any backend system while leveraging the built-in session management logic.</p>
+<h3 id="session-persistence-best-practices">Session Persistence Best Practices<a class="headerlink" href="#session-persistence-best-practices" title="Permanent link">&para;</a></h3>
+<p>When implementing session persistence in your applications, consider these best practices:</p>
+<ol>
+<li>
+<p><strong>Use Unique Session IDs</strong>: Generate unique session IDs for each user or conversation context to prevent data overlap.</p>
+</li>
+<li>
+<p><strong>Consider Storage Requirements</strong>:</p>
+<ul>
+<li><code>FileSessionManager</code> is ideal for development, testing, or single-server deployments</li>
+<li><code>S3SessionManager</code> is better for production, distributed systems, or when high availability is required</li>
+</ul>
+</li>
+<li>
+<p><strong>Security Considerations</strong>:</p>
+<ul>
+<li>For <code>FileSessionManager</code>, ensure the storage directory has appropriate file permissions</li>
+<li>For <code>S3SessionManager</code>, use IAM roles with least privilege and consider server-side encryption</li>
+<li>Be mindful of storing sensitive user data in sessions</li>
+</ul>
+</li>
+<li>
+<p><strong>Performance Optimization</strong>:</p>
+<ul>
+<li>Session data is loaded and saved automatically, so be mindful of large state objects</li>
+<li>Consider implementing a caching layer for frequently accessed sessions</li>
+</ul>
+</li>
+<li>
+<p><strong>Error Handling</strong>:</p>
+<ul>
+<li>Handle <code>SessionException</code> errors that might occur during session operations</li>
+<li>Implement fallback mechanisms for when session storage is unavailable</li>
+</ul>
+</li>
+<li>
+<p><strong>Session Cleanup</strong>:</p>
+<ul>
+<li>Implement a strategy for cleaning up old or inactive sessions</li>
+<li>Consider adding TTL (Time To Live) for sessions in production environments</li>
+</ul>
+</li>
+<li>
+<p><strong>Testing</strong>:</p>
+<ul>
+<li>Use <code>FileSessionManager</code> with a temporary directory for unit tests</li>
+<li>Create mock implementations of <code>SessionRepository</code> for testing complex scenarios</li>
+</ul>
+</li>
+</ol>
+<p>By following these practices, you can build robust applications that maintain user context effectively across multiple interactions.</p>
 
 
 

@@ -233,107 +233,269 @@ The request state:
 
 ## Session Management
 
-A session represents all of the stateful information that is needed by an agent to function. For applications requiring persistent sessions across separate interactions, Strands provides several approaches:
-
-### 1. Object Persistence
-
-The simplest approach is to maintain the Agent object across requests:
+A session represents all of the stateful information that is needed by an agent to function. Strands provides built-in session persistence capabilities that allow agents to maintain state and conversation history across multiple interactions.
 
 ```
 from strands import Agent
+from strands.session.file_session_manager import FileSessionManager
 
-# Create agent once
-agent = Agent()
+# Create a session manager with a unique session ID
+session_manager = FileSessionManager(session_id="test-session")
 
-# Use in multiple requests
-def handle_request(user_message):
-    return agent(user_message)
+# Create an agent with the session manager
+agent = Agent(session_manager=session_manager)
 
-handle_request("Tell me a fun fact")
-handle_request("Tell me a related fact")
-
-```
-
-### 2. Serialization and Restoration
-
-For distributed systems or applications that can't maintain object references:
+# Use the agent - all messages and state are automatically persisted
+agent("hello")  # This is persisted
 
 ```
-import json
-import os
-import uuid
+
+### Built-in Session Persistence
+
+Strands offers two built-in session managers for persisting agent state and conversation history:
+
+1. **FileSessionManager**: Stores sessions in the local filesystem
+1. **S3SessionManager**: Stores sessions in Amazon S3 buckets
+
+#### Using FileSessionManager
+
+The `FileSessionManager` provides a simple way to persist agent sessions to the local filesystem:
+
+```
 from strands import Agent
+from strands.session.file_session_manager import FileSessionManager
 
-# Save agent state
-def save_agent_state(agent, session_id):
-    os.makedirs("sessions", exist_ok=True)
+# Create a session manager with a unique session ID
+session_manager = FileSessionManager(
+    session_id="user-123",
+    storage_dir="/path/to/sessions"  # Optional, defaults to a temp directory
+)
 
-    state = {
-        "messages": agent.messages,
-        "system_prompt": agent.system_prompt
-    }
-    # Store state (e.g., database, file system, cache)
-    with open(f"sessions/{session_id}.json", "w") as f:
-        json.dump(state, f)
+# Create an agent with the session manager
+agent = Agent(session_manager=session_manager)
 
-# Restore agent state
-def restore_agent_state(session_id):
-    # Retrieve state
-    with open(f"sessions/{session_id}.json", "r") as f:
-        state = json.load(f)
+# Use the agent normally - state and messages will be persisted automatically
+agent("Hello, I'm a new user!")
 
-    # Create agent with restored state
-    return Agent(
-        messages=state["messages"],
-        system_prompt=state["system_prompt"]
-    )
-
-agent = Agent(system_prompt="Talk like a pirate")
-agent_id = uuid.uuid4()
-
-print("Initial agent:")
-agent("Where are Octopus found? 🐙")
-save_agent_state(agent, agent_id)
-
-# Create a new Agent object with the previous agent's saved state
-restored_agent = restore_agent_state(agent_id)
-print("\n\nRestored agent:")
-restored_agent("What did we just talk about?")
-
-print("\n\n")
-print(restored_agent.messages)  # Both messages and responses are in the restored agent's conversation history
+# Later, create a new agent instance with the same session manager
+# to continue the conversation where it left off
+new_agent = Agent(session_manager=session_manager)
+new_agent("Do you remember what I said earlier?")
 
 ```
 
-### 3. Integrating with Web Frameworks
+#### Using S3SessionManager
 
-Strands agents can be integrated with web framework session management:
+For cloud-based persistence, especially in distributed environments, use the `S3SessionManager`:
 
 ```
-from flask import Flask, request, session
 from strands import Agent
+from strands.session.s3_session_manager import S3SessionManager
 
-app = Flask(__name__)
-app.secret_key = "your-secret-key"
+# Create a session manager that stores data in S3
+session_manager = S3SessionManager(
+    session_id="user-456",
+    bucket="my-agent-sessions",
+    prefix="production/",  # Optional key prefix
+    region_name="us-west-2"  # Optional AWS region
+)
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    user_message = request.json["message"]
+# Create an agent with the session manager
+agent = Agent(session_manager=session_manager)
 
-    # Initialize or restore agent conversation history from session
-    if "messages" not in session:
-        session["messages"] = []
+# Use the agent normally - state and messages will be persisted to S3
+agent("Tell me about AWS S3")
 
-    # Create agent with session state
-    agent = Agent(messages=session["messages"])
-
-    # Process message
-    result = agent(user_message)
-
-    # Update session with new messages
-    session["messages"] = agent.messages
-
-    # Return the agent's final message
-    return {"response": result.message}
+# Later, even on a different server, create a new agent instance
+# with the same session manager to continue the conversation
+new_agent = Agent(session_manager=session_manager)
+new_agent("Can you elaborate on what you told me about S3?")
 
 ```
+
+### How Session Persistence Works
+
+The session persistence system:
+
+1. **Automatically captures**:
+
+   - Agent initialization events
+   - Message additions to conversation history
+   - Agent state changes
+
+1. **Stores data in a structured format**:
+
+   - `Session`: Top-level container with metadata
+   - `SessionAgent`: Agent-specific data including state
+   - `SessionMessage`: Individual messages with metadata
+
+1. **Handles serialization**:
+
+   - Properly encodes/decodes complex data types
+   - Special handling for binary data using base64 encoding
+   - Maintains timestamps for creation and updates
+
+#### File Storage Structure
+
+When using `FileSessionManager`, sessions are stored in the following directory structure:
+
+```
+/<sessions_dir>/
+└── session_<session_id>/
+    ├── session.json                # Session metadata
+    └── agents/
+        └── agent_<agent_id>/
+            ├── agent.json          # Agent state
+            └── messages/
+                ├── message_<id1>.json
+                └── message_<id2>.json
+
+```
+
+When using `S3SessionManager`, a similar structure is maintained using S3 object keys.
+
+### Custom Session Repositories
+
+For advanced use cases, you can implement your own session storage backend by creating a custom session repository:
+
+```
+from typing import Optional
+from strands import Agent
+from strands.session.agent_session_manager import AgentSessionManager
+from strands.session.session_repository import SessionRepository
+from strands.types.session import Session, SessionAgent, SessionMessage
+
+class CustomSessionRepository(SessionRepository):
+    """Custom session repository implementation."""
+
+    def __init__(self):
+        """Initialize with your custom storage backend."""
+        # Initialize your storage backend (e.g., database connection)
+        self.db = YourDatabaseClient()
+
+    def create_session(self, session: Session) -> Session:
+        """Create a new session."""
+        self.db.sessions.insert(asdict(session))
+        return session
+
+    def read_session(self, session_id: str) -> Optional[Session]:
+        """Read a session by ID."""
+        data = self.db.sessions.find_one({"session_id": session_id})
+        if data:
+            return Session.from_dict(data)
+        return None
+
+    def create_agent(self, session_id: str, session_agent: SessionAgent) -> None:
+        """Create a new Agent in a Session."""
+        self.db.agents.insert({
+            "session_id": session_id,
+            "agent_id": session_agent.agent_id,
+            **asdict(session_agent)
+        })
+
+    def read_agent(self, session_id: str, agent_id: str) -> Optional[SessionAgent]:
+        """Read an Agent."""
+        data = self.db.agents.find_one({"session_id": session_id, "agent_id": agent_id})
+        if data:
+            return SessionAgent.from_dict(data)
+        return None
+
+    def update_agent(self, session_id: str, session_agent: SessionAgent) -> None:
+        """Update an Agent."""
+        self.db.agents.update(
+            {"session_id": session_id, "agent_id": session_agent.agent_id},
+            asdict(session_agent)
+        )
+
+    def create_message(self, session_id: str, agent_id: str, session_message: SessionMessage) -> None:
+        """Create a new Message for the Agent."""
+        self.db.messages.insert({
+            "session_id": session_id,
+            "agent_id": agent_id,
+            "message_id": session_message.message_id,
+            **asdict(session_message)
+        })
+
+    def read_message(self, session_id: str, agent_id: str, message_id: str) -> Optional[SessionMessage]:
+        """Read a Message."""
+        data = self.db.messages.find_one({
+            "session_id": session_id,
+            "agent_id": agent_id,
+            "message_id": message_id
+        })
+        if data:
+            return SessionMessage.from_dict(data)
+        return None
+
+    def update_message(self, session_id: str, agent_id: str, session_message: SessionMessage) -> None:
+        """Update a Message."""
+        self.db.messages.update(
+            {
+                "session_id": session_id,
+                "agent_id": agent_id,
+                "message_id": session_message.message_id
+            },
+            asdict(session_message)
+        )
+
+    def list_messages(
+        self, session_id: str, agent_id: str, limit: Optional[int] = None, offset: int = 0
+    ) -> list[SessionMessage]:
+        """List Messages from an Agent with pagination."""
+        query = {"session_id": session_id, "agent_id": agent_id}
+        cursor = self.db.messages.find(query).sort("created_at").skip(offset)
+        if limit:
+            cursor = cursor.limit(limit)
+        return [SessionMessage.from_dict(msg) for msg in cursor]
+
+# Use your custom repository with AgentSessionManager
+custom_repo = CustomSessionRepository()
+session_manager = AgentSessionManager(
+    session_id="user-789",
+    session_repository=custom_repo
+)
+
+agent = Agent(session_manager=session_manager)
+
+```
+
+This approach allows you to store session data in any backend system while leveraging the built-in session management logic.
+
+### Session Persistence Best Practices
+
+When implementing session persistence in your applications, consider these best practices:
+
+1. **Use Unique Session IDs**: Generate unique session IDs for each user or conversation context to prevent data overlap.
+
+1. **Consider Storage Requirements**:
+
+   - `FileSessionManager` is ideal for development, testing, or single-server deployments
+   - `S3SessionManager` is better for production, distributed systems, or when high availability is required
+
+1. **Security Considerations**:
+
+   - For `FileSessionManager`, ensure the storage directory has appropriate file permissions
+   - For `S3SessionManager`, use IAM roles with least privilege and consider server-side encryption
+   - Be mindful of storing sensitive user data in sessions
+
+1. **Performance Optimization**:
+
+   - Session data is loaded and saved automatically, so be mindful of large state objects
+   - Consider implementing a caching layer for frequently accessed sessions
+
+1. **Error Handling**:
+
+   - Handle `SessionException` errors that might occur during session operations
+   - Implement fallback mechanisms for when session storage is unavailable
+
+1. **Session Cleanup**:
+
+   - Implement a strategy for cleaning up old or inactive sessions
+   - Consider adding TTL (Time To Live) for sessions in production environments
+
+1. **Testing**:
+
+   - Use `FileSessionManager` with a temporary directory for unit tests
+   - Create mock implementations of `SessionRepository` for testing complex scenarios
+
+By following these practices, you can build robust applications that maintain user context effectively across multiple interactions.
