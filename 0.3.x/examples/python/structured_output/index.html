@@ -559,12 +559,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/concepts/agents/state-sessions/" class="md-nav__link">
+      <a href="../../../user-guide/concepts/agents/state/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    State & Sessions
+    State
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user-guide/concepts/agents/session-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Session Management
     
   </span>
   
@@ -2219,6 +2242,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multimodal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-modal
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2574,7 +2620,7 @@
 <span class="sd">This example demonstrates how to use structured output with Strands Agents to</span>
 <span class="sd">get type-safe, validated responses using Pydantic models.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
@@ -2590,12 +2636,50 @@
 
     <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">structured_output</span><span class="p">(</span>
-        <span class="n">PersonInfo</span><span class="p">,</span> 
+        <span class="n">PersonInfo</span><span class="p">,</span>
         <span class="s2">&quot;John Smith is a 30-year-old software engineer&quot;</span>
     <span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Name: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>      <span class="c1"># &quot;John Smith&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Age: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">age</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>        <span class="c1"># 30 </span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Age: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">age</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>        <span class="c1"># 30</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">occupation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># &quot;software engineer&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">multimodal_example</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basic example extracting structured information from a document.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Multi-Modal Example ---&quot;</span><span class="p">)</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">PersonInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">age</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="n">occupation</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">person_file</span><span class="p">:</span>
+        <span class="n">person_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;John Smith is a 30-year old software engineer&quot;</span><span class="p">)</span>
+        <span class="n">person_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">person_file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">document_bytes</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">structured_output</span><span class="p">(</span>
+        <span class="n">PersonInfo</span><span class="p">,</span>
+        <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please process this application.&quot;</span><span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;document&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;txt&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;application&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;bytes&quot;</span><span class="p">:</span> <span class="n">document_bytes</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Name: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>      <span class="c1"># &quot;John Smith&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Age: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">age</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>        <span class="c1"># 30</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">occupation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># &quot;software engineer&quot;</span>
 
 
@@ -2668,6 +2752,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Structured Output Examples</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">basic_example</span><span class="p">()</span>
+    <span class="n">multimodal_example</span><span class="p">()</span>
     <span class="n">conversation_history_example</span><span class="p">()</span>
     <span class="n">complex_nested_model_example</span><span class="p">()</span>
 

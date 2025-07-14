@@ -745,12 +745,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/agents/state-sessions/" class="md-nav__link">
+      <a href="../concepts/agents/state/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    State & Sessions
+    State
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/agents/session-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Session Management
     
   </span>
   
@@ -2320,6 +2343,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/python/multimodal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-modal
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2898,7 +2944,7 @@ strands-agents-tools&gt;=0.1.0
 <span class="c1"># Create a BedrockModel</span>
 <span class="n">bedrock_model</span> <span class="o">=</span> <span class="n">BedrockModel</span><span class="p">(</span>
     <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;us.anthropic.claude-3-7-sonnet-20250219-v1:0&quot;</span><span class="p">,</span>
-    <span class="n">region_name</span><span class="o">=</span><span class="s1">&#39;us-west-2&#39;</span><span class="p">,</span>
+    <span class="n">region_name</span><span class="o">=</span><span class="s2">&quot;us-west-2&quot;</span><span class="p">,</span>
     <span class="n">temperature</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -2913,14 +2959,16 @@ strands-agents-tools&gt;=0.1.0
 <li><strong><a href="../concepts/model-providers/anthropic/">Anthropic</a></strong> - Direct API access to Claude models</li>
 <li><strong><a href="../concepts/model-providers/litellm/">LiteLLM</a></strong> - Unified interface for OpenAI, Mistral, and other providers</li>
 <li><strong><a href="../concepts/model-providers/llamaapi/">Llama API</a></strong> - Access to Meta's Llama models</li>
+<li><strong><a href="../concepts/model-providers/mistral/">Mistral</a></strong> - Access to Mistral models</li>
 <li><strong><a href="../concepts/model-providers/ollama/">Ollama</a></strong> - Run models locally for privacy or offline use</li>
-<li><strong><a href="../concepts/model-providers/openai/">OpenAI</a></strong> - Direct API access to OpenAI or OpenAI-compatible models</li>
+<li><strong><a href="../concepts/model-providers/openai/">OpenAI</a></strong> - Access to OpenAI or OpenAI-compatible models</li>
+<li><strong><a href="../concepts/model-providers/writer/">Writer</a></strong> - Access to Palmyra models</li>
 <li><strong><a href="../concepts/model-providers/custom_model_provider/">Custom Providers</a></strong> - Build your own provider for specialized needs</li>
 </ul>
 <h2 id="capturing-streamed-data-events">Capturing Streamed Data &amp; Events<a class="headerlink" href="#capturing-streamed-data-events" title="Permanent link">&para;</a></h2>
 <p>Strands provides two main approaches to capture streaming events from an agent: async iterators and callback functions.</p>
 <h3 id="async-iterators">Async Iterators<a class="headerlink" href="#async-iterators" title="Permanent link">&para;</a></h3>
-<p>For asynchronous applications (like web servers or APIs), Strands provides an async iterator approach using <code>stream_async()</code>. This is particularly useful with async frameworks like FastAPI or Django Channels.</p>
+<p>For asynchronous applications (like web servers or APIs), Strands provides an async iterator approach using <a href="../../api-reference/agent/#strands.agent.agent.Agent.stream_async"><code>stream_async()</code></a>. This is particularly useful with async frameworks like FastAPI or Django Channels.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">strands_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculator</span>
@@ -2933,10 +2981,10 @@ strands-agents-tools&gt;=0.1.0
 
 <span class="c1"># Async function that iterates over streamed agent events</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process_streaming_response</span><span class="p">():</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;What is 25 * 48 and explain the calculation&quot;</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot;What is 25 * 48 and explain the calculation&quot;</span>
 
     <span class="c1"># Get an async iterator for the agent&#39;s response stream</span>
-    <span class="n">agent_stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">stream_async</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">agent_stream</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">stream_async</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 
     <span class="c1"># Process events as they arrive</span>
     <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">agent_stream</span><span class="p">:</span>
@@ -2952,6 +3000,9 @@ strands-agents-tools&gt;=0.1.0
 </code></pre></div>
 <p>The async iterator yields the same event types as the callback handler callbacks, including text generation events, tool events, and lifecycle events. This approach is ideal for integrating Strands agents with async web frameworks.</p>
 <p>See the <a href="../concepts/streaming/async-iterators/">Async Iterators</a> documentation for full details.</p>
+<blockquote>
+<p>Note, Strands also offers an <a href="../../api-reference/agent/#strands.agent.agent.Agent.invoke_async"><code>invoke_async()</code></a> method for non-iterative async invocations.</p>
+</blockquote>
 <h3 id="callback-handlers-callbacks">Callback Handlers (Callbacks)<a class="headerlink" href="#callback-handlers-callbacks" title="Permanent link">&para;</a></h3>
 <p>We can create a custom callback function (named a <a href="../concepts/streaming/callback-handlers/">callback handler</a>) that is invoked at various points throughout an agent's lifecycle.</p>
 <p>Here is an example that captures streamed data from the agent and logs it instead of printing:</p>
@@ -2995,7 +3046,7 @@ strands-agents-tools&gt;=0.1.0
 <li><a href="../concepts/tools/example-tools-package/">Example Built-in Tools</a> - The <code>strands-agents-tools</code> package provides many powerful example tools for your agents to use during development</li>
 <li><a href="https://github.com/strands-agents/agent-builder">Strands Agent Builder</a> - Use the accompanying <code>strands-agents-builder</code> agent builder to harness the power of LLMs to generate your own tools and agents</li>
 <li><a href="../concepts/agents/agent-loop/">Agent Loop</a> - Learn how Strands agents work under the hood</li>
-<li><a href="../concepts/agents/state-sessions/">State &amp; Sessions</a> - Understand how agents maintain context and state across a conversation or workflow</li>
+<li><a href="../concepts/agents/state/">State &amp; Sessions</a> - Understand how agents maintain context and state across a conversation or workflow</li>
 <li><a href="../concepts/multi-agent/agents-as-tools/">Multi-agent</a> - Orchestrate multiple agents together as one system, with each agent completing specialized tasks</li>
 <li><a href="../observability-evaluation/observability/">Observability &amp; Evaluation</a> - Understand how agents make decisions and improve them with data</li>
 <li><a href="../deploy/operating-agents-in-production/">Operating Agents in Production</a> - Taking agents from development to production, operating them responsibly at scale</li>

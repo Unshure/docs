@@ -571,12 +571,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../state-sessions/" class="md-nav__link">
+      <a href="../state/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    State & Sessions
+    State
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Session Management
     
   </span>
   
@@ -723,6 +746,15 @@
   <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       Basic Usage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-modal-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Modal Input
     </span>
   </a>
   
@@ -2268,6 +2300,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/multimodal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-modal
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2574,6 +2629,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#multi-modal-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Modal Input
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#using-conversation-history" class="md-nav__link">
     <span class="md-ellipsis">
       Using Conversation History
@@ -2685,7 +2749,7 @@
 
 <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">structured_output</span><span class="p">(</span>
-    <span class="n">PersonInfo</span><span class="p">,</span> 
+    <span class="n">PersonInfo</span><span class="p">,</span>
     <span class="s2">&quot;John Smith is a 30-year-old software engineer&quot;</span>
 <span class="p">)</span>
 
@@ -2693,6 +2757,34 @@
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Age: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">age</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>        <span class="c1"># 30</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">occupation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># &quot;software engineer&quot;</span>
 </code></pre></div>
+<h3 id="multi-modal-input">Multi-Modal Input<a class="headerlink" href="#multi-modal-input" title="Permanent link">&para;</a></h3>
+<p>Extract structured information from prompts containing images, documents, and other content types:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PersonInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">age</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">occupation</span><span class="p">:</span> <span class="nb">str</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;path/to/document.pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">document_bytes</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">structured_output</span><span class="p">(</span>
+    <span class="n">PersonInfo</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please process this application.&quot;</span><span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;document&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;pdf&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;application&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;bytes&quot;</span><span class="p">:</span> <span class="n">document_bytes</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>For a complete list of supported content types, please refer to the <a href="../../../../api-reference/types/#strands.types.content.ContentBlock">API Reference</a>.</p>
 <h3 id="using-conversation-history">Using Conversation History<a class="headerlink" href="#using-conversation-history" title="Permanent link">&para;</a></h3>
 <p>Structured output can work with existing conversation context:</p>
 <div class="highlight"><pre><span></span><code><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>

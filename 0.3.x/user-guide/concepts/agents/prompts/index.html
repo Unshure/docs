@@ -13,7 +13,7 @@
       <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/agents/prompts/">
     
     
-      <link rel="prev" href="../state-sessions/">
+      <link rel="prev" href="../session-management/">
     
     
       <link rel="next" href="../hooks/">
@@ -571,12 +571,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../state-sessions/" class="md-nav__link">
+      <a href="../state/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    State & Sessions
+    State
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Session Management
     
   </span>
   
@@ -665,9 +688,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#direct-prompting" class="md-nav__link">
+  <a href="#text-prompt" class="md-nav__link">
     <span class="md-ellipsis">
-      Direct Prompting
+      Text Prompt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-modal-prompting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Modal Prompting
     </span>
   </a>
   
@@ -2241,6 +2273,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/multimodal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-modal
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2529,9 +2584,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#direct-prompting" class="md-nav__link">
+  <a href="#text-prompt" class="md-nav__link">
     <span class="md-ellipsis">
-      Direct Prompting
+      Text Prompt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-modal-prompting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Modal Prompting
     </span>
   </a>
   
@@ -2596,15 +2660,33 @@
 <p>If you do not specify a system prompt, the model will behave according to its default settings.</p>
 <h2 id="user-messages">User Messages<a class="headerlink" href="#user-messages" title="Permanent link">&para;</a></h2>
 <p>These are your queries or requests to the agent. The SDK supports multiple techniques for prompting.</p>
-<h3 id="direct-prompting">Direct Prompting<a class="headerlink" href="#direct-prompting" title="Permanent link">&para;</a></h3>
-<p>The simplest way to interact with an agent is through direct prompting:</p>
+<h3 id="text-prompt">Text Prompt<a class="headerlink" href="#text-prompt" title="Permanent link">&para;</a></h3>
+<p>The simplest way to interact with an agent is through a text prompt:</p>
 <div class="highlight"><pre><span></span><code><span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="s2">&quot;What is the time in Seattle&quot;</span><span class="p">)</span>
 </code></pre></div>
+<h3 id="multi-modal-prompting">Multi-Modal Prompting<a class="headerlink" href="#multi-modal-prompting" title="Permanent link">&para;</a></h3>
+<p>The SDK also supports multi-modal prompts, allowing you to include images, documents, and other content types in your messages:</p>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;path/to/image.png&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+    <span class="n">image_bytes</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="p">([</span>
+    <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;What can you see in this image?&quot;</span><span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;bytes&quot;</span><span class="p">:</span> <span class="n">image_bytes</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">])</span>
+</code></pre></div>
+<p>For a complete list of supported content types, please refer to the <a href="../../../../api-reference/types/#strands.types.content.ContentBlock">API Reference</a>.</p>
 <h3 id="direct-tool-calls">Direct Tool Calls<a class="headerlink" href="#direct-tool-calls" title="Permanent link">&para;</a></h3>
-<p>For programmatic control, you can call tools directly:</p>
+<p>Prompting is a primary functionality of Strands that allows you to invoke tools through natural language requests. However, if at any point you require more programmatic control, Strands also allows you to invoke tools directly:</p>
 <div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool</span><span class="o">.</span><span class="n">current_time</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="s2">&quot;US/Pacific&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>This bypasses the natural language interface and directly executes the tool with the specified parameters. By default, direct tool calls are added to the <a href="../state-sessions/">session state</a> but can be optionally not included by specifying <code>record_direct_tool_call=False</code>.</p>
+<p>This bypasses the natural language interface and directly executes the tool with the specified parameters. By default, direct tool calls are added to the conversation but can be optionally not included by specifying <code>record_direct_tool_call=False</code>.</p>
 <h2 id="prompt-engineering">Prompt Engineering<a class="headerlink" href="#prompt-engineering" title="Permanent link">&para;</a></h2>
 <p>For guidance on how to write safe and responsible prompts, please refer to our <a href="../../../safety-security/prompt-engineering/">Safety &amp; Security - Prompt Engineering</a> documentation.</p>
 <p>Further resources:</p>

@@ -559,12 +559,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/concepts/agents/state-sessions/" class="md-nav__link">
+      <a href="../../user-guide/concepts/agents/state/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    State & Sessions
+    State
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/concepts/agents/session-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Session Management
     
   </span>
   
@@ -2125,6 +2148,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/python/multimodal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-modal
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2306,6 +2352,15 @@
   <a href="#strands.event_loop.event_loop.recurse_event_loop" class="md-nav__link">
     <span class="md-ellipsis">
       recurse_event_loop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strands.event_loop.event_loop.run_tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      run_tool
     </span>
   </a>
   
@@ -2608,6 +2663,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#strands.event_loop.event_loop.run_tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      run_tool
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2822,7 +2886,7 @@ iterative manner.</p>
 
 
 <h3 id="strands.event_loop.event_loop.event_loop_cycle" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">event_loop_cycle</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">,</span> <span class="n">tool_handler</span><span class="p">,</span> <span class="n">thread_pool</span><span class="p">,</span> <span class="n">event_loop_metrics</span><span class="p">,</span> <span class="n">event_loop_parent_span</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">event_loop_cycle</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -2860,14 +2924,14 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>model</code>
+                <code>agent</code>
             </td>
             <td>
-                  <code><span title="strands.types.models.Model">Model</span></code>
+                  <code><a class="autorefs autorefs-internal" title="Agent (strands.agent.Agent)" href="../agent/#strands.agent.agent.Agent">Agent</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Provider for running model inference.</p>
+                <p>The agent for which the cycle is being executed.</p>
               </div>
             </td>
             <td>
@@ -2876,128 +2940,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>system_prompt</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>System prompt instructions for the model.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>messages</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Messages = List[Message]
-
-  
-      module-attribute
-   (strands.types.content.Messages)" href="../types/#strands.types.content.Messages">Messages</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Conversation history messages.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool_config</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="ToolConfig (strands.types.tools.ToolConfig)" href="../types/#strands.types.tools.ToolConfig">ToolConfig</a>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Configuration for available tools.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="ToolHandler (strands.types.tools.ToolHandler)" href="../types/#strands.types.tools.ToolHandler">ToolHandler</a>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Handler for executing tools.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>thread_pool</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="concurrent.futures.ThreadPoolExecutor">ThreadPoolExecutor</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Optional thread pool for parallel tool execution.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>event_loop_metrics</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="EventLoopMetrics
-
-
-  
-      dataclass
-   (strands.telemetry.metrics.EventLoopMetrics)" href="../telemetry/#strands.telemetry.metrics.EventLoopMetrics">EventLoopMetrics</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Metrics tracking object for the event loop.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>event_loop_parent_span</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="opentelemetry.trace.Span">Span</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Span for the parent of this event loop.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>kwargs</code>
+                <code>invocation_state</code>
             </td>
             <td>
                   <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
@@ -3035,7 +2978,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Model and tool invocation events. The last event is a tuple containing:</p>
+                <p>Model and tool stream events. The last event is a tuple containing:</p>
 <ul>
 <li>StopReason: Reason the model stopped generating (e.g., "tool_use")</li>
 <li>Message: The generated message from the model</li>
@@ -3084,13 +3027,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 38</span>
-<span class="normal"> 39</span>
-<span class="normal"> 40</span>
-<span class="normal"> 41</span>
-<span class="normal"> 42</span>
-<span class="normal"> 43</span>
-<span class="normal"> 44</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
 <span class="normal"> 45</span>
 <span class="normal"> 46</span>
 <span class="normal"> 47</span>
@@ -3288,28 +3225,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">event_loop_cycle</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
-    <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
-    <span class="n">tool_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolConfig</span><span class="p">],</span>
-    <span class="n">tool_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolHandler</span><span class="p">],</span>
-    <span class="n">thread_pool</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ThreadPoolExecutor</span><span class="p">],</span>
-    <span class="n">event_loop_metrics</span><span class="p">:</span> <span class="n">EventLoopMetrics</span><span class="p">,</span>
-    <span class="n">event_loop_parent_span</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">trace</span><span class="o">.</span><span class="n">Span</span><span class="p">],</span>
-    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">event_loop_cycle</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="s2">&quot;Agent&quot;</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute a single cycle of the event loop.</span>
 
 <span class="sd">    This core function processes a single conversation turn, handling model inference, tool execution, and error</span>
@@ -3324,22 +3240,15 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="sd">    7. Error handling and recovery</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model: Provider for running model inference.</span>
-<span class="sd">        system_prompt: System prompt instructions for the model.</span>
-<span class="sd">        messages: Conversation history messages.</span>
-<span class="sd">        tool_config: Configuration for available tools.</span>
-<span class="sd">        tool_handler: Handler for executing tools.</span>
-<span class="sd">        thread_pool: Optional thread pool for parallel tool execution.</span>
-<span class="sd">        event_loop_metrics: Metrics tracking object for the event loop.</span>
-<span class="sd">        event_loop_parent_span: Span for the parent of this event loop.</span>
-<span class="sd">        kwargs: Additional arguments including:</span>
+<span class="sd">        agent: The agent for which the cycle is being executed.</span>
+<span class="sd">        invocation_state: Additional arguments including:</span>
 
 <span class="sd">            - request_state: State maintained across cycles</span>
 <span class="sd">            - event_loop_cycle_id: Unique ID for this cycle</span>
 <span class="sd">            - event_loop_cycle_span: Current tracing Span for this cycle</span>
 
 <span class="sd">    Yields:</span>
-<span class="sd">        Model and tool invocation events. The last event is a tuple containing:</span>
+<span class="sd">        Model and tool stream events. The last event is a tuple containing:</span>
 
 <span class="sd">            - StopReason: Reason the model stopped generating (e.g., &quot;tool_use&quot;)</span>
 <span class="sd">            - Message: The generated message from the model</span>
@@ -3351,14 +3260,14 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="sd">        ContextWindowOverflowException: If the input is too large for the model</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initialize cycle state</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+    <span class="n">invocation_state</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
 
     <span class="c1"># Initialize state and get cycle trace</span>
-    <span class="k">if</span> <span class="s2">&quot;request_state&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">))}</span>
-    <span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span> <span class="o">=</span> <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">start_cycle</span><span class="p">(</span><span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_trace&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cycle_trace</span>
+    <span class="k">if</span> <span class="s2">&quot;request_state&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">invocation_state</span><span class="p">:</span>
+        <span class="n">invocation_state</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">invocation_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_loop_cycle_id&quot;</span><span class="p">))}</span>
+    <span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">start_cycle</span><span class="p">(</span><span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">)</span>
+    <span class="n">invocation_state</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_trace&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cycle_trace</span>
 
     <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
     <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;start_event_loop&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
@@ -3366,16 +3275,13 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
     <span class="c1"># Create tracer span for this event loop cycle</span>
     <span class="n">tracer</span> <span class="o">=</span> <span class="n">get_tracer</span><span class="p">()</span>
     <span class="n">cycle_span</span> <span class="o">=</span> <span class="n">tracer</span><span class="o">.</span><span class="n">start_event_loop_cycle_span</span><span class="p">(</span>
-        <span class="n">event_loop_kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span> <span class="n">parent_span</span><span class="o">=</span><span class="n">event_loop_parent_span</span>
+        <span class="n">invocation_state</span><span class="o">=</span><span class="n">invocation_state</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span> <span class="n">parent_span</span><span class="o">=</span><span class="n">agent</span><span class="o">.</span><span class="n">trace_span</span>
     <span class="p">)</span>
-    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_span&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cycle_span</span>
+    <span class="n">invocation_state</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_span&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cycle_span</span>
 
     <span class="c1"># Create a trace for the stream_messages call</span>
     <span class="n">stream_trace</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="s2">&quot;stream_messages&quot;</span><span class="p">,</span> <span class="n">parent_id</span><span class="o">=</span><span class="n">cycle_trace</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
     <span class="n">cycle_trace</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">stream_trace</span><span class="p">)</span>
-
-    <span class="c1"># Clean up orphaned empty tool uses</span>
-    <span class="n">clean_orphaned_empty_tool_uses</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
 
     <span class="c1"># Process messages with exponential backoff for throttling</span>
     <span class="n">message</span><span class="p">:</span> <span class="n">Message</span>
@@ -3386,57 +3292,78 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
     <span class="c1"># Retry loop for handling throttling exceptions</span>
     <span class="n">current_delay</span> <span class="o">=</span> <span class="n">INITIAL_DELAY</span>
     <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">MAX_ATTEMPTS</span><span class="p">):</span>
-        <span class="n">model_id</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">model_id</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_id&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">model_invoke_span</span> <span class="o">=</span> <span class="n">tracer</span><span class="o">.</span><span class="n">start_model_invoke_span</span><span class="p">(</span>
-            <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span>
             <span class="n">parent_span</span><span class="o">=</span><span class="n">cycle_span</span><span class="p">,</span>
             <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="n">tool_specs</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool_registry</span><span class="o">.</span><span class="n">get_all_tool_specs</span><span class="p">()</span>
+
+        <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span>
+            <span class="n">BeforeModelInvocationEvent</span><span class="p">(</span>
+                <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
         <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># TODO: To maintain backwards compatability, we need to combine the stream event with kwargs before yielding</span>
-            <span class="c1">#       to the callback handler. This will be revisited when migrating to strongly typed events.</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream_messages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">):</span>
+            <span class="c1"># TODO: To maintain backwards compatibility, we need to combine the stream event with invocation_state</span>
+            <span class="c1">#       before yielding to the callback handler. This will be revisited when migrating to strongly</span>
+            <span class="c1">#       typed events.</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream_messages</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span> <span class="n">tool_specs</span><span class="p">):</span>
                 <span class="k">if</span> <span class="s2">&quot;callback&quot;</span> <span class="ow">in</span> <span class="n">event</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">**</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">],</span> <span class="o">**</span><span class="p">(</span><span class="n">kwargs</span> <span class="k">if</span> <span class="s2">&quot;delta&quot;</span> <span class="ow">in</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="p">{})}}</span>
+                    <span class="k">yield</span> <span class="p">{</span>
+                        <span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">**</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">],</span> <span class="o">**</span><span class="p">(</span><span class="n">invocation_state</span> <span class="k">if</span> <span class="s2">&quot;delta&quot;</span> <span class="ow">in</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;callback&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="p">{})}</span>
+                    <span class="p">}</span>
 
             <span class="n">stop_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">metrics</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span>
-            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;request_state&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="n">invocation_state</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;request_state&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+            <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span>
+                <span class="n">AfterModelInvocationEvent</span><span class="p">(</span>
+                    <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+                    <span class="n">stop_response</span><span class="o">=</span><span class="n">AfterModelInvocationEvent</span><span class="o">.</span><span class="n">ModelStopResponse</span><span class="p">(</span>
+                        <span class="n">stop_reason</span><span class="o">=</span><span class="n">stop_reason</span><span class="p">,</span>
+                        <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">model_invoke_span</span><span class="p">:</span>
                 <span class="n">tracer</span><span class="o">.</span><span class="n">end_model_invoke_span</span><span class="p">(</span><span class="n">model_invoke_span</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">stop_reason</span><span class="p">)</span>
             <span class="k">break</span>  <span class="c1"># Success! Break out of retry loop</span>
 
-        <span class="k">except</span> <span class="n">ContextWindowOverflowException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">model_invoke_span</span><span class="p">:</span>
-                <span class="n">tracer</span><span class="o">.</span><span class="n">end_span_with_error</span><span class="p">(</span><span class="n">model_invoke_span</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">e</span>
-
-        <span class="k">except</span> <span class="n">ModelThrottledException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">model_invoke_span</span><span class="p">:</span>
-                <span class="n">tracer</span><span class="o">.</span><span class="n">end_span_with_error</span><span class="p">(</span><span class="n">model_invoke_span</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">MAX_ATTEMPTS</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;force_stop&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;force_stop_reason&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}}</span>
-                <span class="k">raise</span> <span class="n">e</span>
-
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-                <span class="s2">&quot;retry_delay_seconds=&lt;</span><span class="si">%s</span><span class="s2">&gt;, max_attempts=&lt;</span><span class="si">%s</span><span class="s2">&gt;, current_attempt=&lt;</span><span class="si">%s</span><span class="s2">&gt; &quot;</span>
-                <span class="s2">&quot;| throttling exception encountered &quot;</span>
-                <span class="s2">&quot;| delaying before next retry&quot;</span><span class="p">,</span>
-                <span class="n">current_delay</span><span class="p">,</span>
-                <span class="n">MAX_ATTEMPTS</span><span class="p">,</span>
-                <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">current_delay</span><span class="p">)</span>
-            <span class="n">current_delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_delay</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">MAX_DELAY</span><span class="p">)</span>
-
-            <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;event_loop_throttled_delay&quot;</span><span class="p">:</span> <span class="n">current_delay</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}}</span>
-
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">model_invoke_span</span><span class="p">:</span>
                 <span class="n">tracer</span><span class="o">.</span><span class="n">end_span_with_error</span><span class="p">(</span><span class="n">model_invoke_span</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">e</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">e</span>
+
+            <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span>
+                <span class="n">AfterModelInvocationEvent</span><span class="p">(</span>
+                    <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+                    <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">ModelThrottledException</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">MAX_ATTEMPTS</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;force_stop&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;force_stop_reason&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}}</span>
+                    <span class="k">raise</span> <span class="n">e</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;retry_delay_seconds=&lt;</span><span class="si">%s</span><span class="s2">&gt;, max_attempts=&lt;</span><span class="si">%s</span><span class="s2">&gt;, current_attempt=&lt;</span><span class="si">%s</span><span class="s2">&gt; &quot;</span>
+                    <span class="s2">&quot;| throttling exception encountered &quot;</span>
+                    <span class="s2">&quot;| delaying before next retry&quot;</span><span class="p">,</span>
+                    <span class="n">current_delay</span><span class="p">,</span>
+                    <span class="n">MAX_ATTEMPTS</span><span class="p">,</span>
+                    <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">current_delay</span><span class="p">)</span>
+                <span class="n">current_delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_delay</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">MAX_DELAY</span><span class="p">)</span>
+
+                <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;event_loop_throttled_delay&quot;</span><span class="p">:</span> <span class="n">current_delay</span><span class="p">,</span> <span class="o">**</span><span class="n">invocation_state</span><span class="p">}}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Add message in trace and mark the end of the stream messages trace</span>
@@ -3444,43 +3371,25 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
         <span class="n">stream_trace</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
 
         <span class="c1"># Add the response message to the conversation</span>
-        <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span><span class="n">MessageAddedEvent</span><span class="p">(</span><span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">))</span>
         <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">message</span><span class="p">}}</span>
 
         <span class="c1"># Update metrics</span>
-        <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">update_usage</span><span class="p">(</span><span class="n">usage</span><span class="p">)</span>
-        <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">update_metrics</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+        <span class="n">agent</span><span class="o">.</span><span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">update_usage</span><span class="p">(</span><span class="n">usage</span><span class="p">)</span>
+        <span class="n">agent</span><span class="o">.</span><span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">update_metrics</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
 
         <span class="c1"># If the model is requesting to use tools</span>
         <span class="k">if</span> <span class="n">stop_reason</span> <span class="o">==</span> <span class="s2">&quot;tool_use&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_handler</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">EventLoopException</span><span class="p">(</span>
-                    <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model requested tool use but no tool handler provided&quot;</span><span class="p">),</span>
-                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">],</span>
-                <span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">tool_config</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">EventLoopException</span><span class="p">(</span>
-                    <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model requested tool use but no tool config provided&quot;</span><span class="p">),</span>
-                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">],</span>
-                <span class="p">)</span>
-
             <span class="c1"># Handle tool execution</span>
             <span class="n">events</span> <span class="o">=</span> <span class="n">_handle_tool_execution</span><span class="p">(</span>
                 <span class="n">stop_reason</span><span class="p">,</span>
                 <span class="n">message</span><span class="p">,</span>
-                <span class="n">model</span><span class="p">,</span>
-                <span class="n">system_prompt</span><span class="p">,</span>
-                <span class="n">messages</span><span class="p">,</span>
-                <span class="n">tool_config</span><span class="p">,</span>
-                <span class="n">tool_handler</span><span class="p">,</span>
-                <span class="n">thread_pool</span><span class="p">,</span>
-                <span class="n">event_loop_metrics</span><span class="p">,</span>
-                <span class="n">event_loop_parent_span</span><span class="p">,</span>
-                <span class="n">cycle_trace</span><span class="p">,</span>
-                <span class="n">cycle_span</span><span class="p">,</span>
-                <span class="n">cycle_start_time</span><span class="p">,</span>
-                <span class="n">kwargs</span><span class="p">,</span>
+                <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+                <span class="n">cycle_trace</span><span class="o">=</span><span class="n">cycle_trace</span><span class="p">,</span>
+                <span class="n">cycle_span</span><span class="o">=</span><span class="n">cycle_span</span><span class="p">,</span>
+                <span class="n">cycle_start_time</span><span class="o">=</span><span class="n">cycle_start_time</span><span class="p">,</span>
+                <span class="n">invocation_state</span><span class="o">=</span><span class="n">invocation_state</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="n">event</span>
@@ -3488,7 +3397,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
             <span class="k">return</span>
 
         <span class="c1"># End the cycle and return results</span>
-        <span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">end_cycle</span><span class="p">(</span><span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+        <span class="n">agent</span><span class="o">.</span><span class="n">event_loop_metrics</span><span class="o">.</span><span class="n">end_cycle</span><span class="p">(</span><span class="n">cycle_start_time</span><span class="p">,</span> <span class="n">cycle_trace</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cycle_span</span><span class="p">:</span>
             <span class="n">tracer</span><span class="o">.</span><span class="n">end_event_loop_cycle_span</span><span class="p">(</span>
                 <span class="n">span</span><span class="o">=</span><span class="n">cycle_span</span><span class="p">,</span>
@@ -3512,9 +3421,9 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
         <span class="c1"># Handle any other exceptions</span>
         <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;force_stop&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;force_stop_reason&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}}</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;cycle failed&quot;</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">EventLoopException</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">])</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="n">EventLoopException</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">])</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-    <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">stop_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">event_loop_metrics</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">])}</span>
+    <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">stop_reason</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">event_loop_metrics</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">[</span><span class="s2">&quot;request_state&quot;</span><span class="p">])}</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3525,7 +3434,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
 
 <h3 id="strands.event_loop.event_loop.recurse_event_loop" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">recurse_event_loop</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">,</span> <span class="n">tool_handler</span><span class="p">,</span> <span class="n">thread_pool</span><span class="p">,</span> <span class="n">event_loop_metrics</span><span class="p">,</span> <span class="n">event_loop_parent_span</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">recurse_event_loop</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -3553,14 +3462,14 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>model</code>
+                <code>agent</code>
             </td>
             <td>
-                  <code><span title="strands.types.models.Model">Model</span></code>
+                  <code><a class="autorefs autorefs-internal" title="Agent (strands.agent.Agent)" href="../agent/#strands.agent.agent.Agent">Agent</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Provider for running model inference</p>
+                <p>Agent for which the recursive call is being made.</p>
               </div>
             </td>
             <td>
@@ -3569,128 +3478,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>system_prompt</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>System prompt instructions for the model</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>messages</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Messages = List[Message]
-
-  
-      module-attribute
-   (strands.types.content.Messages)" href="../types/#strands.types.content.Messages">Messages</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Conversation history messages</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool_config</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="ToolConfig (strands.types.tools.ToolConfig)" href="../types/#strands.types.tools.ToolConfig">ToolConfig</a>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Configuration for available tools</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool_handler</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="ToolHandler (strands.types.tools.ToolHandler)" href="../types/#strands.types.tools.ToolHandler">ToolHandler</a>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Handler for tool execution</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>thread_pool</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="concurrent.futures.ThreadPoolExecutor">ThreadPoolExecutor</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Optional thread pool for parallel tool execution.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>event_loop_metrics</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="EventLoopMetrics
-
-
-  
-      dataclass
-   (strands.telemetry.metrics.EventLoopMetrics)" href="../telemetry/#strands.telemetry.metrics.EventLoopMetrics">EventLoopMetrics</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Metrics tracking object for the event loop.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>event_loop_parent_span</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="opentelemetry.trace.Span">Span</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Span for the parent of this event loop.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>kwargs</code>
+                <code>invocation_state</code>
             </td>
             <td>
                   <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
@@ -3739,7 +3527,18 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
 <span class="normal">259</span>
@@ -3758,10 +3557,155 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
+<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">recurse_event_loop</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="s2">&quot;Agent&quot;</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a recursive call to event_loop_cycle with the current state.</span>
+
+<span class="sd">    This function is used when the event loop needs to continue processing after tool execution.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        agent: Agent for which the recursive call is being made.</span>
+<span class="sd">        invocation_state: Arguments to pass through event_loop_cycle</span>
+
+
+<span class="sd">    Yields:</span>
+<span class="sd">        Results from event_loop_cycle where the last result contains:</span>
+
+<span class="sd">            - StopReason: Reason the model stopped generating</span>
+<span class="sd">            - Message: The generated message from the model</span>
+<span class="sd">            - EventLoopMetrics: Updated metrics for the event loop</span>
+<span class="sd">            - Any: Updated request state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cycle_trace</span> <span class="o">=</span> <span class="n">invocation_state</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_trace&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Recursive call trace</span>
+    <span class="n">recursive_trace</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="s2">&quot;Recursive call&quot;</span><span class="p">,</span> <span class="n">parent_id</span><span class="o">=</span><span class="n">cycle_trace</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="n">cycle_trace</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">recursive_trace</span><span class="p">)</span>
+
+    <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
+
+    <span class="n">events</span> <span class="o">=</span> <span class="n">event_loop_cycle</span><span class="p">(</span><span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span> <span class="n">invocation_state</span><span class="o">=</span><span class="n">invocation_state</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">event</span>
+
+    <span class="n">recursive_trace</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="strands.event_loop.event_loop.run_tool" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">run_tool</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">tool_use</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+<a href="#strands.event_loop.event_loop.run_tool" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Process a tool invocation.</p>
+<p>Looks up the tool in the registry and streams it with the provided parameters.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>agent</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Agent (strands.agent.Agent)" href="../agent/#strands.agent.agent.Agent">Agent</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The agent for which the tool is being executed.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tool_use</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ToolUse (strands.types.tools.ToolUse)" href="../types/#strands.types.tools.ToolUse">ToolUse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The tool object to process, containing name and parameters.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>invocation_state</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Context for the tool invocation, including agent state.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Yields:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ToolGenerator = AsyncGenerator[Any, None]
+
+  
+      module-attribute
+   (strands.types.tools.ToolGenerator)" href="../types/#strands.types.tools.ToolGenerator">ToolGenerator</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Tool events with the last being the tool result.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>strands/event_loop/event_loop.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">278</span>
 <span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
@@ -3796,64 +3740,198 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="normal">310</span>
 <span class="normal">311</span>
 <span class="normal">312</span>
-<span class="normal">313</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">recurse_event_loop</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
-    <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
-    <span class="n">tool_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolConfig</span><span class="p">],</span>
-    <span class="n">tool_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolHandler</span><span class="p">],</span>
-    <span class="n">thread_pool</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ThreadPoolExecutor</span><span class="p">],</span>
-    <span class="n">event_loop_metrics</span><span class="p">:</span> <span class="n">EventLoopMetrics</span><span class="p">,</span>
-    <span class="n">event_loop_parent_span</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">trace</span><span class="o">.</span><span class="n">Span</span><span class="p">],</span>
-    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a recursive call to event_loop_cycle with the current state.</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_tool</span><span class="p">(</span><span class="n">agent</span><span class="p">:</span> <span class="s2">&quot;Agent&quot;</span><span class="p">,</span> <span class="n">tool_use</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ToolGenerator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a tool invocation.</span>
 
-<span class="sd">    This function is used when the event loop needs to continue processing after tool execution.</span>
+<span class="sd">    Looks up the tool in the registry and streams it with the provided parameters.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model: Provider for running model inference</span>
-<span class="sd">        system_prompt: System prompt instructions for the model</span>
-<span class="sd">        messages: Conversation history messages</span>
-<span class="sd">        tool_config: Configuration for available tools</span>
-<span class="sd">        tool_handler: Handler for tool execution</span>
-<span class="sd">        thread_pool: Optional thread pool for parallel tool execution.</span>
-<span class="sd">        event_loop_metrics: Metrics tracking object for the event loop.</span>
-<span class="sd">        event_loop_parent_span: Span for the parent of this event loop.</span>
-<span class="sd">        kwargs: Arguments to pass through event_loop_cycle</span>
-
+<span class="sd">        agent: The agent for which the tool is being executed.</span>
+<span class="sd">        tool_use: The tool object to process, containing name and parameters.</span>
+<span class="sd">        invocation_state: Context for the tool invocation, including agent state.</span>
 
 <span class="sd">    Yields:</span>
-<span class="sd">        Results from event_loop_cycle where the last result contains:</span>
-
-<span class="sd">            - StopReason: Reason the model stopped generating</span>
-<span class="sd">            - Message: The generated message from the model</span>
-<span class="sd">            - EventLoopMetrics: Updated metrics for the event loop</span>
-<span class="sd">            - Any: Updated request state</span>
+<span class="sd">        Tool events with the last being the tool result.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">cycle_trace</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;event_loop_cycle_trace&quot;</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;tool_use=&lt;</span><span class="si">%s</span><span class="s2">&gt; | streaming&quot;</span><span class="p">,</span> <span class="n">tool_use</span><span class="p">)</span>
+    <span class="n">tool_name</span> <span class="o">=</span> <span class="n">tool_use</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
 
-    <span class="c1"># Recursive call trace</span>
-    <span class="n">recursive_trace</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="s2">&quot;Recursive call&quot;</span><span class="p">,</span> <span class="n">parent_id</span><span class="o">=</span><span class="n">cycle_trace</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-    <span class="n">cycle_trace</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">recursive_trace</span><span class="p">)</span>
+    <span class="c1"># Get the tool info</span>
+    <span class="n">tool_info</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool_registry</span><span class="o">.</span><span class="n">dynamic_tools</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span>
+    <span class="n">tool_func</span> <span class="o">=</span> <span class="n">tool_info</span> <span class="k">if</span> <span class="n">tool_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool_registry</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span>
 
-    <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;callback&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
-
-    <span class="n">events</span> <span class="o">=</span> <span class="n">event_loop_cycle</span><span class="p">(</span>
-        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-        <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span>
-        <span class="n">messages</span><span class="o">=</span><span class="n">messages</span><span class="p">,</span>
-        <span class="n">tool_config</span><span class="o">=</span><span class="n">tool_config</span><span class="p">,</span>
-        <span class="n">tool_handler</span><span class="o">=</span><span class="n">tool_handler</span><span class="p">,</span>
-        <span class="n">thread_pool</span><span class="o">=</span><span class="n">thread_pool</span><span class="p">,</span>
-        <span class="n">event_loop_metrics</span><span class="o">=</span><span class="n">event_loop_metrics</span><span class="p">,</span>
-        <span class="n">event_loop_parent_span</span><span class="o">=</span><span class="n">event_loop_parent_span</span><span class="p">,</span>
-        <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="c1"># Add standard arguments to invocation_state for Python tools</span>
+    <span class="n">invocation_state</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="s2">&quot;system_prompt&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">,</span>
+            <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">agent</span><span class="o">.</span><span class="n">messages</span><span class="p">,</span>
+            <span class="s2">&quot;tool_config&quot;</span><span class="p">:</span> <span class="n">ToolConfig</span><span class="p">(</span>  <span class="c1"># for backwards compatability</span>
+                <span class="n">tools</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;toolSpec&quot;</span><span class="p">:</span> <span class="n">tool_spec</span><span class="p">}</span> <span class="k">for</span> <span class="n">tool_spec</span> <span class="ow">in</span> <span class="n">agent</span><span class="o">.</span><span class="n">tool_registry</span><span class="o">.</span><span class="n">get_all_tool_specs</span><span class="p">()],</span>
+                <span class="n">toolChoice</span><span class="o">=</span><span class="n">cast</span><span class="p">(</span><span class="n">ToolChoice</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;auto&quot;</span><span class="p">:</span> <span class="n">ToolChoiceAuto</span><span class="p">()}),</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
     <span class="p">)</span>
-    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="n">event</span>
 
-    <span class="n">recursive_trace</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+    <span class="n">before_event</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span>
+        <span class="n">BeforeToolInvocationEvent</span><span class="p">(</span>
+            <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+            <span class="n">selected_tool</span><span class="o">=</span><span class="n">tool_func</span><span class="p">,</span>
+            <span class="n">tool_use</span><span class="o">=</span><span class="n">tool_use</span><span class="p">,</span>
+            <span class="n">invocation_state</span><span class="o">=</span><span class="n">invocation_state</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">selected_tool</span> <span class="o">=</span> <span class="n">before_event</span><span class="o">.</span><span class="n">selected_tool</span>
+        <span class="n">tool_use</span> <span class="o">=</span> <span class="n">before_event</span><span class="o">.</span><span class="n">tool_use</span>
+        <span class="n">invocation_state</span> <span class="o">=</span> <span class="n">before_event</span><span class="o">.</span><span class="n">invocation_state</span>  <span class="c1"># Get potentially modified invocation_state from hook</span>
+
+        <span class="c1"># Check if tool exists</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_tool</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tool_func</span> <span class="o">==</span> <span class="n">selected_tool</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s2">&quot;tool_name=&lt;</span><span class="si">%s</span><span class="s2">&gt;, available_tools=&lt;</span><span class="si">%s</span><span class="s2">&gt; | tool not found in registry&quot;</span><span class="p">,</span>
+                    <span class="n">tool_name</span><span class="p">,</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">tool_registry</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;tool_name=&lt;</span><span class="si">%s</span><span class="s2">&gt;, tool_use_id=&lt;</span><span class="si">%s</span><span class="s2">&gt; | a hook resulted in a non-existing tool call&quot;</span><span class="p">,</span>
+                    <span class="n">tool_name</span><span class="p">,</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">tool_use</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;toolUseId&quot;</span><span class="p">)),</span>
+                <span class="p">)</span>
+
+            <span class="n">result</span><span class="p">:</span> <span class="n">ToolResult</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;toolUseId&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">tool_use</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;toolUseId&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Unknown tool: </span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}],</span>
+            <span class="p">}</span>
+            <span class="c1"># for every Before event call, we need to have an AfterEvent call</span>
+            <span class="n">after_event</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span>
+                <span class="n">AfterToolInvocationEvent</span><span class="p">(</span>
+                    <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+                    <span class="n">selected_tool</span><span class="o">=</span><span class="n">selected_tool</span><span class="p">,</span>
+                    <span class="n">tool_use</span><span class="o">=</span><span class="n">tool_use</span><span class="p">,</span>
+                    <span class="n">invocation_state</span><span class="o">=</span><span class="n">invocation_state</span><span class="p">,</span>  <span class="c1"># Keep as invocation_state for backward compatibility with hooks</span>
+                    <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="n">after_event</span><span class="o">.</span><span class="n">result</span>
+            <span class="k">return</span>
+
+        <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">selected_tool</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">tool_use</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">event</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">event</span>
+
+        <span class="n">after_event</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span>
+            <span class="n">AfterToolInvocationEvent</span><span class="p">(</span>
+                <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+                <span class="n">selected_tool</span><span class="o">=</span><span class="n">selected_tool</span><span class="p">,</span>
+                <span class="n">tool_use</span><span class="o">=</span><span class="n">tool_use</span><span class="p">,</span>
+                <span class="n">invocation_state</span><span class="o">=</span><span class="n">invocation_state</span><span class="p">,</span>  <span class="c1"># Keep as invocation_state for backward compatibility with hooks</span>
+                <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">yield</span> <span class="n">after_event</span><span class="o">.</span><span class="n">result</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;tool_name=&lt;</span><span class="si">%s</span><span class="s2">&gt; | failed to process tool&quot;</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">)</span>
+        <span class="n">error_result</span><span class="p">:</span> <span class="n">ToolResult</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;toolUseId&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">tool_use</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;toolUseId&quot;</span><span class="p">)),</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}],</span>
+        <span class="p">}</span>
+        <span class="n">after_event</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">hooks</span><span class="o">.</span><span class="n">invoke_callbacks</span><span class="p">(</span>
+            <span class="n">AfterToolInvocationEvent</span><span class="p">(</span>
+                <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+                <span class="n">selected_tool</span><span class="o">=</span><span class="n">selected_tool</span><span class="p">,</span>
+                <span class="n">tool_use</span><span class="o">=</span><span class="n">tool_use</span><span class="p">,</span>
+                <span class="n">invocation_state</span><span class="o">=</span><span class="n">invocation_state</span><span class="p">,</span>  <span class="c1"># Keep as invocation_state for backward compatibility with hooks</span>
+                <span class="n">result</span><span class="o">=</span><span class="n">error_result</span><span class="p">,</span>
+                <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">yield</span> <span class="n">after_event</span><span class="o">.</span><span class="n">result</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5176,7 +5254,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 
 
 <h3 id="strands.event_loop.streaming.stream_messages" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">stream_messages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">stream_messages</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_specs</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -5206,7 +5284,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
                 <code>model</code>
             </td>
             <td>
-                  <code><span title="strands.types.models.Model">Model</span></code>
+                  <code><a class="autorefs autorefs-internal" title="Model (strands.models.model.Model)" href="../models/#strands.models.model.Model">Model</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5255,14 +5333,14 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>tool_config</code>
+                <code>tool_specs</code>
             </td>
             <td>
-                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="ToolConfig (strands.types.tools.ToolConfig)" href="../types/#strands.types.tools.ToolConfig">ToolConfig</a>]</code>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="ToolSpec (strands.types.tools.ToolSpec)" href="../types/#strands.types.tools.ToolSpec">ToolSpec</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Configuration for the tools to use.</p>
+                <p>The list of tool specs.</p>
               </div>
             </td>
             <td>
@@ -5326,7 +5404,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
     <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
     <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
-    <span class="n">tool_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolConfig</span><span class="p">],</span>
+    <span class="n">tool_specs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Streams messages to the model and processes the response.</span>
 
@@ -5334,7 +5412,7 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
 <span class="sd">        model: Model provider.</span>
 <span class="sd">        system_prompt: The system prompt to send.</span>
 <span class="sd">        messages: List of messages to send.</span>
-<span class="sd">        tool_config: Configuration for the tools to use.</span>
+<span class="sd">        tool_specs: The list of tool specs.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The reason for stopping, the final message, and the usage metrics</span>
@@ -5342,9 +5420,9 @@ recovery. It manages the entire lifecycle of a conversation turn, including:</p>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;model=&lt;</span><span class="si">%s</span><span class="s2">&gt; | streaming messages&quot;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
 
     <span class="n">messages</span> <span class="o">=</span> <span class="n">remove_blank_messages_content_text</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-    <span class="n">tool_specs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tool</span><span class="p">[</span><span class="s2">&quot;toolSpec&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tool_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tools&quot;</span><span class="p">,</span> <span class="p">[])]</span> <span class="ow">or</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">tool_config</span> <span class="k">else</span> <span class="kc">None</span>
 
-    <span class="n">chunks</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">converse</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tool_specs</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">)</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">tool_specs</span> <span class="k">if</span> <span class="n">tool_specs</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">)</span>
+
     <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">process_stream</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">messages</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">event</span>
 </code></pre></div></td></tr></table></div>

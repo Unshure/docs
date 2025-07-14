@@ -25,7 +25,7 @@ Structured Output Example
 This example demonstrates how to use structured output with Strands Agents to
 get type-safe, validated responses using Pydantic models.
 """
-
+import tempfile
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from strands import Agent
@@ -41,12 +41,50 @@ def basic_example():
 
     agent = Agent()
     result = agent.structured_output(
-        PersonInfo, 
+        PersonInfo,
         "John Smith is a 30-year-old software engineer"
     )
 
     print(f"Name: {result.name}")      # "John Smith"
-    print(f"Age: {result.age}")        # 30 
+    print(f"Age: {result.age}")        # 30
+    print(f"Job: {result.occupation}") # "software engineer"
+
+
+def multimodal_example():
+    """Basic example extracting structured information from a document."""
+    print("\n--- Multi-Modal Example ---")
+
+    class PersonInfo(BaseModel):
+        name: str
+        age: int
+        occupation: str
+
+    with tempfile.NamedTemporaryFile() as person_file:
+        person_file.write(b"John Smith is a 30-year old software engineer")
+        person_file.flush()
+
+        with open(person_file.name, "rb") as fp:
+            document_bytes = fp.read()
+
+    agent = Agent()
+    result = agent.structured_output(
+        PersonInfo,
+        [
+            {"text": "Please process this application."},
+            {
+                "document": {
+                    "format": "txt",
+                    "name": "application",
+                    "source": {
+                        "bytes": document_bytes,
+                    },
+                },
+            },
+        ]
+    )
+
+    print(f"Name: {result.name}")      # "John Smith"
+    print(f"Age: {result.age}")        # 30
     print(f"Job: {result.occupation}") # "software engineer"
 
 
@@ -119,6 +157,7 @@ if __name__ == "__main__":
     print("Structured Output Examples\n")
 
     basic_example()
+    multimodal_example()
     conversation_history_example()
     complex_nested_model_example()
 

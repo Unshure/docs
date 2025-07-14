@@ -557,12 +557,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/concepts/agents/state-sessions/" class="md-nav__link">
+      <a href="../../user-guide/concepts/agents/state/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    State & Sessions
+    State
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/concepts/agents/session-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Session Management
     
   </span>
   
@@ -2123,6 +2146,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/python/multimodal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-modal
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3085,6 +3131,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#strands.types.tools.RunToolHandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      RunToolHandler
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#strands.types.tools.ToolChoice" class="md-nav__link">
     <span class="md-ellipsis">
       ToolChoice
@@ -3185,18 +3240,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.AgentTool.invoke" class="md-nav__link">
+  <a href="#strands.types.tools.AgentTool.mark_dynamic" class="md-nav__link">
     <span class="md-ellipsis">
-      invoke
+      mark_dynamic
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.AgentTool.mark_dynamic" class="md-nav__link">
+  <a href="#strands.types.tools.AgentTool.stream" class="md-nav__link">
     <span class="md-ellipsis">
-      mark_dynamic
+      stream
     </span>
   </a>
   
@@ -3253,19 +3308,19 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.ToolHandler" class="md-nav__link">
+  <a href="#strands.types.tools.ToolFunc" class="md-nav__link">
     <span class="md-ellipsis">
-      ToolHandler
+      ToolFunc
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="ToolHandler">
+    <nav class="md-nav" aria-label="ToolFunc">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.ToolHandler.process" class="md-nav__link">
+  <a href="#strands.types.tools.ToolFunc.__call__" class="md-nav__link">
     <span class="md-ellipsis">
-      process
+      __call__
     </span>
   </a>
   
@@ -4050,6 +4105,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#strands.types.tools.RunToolHandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      RunToolHandler
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#strands.types.tools.ToolChoice" class="md-nav__link">
     <span class="md-ellipsis">
       ToolChoice
@@ -4150,18 +4214,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.AgentTool.invoke" class="md-nav__link">
+  <a href="#strands.types.tools.AgentTool.mark_dynamic" class="md-nav__link">
     <span class="md-ellipsis">
-      invoke
+      mark_dynamic
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.AgentTool.mark_dynamic" class="md-nav__link">
+  <a href="#strands.types.tools.AgentTool.stream" class="md-nav__link">
     <span class="md-ellipsis">
-      mark_dynamic
+      stream
     </span>
   </a>
   
@@ -4218,19 +4282,19 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.ToolHandler" class="md-nav__link">
+  <a href="#strands.types.tools.ToolFunc" class="md-nav__link">
     <span class="md-ellipsis">
-      ToolHandler
+      ToolFunc
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="ToolHandler">
+    <nav class="md-nav" aria-label="ToolFunc">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#strands.types.tools.ToolHandler.process" class="md-nav__link">
+  <a href="#strands.types.tools.ToolFunc.__call__" class="md-nav__link">
     <span class="md-ellipsis">
-      process
+      __call__
     </span>
   </a>
   
@@ -10880,6 +10944,28 @@ This is optional to accommodate different model providers.</p>
 
 
 
+<h3 id="strands.types.tools.RunToolHandler" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">RunToolHandler</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ToolUse</span><span class="p">],</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#strands.types.tools.RunToolHandler" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Callback that runs a single tool and streams back results.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="strands.types.tools.ToolChoice" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">ToolChoice</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">],</span> <span class="n">ToolChoiceAuto</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;any&#39;</span><span class="p">],</span> <span class="n">ToolChoiceAny</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;tool&#39;</span><span class="p">],</span> <span class="n">ToolChoiceTool</span><span class="p">]]</span></code>
 
@@ -10908,7 +10994,7 @@ This is optional to accommodate different model providers.</p>
 
 
 <h3 id="strands.types.tools.ToolGenerator" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">ToolGenerator</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ToolResult</span><span class="p">]</span></code>
+            <code class="highlight language-python"><span class="n">ToolGenerator</span> <span class="o">=</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
@@ -10919,7 +11005,7 @@ This is optional to accommodate different model providers.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Generator of tool events and a returned tool result.</p>
+        <p>Generator of tool events with the last being the tool result.</p>
 
     </div>
 
@@ -10966,7 +11052,7 @@ This is optional to accommodate different model providers.</p>
 
         <p>Abstract base class for all SDK tools.</p>
 <p>This class defines the interface that all tool implementations must follow. Each tool must provide its name,
-specification, and implement an invoke method that executes the tool's functionality.</p>
+specification, and implement a stream method that executes the tool's functionality.</p>
 
 
 
@@ -10976,24 +11062,7 @@ specification, and implement an invoke method that executes the tool's functiona
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
@@ -11063,11 +11132,28 @@ specification, and implement an invoke method that executes the tool's functiona
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AgentTool</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AgentTool</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for all SDK tools.</span>
 
 <span class="sd">    This class defines the interface that all tool implementations must follow. Each tool must provide its name,</span>
-<span class="sd">    specification, and implement an invoke method that executes the tool&#39;s functionality.</span>
+<span class="sd">    specification, and implement a stream method that executes the tool&#39;s functionality.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_is_dynamic</span><span class="p">:</span> <span class="nb">bool</span>
@@ -11111,18 +11197,18 @@ specification, and implement an invoke method that executes the tool's functiona
 
     <span class="nd">@abstractmethod</span>
     <span class="c1"># pragma: no cover</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">invoke</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ToolResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the tool&#39;s functionality with the given tool use request.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_use</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolGenerator</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stream tool events and return the final result.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            tool: The tool use request containing tool ID and parameters.</span>
-<span class="sd">            *args: Positional arguments to pass to the tool.</span>
-<span class="sd">            **kwargs: Keyword arguments to pass to the tool.</span>
+<span class="sd">            tool_use: The tool use request containing tool ID and parameters.</span>
+<span class="sd">            invocation_state: Context for the tool invocation, including agent state.</span>
+<span class="sd">            **kwargs: Additional keyword arguments for future extensibility.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            The result of the tool execution.</span>
+<span class="sd">        Yield:</span>
+<span class="sd">            Tool events with the last being the tool result.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
+        <span class="o">...</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -11343,9 +11429,9 @@ specification, and implement an invoke method that executes the tool's functiona
 
             <details class="quote">
               <summary>Source code in <code>strands/types/tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize the base agent tool with default dynamic state.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_is_dynamic</span> <span class="o">=</span> <span class="kc">False</span>
 </code></pre></div></td></tr></table></div>
@@ -11394,18 +11480,18 @@ specification, and implement an invoke method that executes the tool's functiona
 
             <details class="quote">
               <summary>Source code in <code>strands/types/tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_display_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_display_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get properties to display in UI representations of this tool.</span>
 
 <span class="sd">    Subclasses can extend this to include additional properties.</span>
@@ -11417,145 +11503,6 @@ specification, and implement an invoke method that executes the tool's functiona
         <span class="s2">&quot;Name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tool_name</span><span class="p">,</span>
         <span class="s2">&quot;Type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tool_type</span><span class="p">,</span>
     <span class="p">}</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h4 id="strands.types.tools.AgentTool.invoke" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">invoke</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
-  </span>
-
-<a href="#strands.types.tools.AgentTool.invoke" class="headerlink" title="Permanent link">&para;</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Execute the tool's functionality with the given tool use request.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ToolUse (strands.types.tools.ToolUse)" href="#strands.types.tools.ToolUse">ToolUse</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The tool use request containing tool ID and parameters.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>*args</code>
-            </td>
-            <td>
-                  <code><span title="typing.Any">Any</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Positional arguments to pass to the tool.</p>
-              </div>
-            </td>
-            <td>
-                  <code>()</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Keyword arguments to pass to the tool.</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ToolResult (strands.types.tools.ToolResult)" href="#strands.types.tools.ToolResult">ToolResult</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The result of the tool execution.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-            <details class="quote">
-              <summary>Source code in <code>strands/types/tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
-<span class="c1"># pragma: no cover</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">invoke</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">ToolResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute the tool&#39;s functionality with the given tool use request.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        tool: The tool use request containing tool ID and parameters.</span>
-<span class="sd">        *args: Positional arguments to pass to the tool.</span>
-<span class="sd">        **kwargs: Keyword arguments to pass to the tool.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The result of the tool execution.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -11578,11 +11525,132 @@ specification, and implement an invoke method that executes the tool's functiona
 
             <details class="quote">
               <summary>Source code in <code>strands/types/tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_dynamic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mark this tool as dynamically loaded.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_is_dynamic</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="strands.types.tools.AgentTool.stream" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">stream</span><span class="p">(</span><span class="n">tool_use</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+<a href="#strands.types.tools.AgentTool.stream" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Stream tool events and return the final result.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>tool_use</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ToolUse (strands.types.tools.ToolUse)" href="#strands.types.tools.ToolUse">ToolUse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The tool use request containing tool ID and parameters.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>invocation_state</code>
+            </td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Context for the tool invocation, including agent state.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>**kwargs</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments for future extensibility.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="yield" open>
+  <summary>Yield</summary>
+  <p>Tool events with the last being the tool result.</p>
+</details>
+
+            <details class="quote">
+              <summary>Source code in <code>strands/types/tools.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
+<span class="c1"># pragma: no cover</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_use</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span> <span class="n">invocation_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolGenerator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream tool events and return the final result.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tool_use: The tool use request containing tool ID and parameters.</span>
+<span class="sd">        invocation_state: Context for the tool invocation, including agent state.</span>
+<span class="sd">        **kwargs: Additional keyword arguments for future extensibility.</span>
+
+<span class="sd">    Yield:</span>
+<span class="sd">        Tool events with the last being the tool result.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="o">...</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -11649,16 +11717,16 @@ specification, and implement an invoke method that executes the tool's functiona
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
 <span class="normal">38</span>
 <span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Tool</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">42</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Tool</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A tool that can be provided to a model.</span>
 
 <span class="sd">    This type wraps a tool specification for inclusion in a model request.</span>
@@ -11717,10 +11785,10 @@ specification, and implement an invoke method that executes the tool's functiona
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolChoiceAny</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolChoiceAny</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration indicating that the model must request at least one tool.&quot;&quot;&quot;</span>
 
     <span class="k">pass</span>
@@ -11759,14 +11827,14 @@ use based on the context.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 98</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolChoiceAuto</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolChoiceAuto</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for automatic tool selection.</span>
 
 <span class="sd">    This represents the configuration for automatic tool selection, where the model decides whether and which tool to</span>
@@ -11832,14 +11900,14 @@ use based on the context.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">114</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolChoiceTool</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolChoiceTool</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for forcing the use of a specific tool.</span>
 
 <span class="sd">    Attributes:</span>
@@ -11936,16 +12004,16 @@ use based on the context.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
 <span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolConfig</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolConfig</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for tools in a model request.</span>
 
 <span class="sd">    Attributes:</span>
@@ -11982,19 +12050,19 @@ use based on the context.</p>
 
 
 
-<h3 id="strands.types.tools.ToolHandler" class="doc doc-heading">
-            <code>ToolHandler</code>
+<h3 id="strands.types.tools.ToolFunc" class="doc doc-heading">
+            <code>ToolFunc</code>
 
 
-<a href="#strands.types.tools.ToolHandler" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#strands.types.tools.ToolFunc" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+              Bases: <code><span title="typing.Protocol">Protocol</span></code></p>
 
 
-        <p>Abstract base class for handling tool execution within the agent framework.</p>
+        <p>Function signature for Python decorated and module based tools.</p>
 
 
 
@@ -12004,65 +12072,37 @@ use based on the context.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolHandler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for handling tool execution within the agent framework.&quot;&quot;&quot;</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolFunc</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function signature for Python decorated and module based tools.&quot;&quot;&quot;</span>
 
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">tool</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
-        <span class="n">model</span><span class="p">:</span> <span class="s2">&quot;Model&quot;</span><span class="p">,</span>
-        <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">messages</span><span class="p">:</span> <span class="s2">&quot;Messages&quot;</span><span class="p">,</span>
-        <span class="n">tool_config</span><span class="p">:</span> <span class="n">ToolConfig</span><span class="p">,</span>
-        <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolGenerator</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a tool use request and execute the tool.</span>
+    <span class="vm">__name__</span><span class="p">:</span> <span class="nb">str</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            tool: The tool use request to process.</span>
-<span class="sd">            messages: The current conversation history.</span>
-<span class="sd">            model: The model being used for the conversation.</span>
-<span class="sd">            system_prompt: The system prompt for the conversation.</span>
-<span class="sd">            tool_config: The tool configuration for the current session.</span>
-<span class="sd">            kwargs: Additional context-specific arguments.</span>
-
-<span class="sd">        Yields:</span>
-<span class="sd">            Events of the tool invocation.</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">ToolResult</span><span class="p">,</span>
+        <span class="n">Awaitable</span><span class="p">[</span><span class="n">ToolResult</span><span class="p">],</span>
+    <span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function signature for Python decorated and module based tools.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The final tool result.</span>
+<span class="sd">            Tool result or awaitable tool result.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span>
 </code></pre></div></td></tr></table></div>
@@ -12083,161 +12123,15 @@ use based on the context.</p>
 <div class="doc doc-object doc-function">
 
 
-<h4 id="strands.types.tools.ToolHandler.process" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">process</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">system_prompt</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tool_config</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></code>
+<h4 id="strands.types.tools.ToolFunc.__call__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
-  </span>
-
-<a href="#strands.types.tools.ToolHandler.process" class="headerlink" title="Permanent link">&para;</a></h4>
+<a href="#strands.types.tools.ToolFunc.__call__" class="headerlink" title="Permanent link">&para;</a></h4>
 
 
     <div class="doc doc-contents ">
 
-        <p>Process a tool use request and execute the tool.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ToolUse (strands.types.tools.ToolUse)" href="#strands.types.tools.ToolUse">ToolUse</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The tool use request to process.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>messages</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="Messages = List[Message]
-
-  
-      module-attribute
-   (strands.types.content.Messages)" href="#strands.types.content.Messages">Messages</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The current conversation history.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>model</code>
-            </td>
-            <td>
-                  <code><span title="strands.types.models.Model">Model</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The model being used for the conversation.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>system_prompt</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The system prompt for the conversation.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tool_config</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ToolConfig (strands.types.tools.ToolConfig)" href="#strands.types.tools.ToolConfig">ToolConfig</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The tool configuration for the current session.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>kwargs</code>
-            </td>
-            <td>
-                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional context-specific arguments.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Yields:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="ToolGenerator = Generator[dict[str, Any], None, ToolResult]
-
-  
-      module-attribute
-   (strands.types.tools.ToolGenerator)" href="#strands.types.tools.ToolGenerator">ToolGenerator</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Events of the tool invocation.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+        <p>Function signature for Python decorated and module based tools.</p>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -12251,15 +12145,11 @@ use based on the context.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="ToolGenerator = Generator[dict[str, Any], None, ToolResult]
-
-  
-      module-attribute
-   (strands.types.tools.ToolGenerator)" href="#strands.types.tools.ToolGenerator">ToolGenerator</a></code>
+                  <code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="ToolResult (strands.types.tools.ToolResult)" href="#strands.types.tools.ToolResult">ToolResult</a>, <span title="typing.Awaitable">Awaitable</span>[<a class="autorefs autorefs-internal" title="ToolResult (strands.types.tools.ToolResult)" href="#strands.types.tools.ToolResult">ToolResult</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The final tool result.</p>
+                <p>Tool result or awaitable tool result.</p>
               </div>
             </td>
           </tr>
@@ -12269,59 +12159,27 @@ use based on the context.</p>
 
             <details class="quote">
               <summary>Source code in <code>strands/types/tools.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@abstractmethod</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">tool</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">:</span> <span class="s2">&quot;Model&quot;</span><span class="p">,</span>
-    <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">messages</span><span class="p">:</span> <span class="s2">&quot;Messages&quot;</span><span class="p">,</span>
-    <span class="n">tool_config</span><span class="p">:</span> <span class="n">ToolConfig</span><span class="p">,</span>
-    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolGenerator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a tool use request and execute the tool.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        tool: The tool use request to process.</span>
-<span class="sd">        messages: The current conversation history.</span>
-<span class="sd">        model: The model being used for the conversation.</span>
-<span class="sd">        system_prompt: The system prompt for the conversation.</span>
-<span class="sd">        tool_config: The tool configuration for the current session.</span>
-<span class="sd">        kwargs: Additional context-specific arguments.</span>
-
-<span class="sd">    Yields:</span>
-<span class="sd">        Events of the tool invocation.</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">ToolResult</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">[</span><span class="n">ToolResult</span><span class="p">],</span>
+<span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function signature for Python decorated and module based tools.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The final tool result.</span>
+<span class="sd">        Tool result or awaitable tool result.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="o">...</span>
 </code></pre></div></td></tr></table></div>
@@ -12415,18 +12273,18 @@ use based on the context.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">84</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span>
 <span class="normal">88</span>
 <span class="normal">89</span>
 <span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolResult</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolResult</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of a tool execution.</span>
 
 <span class="sd">    Attributes:</span>
@@ -12545,7 +12403,11 @@ use based on the context.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">64</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
 <span class="normal">65</span>
 <span class="normal">66</span>
 <span class="normal">67</span>
@@ -12554,11 +12416,7 @@ use based on the context.</p>
 <span class="normal">70</span>
 <span class="normal">71</span>
 <span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolResultContent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolResultContent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Content returned by a tool execution.</span>
 
 <span class="sd">    Attributes:</span>
@@ -12672,18 +12530,18 @@ use based on the context.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">23</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
 <span class="normal">26</span>
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolSpec</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolSpec</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Specification for a tool that can be used by an agent.</span>
 
 <span class="sd">    Attributes:</span>
@@ -12792,7 +12650,11 @@ Can be any JSON-serializable type.</p>
 
               <details class="quote">
                 <summary>Source code in <code>strands/types/tools.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
 <span class="normal">52</span>
@@ -12800,11 +12662,7 @@ Can be any JSON-serializable type.</p>
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolUse</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolUse</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A request from the model to use a specific tool with the provided input.</span>
 
 <span class="sd">    Attributes:</span>

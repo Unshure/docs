@@ -4,6 +4,244 @@ SDK model providers.
 
 This package includes an abstract base Model class along with concrete implementations for specific providers.
 
+## `strands.models.model`
+
+Abstract base class for Agent model providers.
+
+### `Model`
+
+Bases: `ABC`
+
+Abstract base class for Agent model providers.
+
+This class defines the interface for all model implementations in the Strands Agents SDK. It provides a standardized way to configure and process requests for different AI model providers.
+
+Source code in `strands/models/model.py`
+
+```
+class Model(abc.ABC):
+    """Abstract base class for Agent model providers.
+
+    This class defines the interface for all model implementations in the Strands Agents SDK. It provides a
+    standardized way to configure and process requests for different AI model providers.
+    """
+
+    @abc.abstractmethod
+    # pragma: no cover
+    def update_config(self, **model_config: Any) -> None:
+        """Update the model configuration with the provided arguments.
+
+        Args:
+            **model_config: Configuration overrides.
+        """
+        pass
+
+    @abc.abstractmethod
+    # pragma: no cover
+    def get_config(self) -> Any:
+        """Return the model configuration.
+
+        Returns:
+            The model's configuration.
+        """
+        pass
+
+    @abc.abstractmethod
+    # pragma: no cover
+    def structured_output(
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
+        """Get structured output from the model.
+
+        Args:
+            output_model: The output model to use for the agent.
+            prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
+
+        Yields:
+            Model events with the last being the structured output.
+
+        Raises:
+            ValidationException: The response format from the model does not match the output_model
+        """
+        pass
+
+    @abc.abstractmethod
+    # pragma: no cover
+    def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[StreamEvent]:
+        """Stream conversation with the model.
+
+        This method handles the full lifecycle of conversing with the model:
+        1. Format the messages, tool specs, and configuration into a streaming request
+        2. Send the request to the model
+        3. Yield the formatted message chunks
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
+
+        Yields:
+            Formatted message chunks from the model.
+
+        Raises:
+            ModelThrottledException: When the model service is throttling requests from the client.
+        """
+        pass
+
+```
+
+#### `get_config()`
+
+Return the model configuration.
+
+Returns:
+
+| Type | Description | | --- | --- | | `Any` | The model's configuration. |
+
+Source code in `strands/models/model.py`
+
+```
+@abc.abstractmethod
+# pragma: no cover
+def get_config(self) -> Any:
+    """Return the model configuration.
+
+    Returns:
+        The model's configuration.
+    """
+    pass
+
+```
+
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+
+Stream conversation with the model.
+
+This method handles the full lifecycle of conversing with the model:
+
+1. Format the messages, tool specs, and configuration into a streaming request
+1. Send the request to the model
+1. Yield the formatted message chunks
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Yields:
+
+| Type | Description | | --- | --- | | `AsyncIterable[StreamEvent]` | Formatted message chunks from the model. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `ModelThrottledException` | When the model service is throttling requests from the client. |
+
+Source code in `strands/models/model.py`
+
+```
+@abc.abstractmethod
+# pragma: no cover
+def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncIterable[StreamEvent]:
+    """Stream conversation with the model.
+
+    This method handles the full lifecycle of conversing with the model:
+    1. Format the messages, tool specs, and configuration into a streaming request
+    2. Send the request to the model
+    3. Yield the formatted message chunks
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
+
+    Yields:
+        Formatted message chunks from the model.
+
+    Raises:
+        ModelThrottledException: When the model service is throttling requests from the client.
+    """
+    pass
+
+```
+
+#### `structured_output(output_model, prompt, **kwargs)`
+
+Get structured output from the model.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Yields:
+
+| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Union[T, Any]], None]` | Model events with the last being the structured output. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `ValidationException` | The response format from the model does not match the output_model |
+
+Source code in `strands/models/model.py`
+
+```
+@abc.abstractmethod
+# pragma: no cover
+def structured_output(
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
+    """Get structured output from the model.
+
+    Args:
+        output_model: The output model to use for the agent.
+        prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
+
+    Yields:
+        Model events with the last being the structured output.
+
+    Raises:
+        ValidationException: The response format from the model does not match the output_model
+    """
+    pass
+
+```
+
+#### `update_config(**model_config)`
+
+Update the model configuration with the provided arguments.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `**model_config` | `Any` | Configuration overrides. | `{}` |
+
+Source code in `strands/models/model.py`
+
+```
+@abc.abstractmethod
+# pragma: no cover
+def update_config(self, **model_config: Any) -> None:
+    """Update the model configuration with the provided arguments.
+
+    Args:
+        **model_config: Configuration overrides.
+    """
+    pass
+
+```
+
 ## `strands.models.bedrock`
 
 AWS Bedrock model provider.
@@ -153,7 +391,6 @@ class BedrockModel(Model):
         """
         return self.config
 
-    @override
     def format_request(
         self,
         messages: Messages,
@@ -237,18 +474,6 @@ class BedrockModel(Model):
             ),
         }
 
-    @override
-    def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
-        """Format the Bedrock response events into standardized message chunks.
-
-        Args:
-            event: A response event from the Bedrock model.
-
-        Returns:
-            The formatted chunk.
-        """
-        return cast(StreamEvent, event)
-
     def _has_blocked_guardrail(self, guardrail_data: dict[str, Any]) -> bool:
         """Check if guardrail data contains any blocked policies.
 
@@ -277,7 +502,7 @@ class BedrockModel(Model):
         Returns:
             List of redaction events to yield.
         """
-        events: List[StreamEvent] = []
+        events: list[StreamEvent] = []
 
         if self.config.get("guardrail_redact_input", True):
             logger.debug("Redacting user input due to guardrail.")
@@ -306,27 +531,89 @@ class BedrockModel(Model):
         return events
 
     @override
-    async def stream(self, request: dict[str, Any]) -> AsyncGenerator[StreamEvent, None]:
-        """Send the request to the Bedrock model and get the response.
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the Bedrock model.
 
         This method calls either the Bedrock converse_stream API or the converse API
         based on the streaming parameter in the configuration.
 
         Args:
-            request: The formatted request to send to the Bedrock model
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
 
-        Returns:
-            An iterable of response events from the Bedrock model
+        Yields:
+            Model events.
 
         Raises:
             ContextWindowOverflowException: If the input exceeds the model's context window.
             ModelThrottledException: If the model service is throttling requests.
         """
+
+        def callback(event: Optional[StreamEvent] = None) -> None:
+            loop.call_soon_threadsafe(queue.put_nowait, event)
+            if event is None:
+                return
+
+            signal.wait()
+            signal.clear()
+
+        loop = asyncio.get_event_loop()
+        queue: asyncio.Queue[Optional[StreamEvent]] = asyncio.Queue()
+        signal = threading.Event()
+
+        thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt)
+        task = asyncio.create_task(thread)
+
+        while True:
+            event = await queue.get()
+            if event is None:
+                break
+
+            yield event
+            signal.set()
+
+        await task
+
+    def _stream(
+        self,
+        callback: Callable[..., None],
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+    ) -> None:
+        """Stream conversation with the Bedrock model.
+
+        This method operates in a separate thread to avoid blocking the async event loop with the call to
+        Bedrock's converse_stream.
+
+        Args:
+            callback: Function to send events to the main thread.
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+
+        Raises:
+            ContextWindowOverflowException: If the input exceeds the model's context window.
+            ModelThrottledException: If the model service is throttling requests.
+        """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("request=<%s>", request)
+
+        logger.debug("invoking model")
         streaming = self.config.get("streaming", True)
 
         try:
+            logger.debug("got response from model")
             if streaming:
-                # Streaming implementation
                 response = self.client.converse_stream(**request)
                 for chunk in response["stream"]:
                     if (
@@ -337,33 +624,29 @@ class BedrockModel(Model):
                         guardrail_data = chunk["metadata"]["trace"]["guardrail"]
                         if self._has_blocked_guardrail(guardrail_data):
                             for event in self._generate_redaction_events():
-                                yield event
-                    yield chunk
+                                callback(event)
+
+                    callback(chunk)
+
             else:
-                # Non-streaming implementation
                 response = self.client.converse(**request)
-
-                # Convert and yield from the response
                 for event in self._convert_non_streaming_to_streaming(response):
-                    yield event
+                    callback(event)
 
-                # Check for guardrail triggers after yielding any events (same as streaming path)
                 if (
                     "trace" in response
                     and "guardrail" in response["trace"]
                     and self._has_blocked_guardrail(response["trace"]["guardrail"])
                 ):
                     for event in self._generate_redaction_events():
-                        yield event
+                        callback(event)
 
         except ClientError as e:
             error_message = str(e)
 
-            # Handle throttling error
             if e.response["Error"]["Code"] == "ThrottlingException":
                 raise ModelThrottledException(error_message) from e
 
-            # Handle context window overflow
             if any(overflow_message in error_message for overflow_message in BEDROCK_CONTEXT_WINDOW_OVERFLOW_MESSAGES):
                 logger.warning("bedrock threw context window overflow error")
                 raise ContextWindowOverflowException(e) from e
@@ -394,8 +677,11 @@ class BedrockModel(Model):
                         "https://strandsagents.com/latest/user-guide/concepts/model-providers/amazon-bedrock/#on-demand-throughput-isnt-supported"
                     )
 
-            # Otherwise raise the error
             raise e
+
+        finally:
+            callback()
+            logger.debug("finished streaming response from model")
 
     def _convert_non_streaming_to_streaming(self, response: dict[str, Any]) -> Iterable[StreamEvent]:
         """Convert a non-streaming response to the streaming format.
@@ -509,21 +795,22 @@ class BedrockModel(Model):
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Model events with the last being the structured output.
         """
         tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-        response = self.converse(messages=prompt, tool_specs=[tool_spec])
-        async for event in process_stream(response, prompt):
+        response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
+        async for event in streaming.process_stream(response, prompt):
             yield event
 
         stop_reason, messages, _, _ = event["stop"]
@@ -672,35 +959,6 @@ def __init__(
 
 ```
 
-#### `format_chunk(event)`
-
-Format the Bedrock response events into standardized message chunks.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `event` | `dict[str, Any]` | A response event from the Bedrock model. | *required* |
-
-Returns:
-
-| Type | Description | | --- | --- | | `StreamEvent` | The formatted chunk. |
-
-Source code in `strands/models/bedrock.py`
-
-```
-@override
-def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
-    """Format the Bedrock response events into standardized message chunks.
-
-    Args:
-        event: A response event from the Bedrock model.
-
-    Returns:
-        The formatted chunk.
-    """
-    return cast(StreamEvent, event)
-
-```
-
 #### `format_request(messages, tool_specs=None, system_prompt=None)`
 
 Format a Bedrock converse stream request.
@@ -716,7 +974,6 @@ Returns:
 Source code in `strands/models/bedrock.py`
 
 ```
-@override
 def format_request(
     self,
     messages: Messages,
@@ -824,19 +1081,19 @@ def get_config(self) -> BedrockConfig:
 
 ```
 
-#### `stream(request)`
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
 
-Send the request to the Bedrock model and get the response.
+Stream conversation with the Bedrock model.
 
 This method calls either the Bedrock converse_stream API or the converse API based on the streaming parameter in the configuration.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `request` | `dict[str, Any]` | The formatted request to send to the Bedrock model | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
-Returns:
+Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | An iterable of response events from the Bedrock model |
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Model events. |
 
 Raises:
 
@@ -846,106 +1103,66 @@ Source code in `strands/models/bedrock.py`
 
 ```
 @override
-async def stream(self, request: dict[str, Any]) -> AsyncGenerator[StreamEvent, None]:
-    """Send the request to the Bedrock model and get the response.
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the Bedrock model.
 
     This method calls either the Bedrock converse_stream API or the converse API
     based on the streaming parameter in the configuration.
 
     Args:
-        request: The formatted request to send to the Bedrock model
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
 
-    Returns:
-        An iterable of response events from the Bedrock model
+    Yields:
+        Model events.
 
     Raises:
         ContextWindowOverflowException: If the input exceeds the model's context window.
         ModelThrottledException: If the model service is throttling requests.
     """
-    streaming = self.config.get("streaming", True)
 
-    try:
-        if streaming:
-            # Streaming implementation
-            response = self.client.converse_stream(**request)
-            for chunk in response["stream"]:
-                if (
-                    "metadata" in chunk
-                    and "trace" in chunk["metadata"]
-                    and "guardrail" in chunk["metadata"]["trace"]
-                ):
-                    guardrail_data = chunk["metadata"]["trace"]["guardrail"]
-                    if self._has_blocked_guardrail(guardrail_data):
-                        for event in self._generate_redaction_events():
-                            yield event
-                yield chunk
-        else:
-            # Non-streaming implementation
-            response = self.client.converse(**request)
+    def callback(event: Optional[StreamEvent] = None) -> None:
+        loop.call_soon_threadsafe(queue.put_nowait, event)
+        if event is None:
+            return
 
-            # Convert and yield from the response
-            for event in self._convert_non_streaming_to_streaming(response):
-                yield event
+        signal.wait()
+        signal.clear()
 
-            # Check for guardrail triggers after yielding any events (same as streaming path)
-            if (
-                "trace" in response
-                and "guardrail" in response["trace"]
-                and self._has_blocked_guardrail(response["trace"]["guardrail"])
-            ):
-                for event in self._generate_redaction_events():
-                    yield event
+    loop = asyncio.get_event_loop()
+    queue: asyncio.Queue[Optional[StreamEvent]] = asyncio.Queue()
+    signal = threading.Event()
 
-    except ClientError as e:
-        error_message = str(e)
+    thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt)
+    task = asyncio.create_task(thread)
 
-        # Handle throttling error
-        if e.response["Error"]["Code"] == "ThrottlingException":
-            raise ModelThrottledException(error_message) from e
+    while True:
+        event = await queue.get()
+        if event is None:
+            break
 
-        # Handle context window overflow
-        if any(overflow_message in error_message for overflow_message in BEDROCK_CONTEXT_WINDOW_OVERFLOW_MESSAGES):
-            logger.warning("bedrock threw context window overflow error")
-            raise ContextWindowOverflowException(e) from e
+        yield event
+        signal.set()
 
-        region = self.client.meta.region_name
-
-        # add_note added in Python 3.11
-        if hasattr(e, "add_note"):
-            # Aid in debugging by adding more information
-            e.add_note(f"└ Bedrock region: {region}")
-            e.add_note(f"└ Model id: {self.config.get('model_id')}")
-
-            if (
-                e.response["Error"]["Code"] == "AccessDeniedException"
-                and "You don't have access to the model" in error_message
-            ):
-                e.add_note(
-                    "└ For more information see "
-                    "https://strandsagents.com/user-guide/concepts/model-providers/amazon-bedrock/#model-access-issue"
-                )
-
-            if (
-                e.response["Error"]["Code"] == "ValidationException"
-                and "with on-demand throughput isn’t supported" in error_message
-            ):
-                e.add_note(
-                    "└ For more information see "
-                    "https://strandsagents.com/latest/user-guide/concepts/model-providers/amazon-bedrock/#on-demand-throughput-isnt-supported"
-                )
-
-        # Otherwise raise the error
-        raise e
+    await task
 
 ```
 
-#### `structured_output(output_model, prompt)`
+#### `structured_output(output_model, prompt, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -956,21 +1173,22 @@ Source code in `strands/models/bedrock.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Model events with the last being the structured output.
     """
     tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-    response = self.converse(messages=prompt, tool_specs=[tool_spec])
-    async for event in process_stream(response, prompt):
+    response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
+    async for event in streaming.process_stream(response, prompt):
         yield event
 
     stop_reason, messages, _, _ = event["stop"]
@@ -1078,7 +1296,7 @@ class AnthropicModel(Model):
         logger.debug("config=<%s> | initializing", self.config)
 
         client_args = client_args or {}
-        self.client = anthropic.Anthropic(**client_args)
+        self.client = anthropic.AsyncAnthropic(**client_args)
 
     @override
     def update_config(self, **model_config: Unpack[AnthropicConfig]) -> None:  # type: ignore[override]
@@ -1197,7 +1415,6 @@ class AnthropicModel(Model):
 
         return formatted_messages
 
-    @override
     def format_request(
         self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
     ) -> dict[str, Any]:
@@ -1231,7 +1448,6 @@ class AnthropicModel(Model):
             **(self.config.get("params") or {}),
         }
 
-    @override
     def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
         """Format the Anthropic response events into standardized message chunks.
 
@@ -1350,27 +1566,42 @@ class AnthropicModel(Model):
                 raise RuntimeError(f"event_type=<{event['type']} | unknown type")
 
     @override
-    async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-        """Send the request to the Anthropic model and get the streaming response.
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the Anthropic model.
 
         Args:
-            request: The formatted request to send to the Anthropic model.
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
 
-        Returns:
-            An iterable of response events from the Anthropic model.
+        Yields:
+            Formatted message chunks from the model.
 
         Raises:
             ContextWindowOverflowException: If the input exceeds the model's context window.
             ModelThrottledException: If the request is throttled by Anthropic.
         """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("request=<%s>", request)
+
+        logger.debug("invoking model")
         try:
-            with self.client.messages.stream(**request) as stream:
-                for event in stream:
+            async with self.client.messages.stream(**request) as stream:
+                logger.debug("got response from model")
+                async for event in stream:
                     if event.type in AnthropicModel.EVENT_TYPES:
-                        yield event.model_dump()
+                        yield self.format_chunk(event.model_dump())
 
                 usage = event.message.usage  # type: ignore
-                yield {"type": "metadata", "usage": usage.model_dump()}
+                yield self.format_chunk({"type": "metadata", "usage": usage.model_dump()})
 
         except anthropic.RateLimitError as error:
             raise ModelThrottledException(str(error)) from error
@@ -1381,22 +1612,25 @@ class AnthropicModel(Model):
 
             raise error
 
+        logger.debug("finished streaming response from model")
+
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Model events with the last being the structured output.
         """
         tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-        response = self.converse(messages=prompt, tool_specs=[tool_spec])
+        response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
         async for event in process_stream(response, prompt):
             yield event
 
@@ -1477,7 +1711,7 @@ def __init__(self, *, client_args: Optional[dict[str, Any]] = None, **model_conf
     logger.debug("config=<%s> | initializing", self.config)
 
     client_args = client_args or {}
-    self.client = anthropic.Anthropic(**client_args)
+    self.client = anthropic.AsyncAnthropic(**client_args)
 
 ```
 
@@ -1500,7 +1734,6 @@ Raises:
 Source code in `strands/models/anthropic.py`
 
 ```
-@override
 def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
     """Format the Anthropic response events into standardized message chunks.
 
@@ -1639,7 +1872,6 @@ Raises:
 Source code in `strands/models/anthropic.py`
 
 ```
-@override
 def format_request(
     self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
 ) -> dict[str, Any]:
@@ -1697,17 +1929,17 @@ def get_config(self) -> AnthropicConfig:
 
 ```
 
-#### `stream(request)`
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
 
-Send the request to the Anthropic model and get the streaming response.
+Stream conversation with the Anthropic model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `request` | `dict[str, Any]` | The formatted request to send to the Anthropic model. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
-Returns:
+Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | An iterable of response events from the Anthropic model. |
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Formatted message chunks from the model. |
 
 Raises:
 
@@ -1717,27 +1949,42 @@ Source code in `strands/models/anthropic.py`
 
 ```
 @override
-async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-    """Send the request to the Anthropic model and get the streaming response.
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the Anthropic model.
 
     Args:
-        request: The formatted request to send to the Anthropic model.
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
 
-    Returns:
-        An iterable of response events from the Anthropic model.
+    Yields:
+        Formatted message chunks from the model.
 
     Raises:
         ContextWindowOverflowException: If the input exceeds the model's context window.
         ModelThrottledException: If the request is throttled by Anthropic.
     """
+    logger.debug("formatting request")
+    request = self.format_request(messages, tool_specs, system_prompt)
+    logger.debug("request=<%s>", request)
+
+    logger.debug("invoking model")
     try:
-        with self.client.messages.stream(**request) as stream:
-            for event in stream:
+        async with self.client.messages.stream(**request) as stream:
+            logger.debug("got response from model")
+            async for event in stream:
                 if event.type in AnthropicModel.EVENT_TYPES:
-                    yield event.model_dump()
+                    yield self.format_chunk(event.model_dump())
 
             usage = event.message.usage  # type: ignore
-            yield {"type": "metadata", "usage": usage.model_dump()}
+            yield self.format_chunk({"type": "metadata", "usage": usage.model_dump()})
 
     except anthropic.RateLimitError as error:
         raise ModelThrottledException(str(error)) from error
@@ -1748,15 +1995,17 @@ async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any]
 
         raise error
 
+    logger.debug("finished streaming response from model")
+
 ```
 
-#### `structured_output(output_model, prompt)`
+#### `structured_output(output_model, prompt, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -1767,20 +2016,21 @@ Source code in `strands/models/anthropic.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Model events with the last being the structured output.
     """
     tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-    response = self.converse(messages=prompt, tool_specs=[tool_spec])
+    response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
     async for event in process_stream(response, prompt):
         yield event
 
@@ -1869,12 +2119,10 @@ class LiteLLMModel(OpenAIModel):
                 https://github.com/BerriAI/litellm/blob/main/litellm/main.py.
             **model_config: Configuration options for the LiteLLM model.
         """
+        self.client_args = client_args or {}
         self.config = dict(model_config)
 
         logger.debug("config=<%s> | initializing", self.config)
-
-        client_args = client_args or {}
-        self.client = litellm.LiteLLM(**client_args)
 
     @override
     def update_config(self, **model_config: Unpack[LiteLLMConfig]) -> None:  # type: ignore[override]
@@ -1927,24 +2175,101 @@ class LiteLLMModel(OpenAIModel):
         return super().format_request_message_content(content)
 
     @override
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the LiteLLM model.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
+
+        Yields:
+            Formatted message chunks from the model.
+        """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("request=<%s>", request)
+
+        logger.debug("invoking model")
+        response = await litellm.acompletion(**self.client_args, **request)
+
+        logger.debug("got response from model")
+        yield self.format_chunk({"chunk_type": "message_start"})
+        yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+
+        tool_calls: dict[int, list[Any]] = {}
+
+        async for event in response:
+            # Defensive: skip events with empty or missing choices
+            if not getattr(event, "choices", None):
+                continue
+            choice = event.choices[0]
+
+            if choice.delta.content:
+                yield self.format_chunk(
+                    {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+                )
+
+            if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
+                yield self.format_chunk(
+                    {
+                        "chunk_type": "content_delta",
+                        "data_type": "reasoning_content",
+                        "data": choice.delta.reasoning_content,
+                    }
+                )
+
+            for tool_call in choice.delta.tool_calls or []:
+                tool_calls.setdefault(tool_call.index, []).append(tool_call)
+
+            if choice.finish_reason:
+                break
+
+        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+
+        for tool_deltas in tool_calls.values():
+            yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
+
+            for tool_delta in tool_deltas:
+                yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
+
+            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+
+        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+
+        # Skip remaining events as we don't have use for anything except the final usage payload
+        async for event in response:
+            _ = event
+
+        yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+
+        logger.debug("finished streaming response from model")
+
+    @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Model events with the last being the structured output.
         """
-        # The LiteLLM `Client` inits with Chat().
-        # Chat() inits with self.completions
-        # completions() has a method `create()` which wraps the real completion API of Litellm
-        response = self.client.chat.completions.create(
+        response = await litellm.acompletion(
+            **self.client_args,
             model=self.get_config()["model_id"],
-            messages=super().format_request(prompt)["messages"],
+            messages=self.format_request(prompt)["messages"],
             response_format=output_model,
         )
 
@@ -2019,12 +2344,10 @@ def __init__(self, client_args: Optional[dict[str, Any]] = None, **model_config:
             https://github.com/BerriAI/litellm/blob/main/litellm/main.py.
         **model_config: Configuration options for the LiteLLM model.
     """
+    self.client_args = client_args or {}
     self.config = dict(model_config)
 
     logger.debug("config=<%s> | initializing", self.config)
-
-    client_args = client_args or {}
-    self.client = litellm.LiteLLM(**client_args)
 
 ```
 
@@ -2103,13 +2426,108 @@ def get_config(self) -> LiteLLMConfig:
 
 ```
 
-#### `structured_output(output_model, prompt)`
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+
+Stream conversation with the LiteLLM model.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Yields:
+
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Formatted message chunks from the model. |
+
+Source code in `strands/models/litellm.py`
+
+```
+@override
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the LiteLLM model.
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
+
+    Yields:
+        Formatted message chunks from the model.
+    """
+    logger.debug("formatting request")
+    request = self.format_request(messages, tool_specs, system_prompt)
+    logger.debug("request=<%s>", request)
+
+    logger.debug("invoking model")
+    response = await litellm.acompletion(**self.client_args, **request)
+
+    logger.debug("got response from model")
+    yield self.format_chunk({"chunk_type": "message_start"})
+    yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+
+    tool_calls: dict[int, list[Any]] = {}
+
+    async for event in response:
+        # Defensive: skip events with empty or missing choices
+        if not getattr(event, "choices", None):
+            continue
+        choice = event.choices[0]
+
+        if choice.delta.content:
+            yield self.format_chunk(
+                {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+            )
+
+        if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
+            yield self.format_chunk(
+                {
+                    "chunk_type": "content_delta",
+                    "data_type": "reasoning_content",
+                    "data": choice.delta.reasoning_content,
+                }
+            )
+
+        for tool_call in choice.delta.tool_calls or []:
+            tool_calls.setdefault(tool_call.index, []).append(tool_call)
+
+        if choice.finish_reason:
+            break
+
+    yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+
+    for tool_deltas in tool_calls.values():
+        yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
+
+        for tool_delta in tool_deltas:
+            yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
+
+        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+
+    yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+
+    # Skip remaining events as we don't have use for anything except the final usage payload
+    async for event in response:
+        _ = event
+
+    yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+
+    logger.debug("finished streaming response from model")
+
+```
+
+#### `structured_output(output_model, prompt, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -2120,23 +2538,22 @@ Source code in `strands/models/litellm.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Model events with the last being the structured output.
     """
-    # The LiteLLM `Client` inits with Chat().
-    # Chat() inits with self.completions
-    # completions() has a method `create()` which wraps the real completion API of Litellm
-    response = self.client.chat.completions.create(
+    response = await litellm.acompletion(
+        **self.client_args,
         model=self.get_config()["model_id"],
-        messages=super().format_request(prompt)["messages"],
+        messages=self.format_request(prompt)["messages"],
         response_format=output_model,
     )
 
@@ -2375,7 +2792,6 @@ class LlamaAPIModel(Model):
 
         return [message for message in formatted_messages if message["content"] or "tool_calls" in message]
 
-    @override
     def format_request(
         self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
     ) -> dict[str, Any]:
@@ -2422,7 +2838,6 @@ class LlamaAPIModel(Model):
 
         return request
 
-    @override
     def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
         """Format the Llama API model response events into standardized message chunks.
 
@@ -2497,24 +2912,39 @@ class LlamaAPIModel(Model):
                 raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
 
     @override
-    async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-        """Send the request to the model and get a streaming response.
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the LlamaAPI model.
 
         Args:
-            request: The formatted request to send to the model.
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
 
-        Returns:
-            The model's response.
+        Yields:
+            Formatted message chunks from the model.
 
         Raises:
             ModelThrottledException: When the model service is throttling requests from the client.
         """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("request=<%s>", request)
+
+        logger.debug("invoking model")
         try:
             response = self.client.chat.completions.create(**request)
         except llama_api_client.RateLimitError as e:
             raise ModelThrottledException(str(e)) from e
 
-        yield {"chunk_type": "message_start"}
+        logger.debug("got response from model")
+        yield self.format_chunk({"chunk_type": "message_start"})
 
         stop_reason = None
         tool_calls: dict[Any, list[Any]] = {}
@@ -2523,9 +2953,11 @@ class LlamaAPIModel(Model):
         metrics_event = None
         for chunk in response:
             if chunk.event.event_type == "start":
-                yield {"chunk_type": "content_start", "data_type": "text"}
+                yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
             elif chunk.event.event_type in ["progress", "complete"] and chunk.event.delta.type == "text":
-                yield {"chunk_type": "content_delta", "data_type": "text", "data": chunk.event.delta.text}
+                yield self.format_chunk(
+                    {"chunk_type": "content_delta", "data_type": "text", "data": chunk.event.delta.text}
+                )
             else:
                 if chunk.event.delta.type == "tool_call":
                     if chunk.event.delta.id:
@@ -2537,39 +2969,42 @@ class LlamaAPIModel(Model):
                 elif chunk.event.event_type == "metrics":
                     metrics_event = chunk.event.metrics
                 else:
-                    yield chunk
+                    yield self.format_chunk(chunk)
 
             if stop_reason is None:
                 stop_reason = chunk.event.stop_reason
 
             # stopped generation
             if stop_reason:
-                yield {"chunk_type": "content_stop", "data_type": "text"}
+                yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
         for tool_deltas in tool_calls.values():
             tool_start, tool_deltas = tool_deltas[0], tool_deltas[1:]
-            yield {"chunk_type": "content_start", "data_type": "tool", "data": tool_start}
+            yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_start})
 
             for tool_delta in tool_deltas:
-                yield {"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta}
+                yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
 
-            yield {"chunk_type": "content_stop", "data_type": "tool"}
+            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-        yield {"chunk_type": "message_stop", "data": stop_reason}
+        yield self.format_chunk({"chunk_type": "message_stop", "data": stop_reason})
 
         # we may have a metrics event here
         if metrics_event:
-            yield {"chunk_type": "metadata", "data": metrics_event}
+            yield self.format_chunk({"chunk_type": "metadata", "data": metrics_event})
+
+        logger.debug("finished streaming response from model")
 
     @override
     def structured_output(
-        self, output_model: Type[T], prompt: Messages
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Model events with the last being the structured output.
@@ -2675,7 +3110,6 @@ Returns:
 Source code in `strands/models/llamaapi.py`
 
 ```
-@override
 def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
     """Format the Llama API model response events into standardized message chunks.
 
@@ -2770,7 +3204,6 @@ Raises:
 Source code in `strands/models/llamaapi.py`
 
 ```
-@override
 def format_request(
     self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
 ) -> dict[str, Any]:
@@ -2841,17 +3274,17 @@ def get_config(self) -> LlamaConfig:
 
 ```
 
-#### `stream(request)`
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
 
-Send the request to the model and get a streaming response.
+Stream conversation with the LlamaAPI model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `request` | `dict[str, Any]` | The formatted request to send to the model. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
-Returns:
+Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | The model's response. |
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Formatted message chunks from the model. |
 
 Raises:
 
@@ -2861,24 +3294,39 @@ Source code in `strands/models/llamaapi.py`
 
 ```
 @override
-async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-    """Send the request to the model and get a streaming response.
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the LlamaAPI model.
 
     Args:
-        request: The formatted request to send to the model.
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
 
-    Returns:
-        The model's response.
+    Yields:
+        Formatted message chunks from the model.
 
     Raises:
         ModelThrottledException: When the model service is throttling requests from the client.
     """
+    logger.debug("formatting request")
+    request = self.format_request(messages, tool_specs, system_prompt)
+    logger.debug("request=<%s>", request)
+
+    logger.debug("invoking model")
     try:
         response = self.client.chat.completions.create(**request)
     except llama_api_client.RateLimitError as e:
         raise ModelThrottledException(str(e)) from e
 
-    yield {"chunk_type": "message_start"}
+    logger.debug("got response from model")
+    yield self.format_chunk({"chunk_type": "message_start"})
 
     stop_reason = None
     tool_calls: dict[Any, list[Any]] = {}
@@ -2887,9 +3335,11 @@ async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any]
     metrics_event = None
     for chunk in response:
         if chunk.event.event_type == "start":
-            yield {"chunk_type": "content_start", "data_type": "text"}
+            yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
         elif chunk.event.event_type in ["progress", "complete"] and chunk.event.delta.type == "text":
-            yield {"chunk_type": "content_delta", "data_type": "text", "data": chunk.event.delta.text}
+            yield self.format_chunk(
+                {"chunk_type": "content_delta", "data_type": "text", "data": chunk.event.delta.text}
+            )
         else:
             if chunk.event.delta.type == "tool_call":
                 if chunk.event.delta.id:
@@ -2901,39 +3351,41 @@ async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any]
             elif chunk.event.event_type == "metrics":
                 metrics_event = chunk.event.metrics
             else:
-                yield chunk
+                yield self.format_chunk(chunk)
 
         if stop_reason is None:
             stop_reason = chunk.event.stop_reason
 
         # stopped generation
         if stop_reason:
-            yield {"chunk_type": "content_stop", "data_type": "text"}
+            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
     for tool_deltas in tool_calls.values():
         tool_start, tool_deltas = tool_deltas[0], tool_deltas[1:]
-        yield {"chunk_type": "content_start", "data_type": "tool", "data": tool_start}
+        yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_start})
 
         for tool_delta in tool_deltas:
-            yield {"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta}
+            yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
 
-        yield {"chunk_type": "content_stop", "data_type": "tool"}
+        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-    yield {"chunk_type": "message_stop", "data": stop_reason}
+    yield self.format_chunk({"chunk_type": "message_stop", "data": stop_reason})
 
     # we may have a metrics event here
     if metrics_event:
-        yield {"chunk_type": "metadata", "data": metrics_event}
+        yield self.format_chunk({"chunk_type": "metadata", "data": metrics_event})
+
+    logger.debug("finished streaming response from model")
 
 ```
 
-#### `structured_output(output_model, prompt)`
+#### `structured_output(output_model, prompt, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -2948,13 +3400,14 @@ Source code in `strands/models/llamaapi.py`
 ```
 @override
 def structured_output(
-    self, output_model: Type[T], prompt: Messages
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Model events with the last being the structured output.
@@ -3074,7 +3527,7 @@ class OllamaModel(Model):
 
         ollama_client_args = ollama_client_args if ollama_client_args is not None else {}
 
-        self.client = OllamaClient(host, **ollama_client_args)
+        self.client = ollama.AsyncClient(host, **ollama_client_args)
 
     @override
     def update_config(self, **model_config: Unpack[OllamaConfig]) -> None:  # type: ignore
@@ -3165,7 +3618,6 @@ class OllamaModel(Model):
             for formatted_message in self._format_request_message_contents(message["role"], content)
         ]
 
-    @override
     def format_request(
         self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
     ) -> dict[str, Any]:
@@ -3219,7 +3671,6 @@ class OllamaModel(Model):
             ),
         }
 
-    @override
     def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
         """Format the Ollama response events into standardized message chunks.
 
@@ -3283,46 +3734,64 @@ class OllamaModel(Model):
                 raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
 
     @override
-    async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-        """Send the request to the Ollama model and get the streaming response.
-
-        This method calls the Ollama chat API and returns the stream of response events.
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the Ollama model.
 
         Args:
-            request: The formatted request to send to the Ollama model.
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
 
-        Returns:
-            An iterable of response events from the Ollama model.
+        Yields:
+            Formatted message chunks from the model.
         """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("request=<%s>", request)
+
+        logger.debug("invoking model")
         tool_requested = False
 
-        response = self.client.chat(**request)
+        response = await self.client.chat(**request)
 
-        yield {"chunk_type": "message_start"}
-        yield {"chunk_type": "content_start", "data_type": "text"}
+        logger.debug("got response from model")
+        yield self.format_chunk({"chunk_type": "message_start"})
+        yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
 
-        for event in response:
+        async for event in response:
             for tool_call in event.message.tool_calls or []:
-                yield {"chunk_type": "content_start", "data_type": "tool", "data": tool_call}
-                yield {"chunk_type": "content_delta", "data_type": "tool", "data": tool_call}
-                yield {"chunk_type": "content_stop", "data_type": "tool", "data": tool_call}
+                yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_call})
+                yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_call})
+                yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool", "data": tool_call})
                 tool_requested = True
 
-            yield {"chunk_type": "content_delta", "data_type": "text", "data": event.message.content}
+            yield self.format_chunk({"chunk_type": "content_delta", "data_type": "text", "data": event.message.content})
 
-        yield {"chunk_type": "content_stop", "data_type": "text"}
-        yield {"chunk_type": "message_stop", "data": "tool_use" if tool_requested else event.done_reason}
-        yield {"chunk_type": "metadata", "data": event}
+        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+        yield self.format_chunk(
+            {"chunk_type": "message_stop", "data": "tool_use" if tool_requested else event.done_reason}
+        )
+        yield self.format_chunk({"chunk_type": "metadata", "data": event})
+
+        logger.debug("finished streaming response from model")
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Model events with the last being the structured output.
@@ -3330,7 +3799,7 @@ class OllamaModel(Model):
         formatted_request = self.format_request(messages=prompt)
         formatted_request["format"] = output_model.model_json_schema()
         formatted_request["stream"] = False
-        response = self.client.chat(**formatted_request)
+        response = await self.client.chat(**formatted_request)
 
         try:
             content = response.message.content.strip()
@@ -3409,7 +3878,7 @@ def __init__(
 
     ollama_client_args = ollama_client_args if ollama_client_args is not None else {}
 
-    self.client = OllamaClient(host, **ollama_client_args)
+    self.client = ollama.AsyncClient(host, **ollama_client_args)
 
 ```
 
@@ -3432,7 +3901,6 @@ Raises:
 Source code in `strands/models/ollama.py`
 
 ```
-@override
 def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
     """Format the Ollama response events into standardized message chunks.
 
@@ -3516,7 +3984,6 @@ Raises:
 Source code in `strands/models/ollama.py`
 
 ```
-@override
 def format_request(
     self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
 ) -> dict[str, Any]:
@@ -3594,64 +4061,79 @@ def get_config(self) -> OllamaConfig:
 
 ```
 
-#### `stream(request)`
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
 
-Send the request to the Ollama model and get the streaming response.
-
-This method calls the Ollama chat API and returns the stream of response events.
+Stream conversation with the Ollama model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `request` | `dict[str, Any]` | The formatted request to send to the Ollama model. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
-Returns:
+Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | An iterable of response events from the Ollama model. |
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Formatted message chunks from the model. |
 
 Source code in `strands/models/ollama.py`
 
 ```
 @override
-async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-    """Send the request to the Ollama model and get the streaming response.
-
-    This method calls the Ollama chat API and returns the stream of response events.
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the Ollama model.
 
     Args:
-        request: The formatted request to send to the Ollama model.
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
 
-    Returns:
-        An iterable of response events from the Ollama model.
+    Yields:
+        Formatted message chunks from the model.
     """
+    logger.debug("formatting request")
+    request = self.format_request(messages, tool_specs, system_prompt)
+    logger.debug("request=<%s>", request)
+
+    logger.debug("invoking model")
     tool_requested = False
 
-    response = self.client.chat(**request)
+    response = await self.client.chat(**request)
 
-    yield {"chunk_type": "message_start"}
-    yield {"chunk_type": "content_start", "data_type": "text"}
+    logger.debug("got response from model")
+    yield self.format_chunk({"chunk_type": "message_start"})
+    yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
 
-    for event in response:
+    async for event in response:
         for tool_call in event.message.tool_calls or []:
-            yield {"chunk_type": "content_start", "data_type": "tool", "data": tool_call}
-            yield {"chunk_type": "content_delta", "data_type": "tool", "data": tool_call}
-            yield {"chunk_type": "content_stop", "data_type": "tool", "data": tool_call}
+            yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_call})
+            yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_call})
+            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool", "data": tool_call})
             tool_requested = True
 
-        yield {"chunk_type": "content_delta", "data_type": "text", "data": event.message.content}
+        yield self.format_chunk({"chunk_type": "content_delta", "data_type": "text", "data": event.message.content})
 
-    yield {"chunk_type": "content_stop", "data_type": "text"}
-    yield {"chunk_type": "message_stop", "data": "tool_use" if tool_requested else event.done_reason}
-    yield {"chunk_type": "metadata", "data": event}
+    yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+    yield self.format_chunk(
+        {"chunk_type": "message_stop", "data": "tool_use" if tool_requested else event.done_reason}
+    )
+    yield self.format_chunk({"chunk_type": "metadata", "data": event})
+
+    logger.debug("finished streaming response from model")
 
 ```
 
-#### `structured_output(output_model, prompt)`
+#### `structured_output(output_model, prompt, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -3662,13 +4144,14 @@ Source code in `strands/models/ollama.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Model events with the last being the structured output.
@@ -3676,7 +4159,7 @@ async def structured_output(
     formatted_request = self.format_request(messages=prompt)
     formatted_request["format"] = output_model.model_json_schema()
     formatted_request["stream"] = False
-    response = self.client.chat(**formatted_request)
+    response = await self.client.chat(**formatted_request)
 
     try:
         content = response.message.content.strip()
@@ -3740,14 +4223,14 @@ Chat completions interface.
 
 ### `OpenAIModel`
 
-Bases: `OpenAIModel`
+Bases: `Model`
 
 OpenAI model provider implementation.
 
 Source code in `strands/models/openai.py`
 
 ```
-class OpenAIModel(SAOpenAIModel):
+class OpenAIModel(Model):
     """OpenAI model provider implementation."""
 
     client: Client
@@ -3779,7 +4262,7 @@ class OpenAIModel(SAOpenAIModel):
         logger.debug("config=<%s> | initializing", self.config)
 
         client_args = client_args or {}
-        self.client = openai.OpenAI(**client_args)
+        self.client = openai.AsyncOpenAI(**client_args)
 
     @override
     def update_config(self, **model_config: Unpack[OpenAIConfig]) -> None:  # type: ignore[override]
@@ -3799,38 +4282,291 @@ class OpenAIModel(SAOpenAIModel):
         """
         return cast(OpenAIModel.OpenAIConfig, self.config)
 
-    @override
-    async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-        """Send the request to the OpenAI model and get the streaming response.
+    @classmethod
+    def format_request_message_content(cls, content: ContentBlock) -> dict[str, Any]:
+        """Format an OpenAI compatible content block.
 
         Args:
-            request: The formatted request to send to the OpenAI model.
+            content: Message content.
 
         Returns:
-            An iterable of response events from the OpenAI model.
-        """
-        response = self.client.chat.completions.create(**request)
+            OpenAI compatible content block.
 
-        yield {"chunk_type": "message_start"}
-        yield {"chunk_type": "content_start", "data_type": "text"}
+        Raises:
+            TypeError: If the content block type cannot be converted to an OpenAI-compatible format.
+        """
+        if "document" in content:
+            mime_type = mimetypes.types_map.get(f".{content['document']['format']}", "application/octet-stream")
+            file_data = base64.b64encode(content["document"]["source"]["bytes"]).decode("utf-8")
+            return {
+                "file": {
+                    "file_data": f"data:{mime_type};base64,{file_data}",
+                    "filename": content["document"]["name"],
+                },
+                "type": "file",
+            }
+
+        if "image" in content:
+            mime_type = mimetypes.types_map.get(f".{content['image']['format']}", "application/octet-stream")
+            image_data = base64.b64encode(content["image"]["source"]["bytes"]).decode("utf-8")
+
+            return {
+                "image_url": {
+                    "detail": "auto",
+                    "format": mime_type,
+                    "url": f"data:{mime_type};base64,{image_data}",
+                },
+                "type": "image_url",
+            }
+
+        if "text" in content:
+            return {"text": content["text"], "type": "text"}
+
+        raise TypeError(f"content_type=<{next(iter(content))}> | unsupported type")
+
+    @classmethod
+    def format_request_message_tool_call(cls, tool_use: ToolUse) -> dict[str, Any]:
+        """Format an OpenAI compatible tool call.
+
+        Args:
+            tool_use: Tool use requested by the model.
+
+        Returns:
+            OpenAI compatible tool call.
+        """
+        return {
+            "function": {
+                "arguments": json.dumps(tool_use["input"]),
+                "name": tool_use["name"],
+            },
+            "id": tool_use["toolUseId"],
+            "type": "function",
+        }
+
+    @classmethod
+    def format_request_tool_message(cls, tool_result: ToolResult) -> dict[str, Any]:
+        """Format an OpenAI compatible tool message.
+
+        Args:
+            tool_result: Tool result collected from a tool execution.
+
+        Returns:
+            OpenAI compatible tool message.
+        """
+        contents = cast(
+            list[ContentBlock],
+            [
+                {"text": json.dumps(content["json"])} if "json" in content else content
+                for content in tool_result["content"]
+            ],
+        )
+
+        return {
+            "role": "tool",
+            "tool_call_id": tool_result["toolUseId"],
+            "content": [cls.format_request_message_content(content) for content in contents],
+        }
+
+    @classmethod
+    def format_request_messages(cls, messages: Messages, system_prompt: Optional[str] = None) -> list[dict[str, Any]]:
+        """Format an OpenAI compatible messages array.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            system_prompt: System prompt to provide context to the model.
+
+        Returns:
+            An OpenAI compatible messages array.
+        """
+        formatted_messages: list[dict[str, Any]]
+        formatted_messages = [{"role": "system", "content": system_prompt}] if system_prompt else []
+
+        for message in messages:
+            contents = message["content"]
+
+            formatted_contents = [
+                cls.format_request_message_content(content)
+                for content in contents
+                if not any(block_type in content for block_type in ["toolResult", "toolUse"])
+            ]
+            formatted_tool_calls = [
+                cls.format_request_message_tool_call(content["toolUse"]) for content in contents if "toolUse" in content
+            ]
+            formatted_tool_messages = [
+                cls.format_request_tool_message(content["toolResult"])
+                for content in contents
+                if "toolResult" in content
+            ]
+
+            formatted_message = {
+                "role": message["role"],
+                "content": formatted_contents,
+                **({"tool_calls": formatted_tool_calls} if formatted_tool_calls else {}),
+            }
+            formatted_messages.append(formatted_message)
+            formatted_messages.extend(formatted_tool_messages)
+
+        return [message for message in formatted_messages if message["content"] or "tool_calls" in message]
+
+    def format_request(
+        self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+    ) -> dict[str, Any]:
+        """Format an OpenAI compatible chat streaming request.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+
+        Returns:
+            An OpenAI compatible chat streaming request.
+
+        Raises:
+            TypeError: If a message contains a content block type that cannot be converted to an OpenAI-compatible
+                format.
+        """
+        return {
+            "messages": self.format_request_messages(messages, system_prompt),
+            "model": self.config["model_id"],
+            "stream": True,
+            "stream_options": {"include_usage": True},
+            "tools": [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool_spec["name"],
+                        "description": tool_spec["description"],
+                        "parameters": tool_spec["inputSchema"]["json"],
+                    },
+                }
+                for tool_spec in tool_specs or []
+            ],
+            **cast(dict[str, Any], self.config.get("params", {})),
+        }
+
+    def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
+        """Format an OpenAI response event into a standardized message chunk.
+
+        Args:
+            event: A response event from the OpenAI compatible model.
+
+        Returns:
+            The formatted chunk.
+
+        Raises:
+            RuntimeError: If chunk_type is not recognized.
+                This error should never be encountered as chunk_type is controlled in the stream method.
+        """
+        match event["chunk_type"]:
+            case "message_start":
+                return {"messageStart": {"role": "assistant"}}
+
+            case "content_start":
+                if event["data_type"] == "tool":
+                    return {
+                        "contentBlockStart": {
+                            "start": {
+                                "toolUse": {
+                                    "name": event["data"].function.name,
+                                    "toolUseId": event["data"].id,
+                                }
+                            }
+                        }
+                    }
+
+                return {"contentBlockStart": {"start": {}}}
+
+            case "content_delta":
+                if event["data_type"] == "tool":
+                    return {
+                        "contentBlockDelta": {"delta": {"toolUse": {"input": event["data"].function.arguments or ""}}}
+                    }
+
+                if event["data_type"] == "reasoning_content":
+                    return {"contentBlockDelta": {"delta": {"reasoningContent": {"text": event["data"]}}}}
+
+                return {"contentBlockDelta": {"delta": {"text": event["data"]}}}
+
+            case "content_stop":
+                return {"contentBlockStop": {}}
+
+            case "message_stop":
+                match event["data"]:
+                    case "tool_calls":
+                        return {"messageStop": {"stopReason": "tool_use"}}
+                    case "length":
+                        return {"messageStop": {"stopReason": "max_tokens"}}
+                    case _:
+                        return {"messageStop": {"stopReason": "end_turn"}}
+
+            case "metadata":
+                return {
+                    "metadata": {
+                        "usage": {
+                            "inputTokens": event["data"].prompt_tokens,
+                            "outputTokens": event["data"].completion_tokens,
+                            "totalTokens": event["data"].total_tokens,
+                        },
+                        "metrics": {
+                            "latencyMs": 0,  # TODO
+                        },
+                    },
+                }
+
+            case _:
+                raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
+
+    @override
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the OpenAI model.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
+
+        Yields:
+            Formatted message chunks from the model.
+        """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("formatted request=<%s>", request)
+
+        logger.debug("invoking model")
+        response = await self.client.chat.completions.create(**request)
+
+        logger.debug("got response from model")
+        yield self.format_chunk({"chunk_type": "message_start"})
+        yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
 
         tool_calls: dict[int, list[Any]] = {}
 
-        for event in response:
+        async for event in response:
             # Defensive: skip events with empty or missing choices
             if not getattr(event, "choices", None):
                 continue
             choice = event.choices[0]
 
             if choice.delta.content:
-                yield {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+                yield self.format_chunk(
+                    {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+                )
 
             if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
-                yield {
-                    "chunk_type": "content_delta",
-                    "data_type": "reasoning_content",
-                    "data": choice.delta.reasoning_content,
-                }
+                yield self.format_chunk(
+                    {
+                        "chunk_type": "content_delta",
+                        "data_type": "reasoning_content",
+                        "data": choice.delta.reasoning_content,
+                    }
+                )
 
             for tool_call in choice.delta.tool_calls or []:
                 tool_calls.setdefault(tool_call.index, []).append(tool_call)
@@ -3838,40 +4574,43 @@ class OpenAIModel(SAOpenAIModel):
             if choice.finish_reason:
                 break
 
-        yield {"chunk_type": "content_stop", "data_type": "text"}
+        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
         for tool_deltas in tool_calls.values():
-            yield {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
+            yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
 
             for tool_delta in tool_deltas:
-                yield {"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta}
+                yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
 
-            yield {"chunk_type": "content_stop", "data_type": "tool"}
+            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-        yield {"chunk_type": "message_stop", "data": choice.finish_reason}
+        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
 
         # Skip remaining events as we don't have use for anything except the final usage payload
-        for event in response:
+        async for event in response:
             _ = event
 
-        yield {"chunk_type": "metadata", "data": event.usage}
+        yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+
+        logger.debug("finished streaming response from model")
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Model events with the last being the structured output.
         """
-        response: ParsedChatCompletion = self.client.beta.chat.completions.parse(  # type: ignore
+        response: ParsedChatCompletion = await self.client.beta.chat.completions.parse(  # type: ignore
             model=self.get_config()["model_id"],
-            messages=super().format_request(prompt)["messages"],
+            messages=self.format_request(prompt)["messages"],
             response_format=output_model,
         )
 
@@ -3945,7 +4684,355 @@ def __init__(self, client_args: Optional[dict[str, Any]] = None, **model_config:
     logger.debug("config=<%s> | initializing", self.config)
 
     client_args = client_args or {}
-    self.client = openai.OpenAI(**client_args)
+    self.client = openai.AsyncOpenAI(**client_args)
+
+```
+
+#### `format_chunk(event)`
+
+Format an OpenAI response event into a standardized message chunk.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `event` | `dict[str, Any]` | A response event from the OpenAI compatible model. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `StreamEvent` | The formatted chunk. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `RuntimeError` | If chunk_type is not recognized. This error should never be encountered as chunk_type is controlled in the stream method. |
+
+Source code in `strands/models/openai.py`
+
+```
+def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
+    """Format an OpenAI response event into a standardized message chunk.
+
+    Args:
+        event: A response event from the OpenAI compatible model.
+
+    Returns:
+        The formatted chunk.
+
+    Raises:
+        RuntimeError: If chunk_type is not recognized.
+            This error should never be encountered as chunk_type is controlled in the stream method.
+    """
+    match event["chunk_type"]:
+        case "message_start":
+            return {"messageStart": {"role": "assistant"}}
+
+        case "content_start":
+            if event["data_type"] == "tool":
+                return {
+                    "contentBlockStart": {
+                        "start": {
+                            "toolUse": {
+                                "name": event["data"].function.name,
+                                "toolUseId": event["data"].id,
+                            }
+                        }
+                    }
+                }
+
+            return {"contentBlockStart": {"start": {}}}
+
+        case "content_delta":
+            if event["data_type"] == "tool":
+                return {
+                    "contentBlockDelta": {"delta": {"toolUse": {"input": event["data"].function.arguments or ""}}}
+                }
+
+            if event["data_type"] == "reasoning_content":
+                return {"contentBlockDelta": {"delta": {"reasoningContent": {"text": event["data"]}}}}
+
+            return {"contentBlockDelta": {"delta": {"text": event["data"]}}}
+
+        case "content_stop":
+            return {"contentBlockStop": {}}
+
+        case "message_stop":
+            match event["data"]:
+                case "tool_calls":
+                    return {"messageStop": {"stopReason": "tool_use"}}
+                case "length":
+                    return {"messageStop": {"stopReason": "max_tokens"}}
+                case _:
+                    return {"messageStop": {"stopReason": "end_turn"}}
+
+        case "metadata":
+            return {
+                "metadata": {
+                    "usage": {
+                        "inputTokens": event["data"].prompt_tokens,
+                        "outputTokens": event["data"].completion_tokens,
+                        "totalTokens": event["data"].total_tokens,
+                    },
+                    "metrics": {
+                        "latencyMs": 0,  # TODO
+                    },
+                },
+            }
+
+        case _:
+            raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
+
+```
+
+#### `format_request(messages, tool_specs=None, system_prompt=None)`
+
+Format an OpenAI compatible chat streaming request.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` |
+
+Returns:
+
+| Type | Description | | --- | --- | | `dict[str, Any]` | An OpenAI compatible chat streaming request. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `TypeError` | If a message contains a content block type that cannot be converted to an OpenAI-compatible format. |
+
+Source code in `strands/models/openai.py`
+
+```
+def format_request(
+    self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+) -> dict[str, Any]:
+    """Format an OpenAI compatible chat streaming request.
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+
+    Returns:
+        An OpenAI compatible chat streaming request.
+
+    Raises:
+        TypeError: If a message contains a content block type that cannot be converted to an OpenAI-compatible
+            format.
+    """
+    return {
+        "messages": self.format_request_messages(messages, system_prompt),
+        "model": self.config["model_id"],
+        "stream": True,
+        "stream_options": {"include_usage": True},
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": tool_spec["name"],
+                    "description": tool_spec["description"],
+                    "parameters": tool_spec["inputSchema"]["json"],
+                },
+            }
+            for tool_spec in tool_specs or []
+        ],
+        **cast(dict[str, Any], self.config.get("params", {})),
+    }
+
+```
+
+#### `format_request_message_content(content)`
+
+Format an OpenAI compatible content block.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `content` | `ContentBlock` | Message content. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `dict[str, Any]` | OpenAI compatible content block. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `TypeError` | If the content block type cannot be converted to an OpenAI-compatible format. |
+
+Source code in `strands/models/openai.py`
+
+```
+@classmethod
+def format_request_message_content(cls, content: ContentBlock) -> dict[str, Any]:
+    """Format an OpenAI compatible content block.
+
+    Args:
+        content: Message content.
+
+    Returns:
+        OpenAI compatible content block.
+
+    Raises:
+        TypeError: If the content block type cannot be converted to an OpenAI-compatible format.
+    """
+    if "document" in content:
+        mime_type = mimetypes.types_map.get(f".{content['document']['format']}", "application/octet-stream")
+        file_data = base64.b64encode(content["document"]["source"]["bytes"]).decode("utf-8")
+        return {
+            "file": {
+                "file_data": f"data:{mime_type};base64,{file_data}",
+                "filename": content["document"]["name"],
+            },
+            "type": "file",
+        }
+
+    if "image" in content:
+        mime_type = mimetypes.types_map.get(f".{content['image']['format']}", "application/octet-stream")
+        image_data = base64.b64encode(content["image"]["source"]["bytes"]).decode("utf-8")
+
+        return {
+            "image_url": {
+                "detail": "auto",
+                "format": mime_type,
+                "url": f"data:{mime_type};base64,{image_data}",
+            },
+            "type": "image_url",
+        }
+
+    if "text" in content:
+        return {"text": content["text"], "type": "text"}
+
+    raise TypeError(f"content_type=<{next(iter(content))}> | unsupported type")
+
+```
+
+#### `format_request_message_tool_call(tool_use)`
+
+Format an OpenAI compatible tool call.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_use` | `ToolUse` | Tool use requested by the model. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `dict[str, Any]` | OpenAI compatible tool call. |
+
+Source code in `strands/models/openai.py`
+
+```
+@classmethod
+def format_request_message_tool_call(cls, tool_use: ToolUse) -> dict[str, Any]:
+    """Format an OpenAI compatible tool call.
+
+    Args:
+        tool_use: Tool use requested by the model.
+
+    Returns:
+        OpenAI compatible tool call.
+    """
+    return {
+        "function": {
+            "arguments": json.dumps(tool_use["input"]),
+            "name": tool_use["name"],
+        },
+        "id": tool_use["toolUseId"],
+        "type": "function",
+    }
+
+```
+
+#### `format_request_messages(messages, system_prompt=None)`
+
+Format an OpenAI compatible messages array.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` |
+
+Returns:
+
+| Type | Description | | --- | --- | | `list[dict[str, Any]]` | An OpenAI compatible messages array. |
+
+Source code in `strands/models/openai.py`
+
+```
+@classmethod
+def format_request_messages(cls, messages: Messages, system_prompt: Optional[str] = None) -> list[dict[str, Any]]:
+    """Format an OpenAI compatible messages array.
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        system_prompt: System prompt to provide context to the model.
+
+    Returns:
+        An OpenAI compatible messages array.
+    """
+    formatted_messages: list[dict[str, Any]]
+    formatted_messages = [{"role": "system", "content": system_prompt}] if system_prompt else []
+
+    for message in messages:
+        contents = message["content"]
+
+        formatted_contents = [
+            cls.format_request_message_content(content)
+            for content in contents
+            if not any(block_type in content for block_type in ["toolResult", "toolUse"])
+        ]
+        formatted_tool_calls = [
+            cls.format_request_message_tool_call(content["toolUse"]) for content in contents if "toolUse" in content
+        ]
+        formatted_tool_messages = [
+            cls.format_request_tool_message(content["toolResult"])
+            for content in contents
+            if "toolResult" in content
+        ]
+
+        formatted_message = {
+            "role": message["role"],
+            "content": formatted_contents,
+            **({"tool_calls": formatted_tool_calls} if formatted_tool_calls else {}),
+        }
+        formatted_messages.append(formatted_message)
+        formatted_messages.extend(formatted_tool_messages)
+
+    return [message for message in formatted_messages if message["content"] or "tool_calls" in message]
+
+```
+
+#### `format_request_tool_message(tool_result)`
+
+Format an OpenAI compatible tool message.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_result` | `ToolResult` | Tool result collected from a tool execution. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `dict[str, Any]` | OpenAI compatible tool message. |
+
+Source code in `strands/models/openai.py`
+
+```
+@classmethod
+def format_request_tool_message(cls, tool_result: ToolResult) -> dict[str, Any]:
+    """Format an OpenAI compatible tool message.
+
+    Args:
+        tool_result: Tool result collected from a tool execution.
+
+    Returns:
+        OpenAI compatible tool message.
+    """
+    contents = cast(
+        list[ContentBlock],
+        [
+            {"text": json.dumps(content["json"])} if "json" in content else content
+            for content in tool_result["content"]
+        ],
+    )
+
+    return {
+        "role": "tool",
+        "tool_call_id": tool_result["toolUseId"],
+        "content": [cls.format_request_message_content(content) for content in contents],
+    }
 
 ```
 
@@ -3971,53 +5058,72 @@ def get_config(self) -> OpenAIConfig:
 
 ```
 
-#### `stream(request)`
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
 
-Send the request to the OpenAI model and get the streaming response.
+Stream conversation with the OpenAI model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `request` | `dict[str, Any]` | The formatted request to send to the OpenAI model. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
-Returns:
+Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | An iterable of response events from the OpenAI model. |
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Formatted message chunks from the model. |
 
 Source code in `strands/models/openai.py`
 
 ```
 @override
-async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-    """Send the request to the OpenAI model and get the streaming response.
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the OpenAI model.
 
     Args:
-        request: The formatted request to send to the OpenAI model.
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
 
-    Returns:
-        An iterable of response events from the OpenAI model.
+    Yields:
+        Formatted message chunks from the model.
     """
-    response = self.client.chat.completions.create(**request)
+    logger.debug("formatting request")
+    request = self.format_request(messages, tool_specs, system_prompt)
+    logger.debug("formatted request=<%s>", request)
 
-    yield {"chunk_type": "message_start"}
-    yield {"chunk_type": "content_start", "data_type": "text"}
+    logger.debug("invoking model")
+    response = await self.client.chat.completions.create(**request)
+
+    logger.debug("got response from model")
+    yield self.format_chunk({"chunk_type": "message_start"})
+    yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
 
     tool_calls: dict[int, list[Any]] = {}
 
-    for event in response:
+    async for event in response:
         # Defensive: skip events with empty or missing choices
         if not getattr(event, "choices", None):
             continue
         choice = event.choices[0]
 
         if choice.delta.content:
-            yield {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+            yield self.format_chunk(
+                {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+            )
 
         if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
-            yield {
-                "chunk_type": "content_delta",
-                "data_type": "reasoning_content",
-                "data": choice.delta.reasoning_content,
-            }
+            yield self.format_chunk(
+                {
+                    "chunk_type": "content_delta",
+                    "data_type": "reasoning_content",
+                    "data": choice.delta.reasoning_content,
+                }
+            )
 
         for tool_call in choice.delta.tool_calls or []:
             tool_calls.setdefault(tool_call.index, []).append(tool_call)
@@ -4025,33 +5131,35 @@ async def stream(self, request: dict[str, Any]) -> AsyncGenerator[dict[str, Any]
         if choice.finish_reason:
             break
 
-    yield {"chunk_type": "content_stop", "data_type": "text"}
+    yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
     for tool_deltas in tool_calls.values():
-        yield {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
+        yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
 
         for tool_delta in tool_deltas:
-            yield {"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta}
+            yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
 
-        yield {"chunk_type": "content_stop", "data_type": "tool"}
+        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-    yield {"chunk_type": "message_stop", "data": choice.finish_reason}
+    yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
 
     # Skip remaining events as we don't have use for anything except the final usage payload
-    for event in response:
+    async for event in response:
         _ = event
 
-    yield {"chunk_type": "metadata", "data": event.usage}
+    yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+
+    logger.debug("finished streaming response from model")
 
 ```
 
-#### `structured_output(output_model, prompt)`
+#### `structured_output(output_model, prompt, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -4062,20 +5170,21 @@ Source code in `strands/models/openai.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Model events with the last being the structured output.
     """
-    response: ParsedChatCompletion = self.client.beta.chat.completions.parse(  # type: ignore
+    response: ParsedChatCompletion = await self.client.beta.chat.completions.parse(  # type: ignore
         model=self.get_config()["model_id"],
-        messages=super().format_request(prompt)["messages"],
+        messages=self.format_request(prompt)["messages"],
         response_format=output_model,
     )
 

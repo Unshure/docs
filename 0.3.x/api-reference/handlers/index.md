@@ -4,7 +4,6 @@ Various handlers for performing custom actions on agent state.
 
 Examples include:
 
-- Processing tool invocations
 - Displaying events from the event stream
 
 ## `strands.handlers.callback_handler`

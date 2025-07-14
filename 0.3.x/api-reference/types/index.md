@@ -1628,6 +1628,10 @@ These types are modeled after the Bedrock API.
 
 Type alias for JSON Schema dictionaries.
 
+### `RunToolHandler = Callable[[ToolUse], AsyncGenerator[dict[str, Any], None]]`
+
+Callback that runs a single tool and streams back results.
+
 ### `ToolChoice = Union[dict[Literal['auto'], ToolChoiceAuto], dict[Literal['any'], ToolChoiceAny], dict[Literal['tool'], ToolChoiceTool]]`
 
 Configuration for how the model should choose tools.
@@ -1636,9 +1640,9 @@ Configuration for how the model should choose tools.
 - "any": The model must use at least one tool (any tool)
 - "tool": The model must use the specified tool
 
-### `ToolGenerator = Generator[dict[str, Any], None, ToolResult]`
+### `ToolGenerator = AsyncGenerator[Any, None]`
 
-Generator of tool events and a returned tool result.
+Generator of tool events with the last being the tool result.
 
 ### `ToolResultStatus = Literal['success', 'error']`
 
@@ -1650,7 +1654,7 @@ Bases: `ABC`
 
 Abstract base class for all SDK tools.
 
-This class defines the interface that all tool implementations must follow. Each tool must provide its name, specification, and implement an invoke method that executes the tool's functionality.
+This class defines the interface that all tool implementations must follow. Each tool must provide its name, specification, and implement a stream method that executes the tool's functionality.
 
 Source code in `strands/types/tools.py`
 
@@ -1659,7 +1663,7 @@ class AgentTool(ABC):
     """Abstract base class for all SDK tools.
 
     This class defines the interface that all tool implementations must follow. Each tool must provide its name,
-    specification, and implement an invoke method that executes the tool's functionality.
+    specification, and implement a stream method that executes the tool's functionality.
     """
 
     _is_dynamic: bool
@@ -1703,18 +1707,18 @@ class AgentTool(ABC):
 
     @abstractmethod
     # pragma: no cover
-    def invoke(self, tool: ToolUse, *args: Any, **kwargs: dict[str, Any]) -> ToolResult:
-        """Execute the tool's functionality with the given tool use request.
+    def stream(self, tool_use: ToolUse, invocation_state: dict[str, Any], **kwargs: Any) -> ToolGenerator:
+        """Stream tool events and return the final result.
 
         Args:
-            tool: The tool use request containing tool ID and parameters.
-            *args: Positional arguments to pass to the tool.
-            **kwargs: Keyword arguments to pass to the tool.
+            tool_use: The tool use request containing tool ID and parameters.
+            invocation_state: Context for the tool invocation, including agent state.
+            **kwargs: Additional keyword arguments for future extensibility.
 
-        Returns:
-            The result of the tool execution.
+        Yield:
+            Tool events with the last being the tool result.
         """
-        pass
+        ...
 
     @property
     def is_dynamic(self) -> bool:
@@ -1819,38 +1823,6 @@ def get_display_properties(self) -> dict[str, str]:
 
 ```
 
-#### `invoke(tool, *args, **kwargs)`
-
-Execute the tool's functionality with the given tool use request.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool` | `ToolUse` | The tool use request containing tool ID and parameters. | *required* | | `*args` | `Any` | Positional arguments to pass to the tool. | `()` | | `**kwargs` | `dict[str, Any]` | Keyword arguments to pass to the tool. | `{}` |
-
-Returns:
-
-| Type | Description | | --- | --- | | `ToolResult` | The result of the tool execution. |
-
-Source code in `strands/types/tools.py`
-
-```
-@abstractmethod
-# pragma: no cover
-def invoke(self, tool: ToolUse, *args: Any, **kwargs: dict[str, Any]) -> ToolResult:
-    """Execute the tool's functionality with the given tool use request.
-
-    Args:
-        tool: The tool use request containing tool ID and parameters.
-        *args: Positional arguments to pass to the tool.
-        **kwargs: Keyword arguments to pass to the tool.
-
-    Returns:
-        The result of the tool execution.
-    """
-    pass
-
-```
-
 #### `mark_dynamic()`
 
 Mark this tool as dynamically loaded.
@@ -1861,6 +1833,38 @@ Source code in `strands/types/tools.py`
 def mark_dynamic(self) -> None:
     """Mark this tool as dynamically loaded."""
     self._is_dynamic = True
+
+```
+
+#### `stream(tool_use, invocation_state, **kwargs)`
+
+Stream tool events and return the final result.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_use` | `ToolUse` | The tool use request containing tool ID and parameters. | *required* | | `invocation_state` | `dict[str, Any]` | Context for the tool invocation, including agent state. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Yield
+
+Tool events with the last being the tool result.
+
+Source code in `strands/types/tools.py`
+
+```
+@abstractmethod
+# pragma: no cover
+def stream(self, tool_use: ToolUse, invocation_state: dict[str, Any], **kwargs: Any) -> ToolGenerator:
+    """Stream tool events and return the final result.
+
+    Args:
+        tool_use: The tool use request containing tool ID and parameters.
+        invocation_state: Context for the tool invocation, including agent state.
+        **kwargs: Additional keyword arguments for future extensibility.
+
+    Yield:
+        Tool events with the last being the tool result.
+    """
+    ...
 
 ```
 
@@ -1980,94 +1984,56 @@ class ToolConfig(TypedDict):
 
 ```
 
-### `ToolHandler`
+### `ToolFunc`
 
-Bases: `ABC`
+Bases: `Protocol`
 
-Abstract base class for handling tool execution within the agent framework.
+Function signature for Python decorated and module based tools.
 
 Source code in `strands/types/tools.py`
 
 ```
-class ToolHandler(ABC):
-    """Abstract base class for handling tool execution within the agent framework."""
+class ToolFunc(Protocol):
+    """Function signature for Python decorated and module based tools."""
 
-    @abstractmethod
-    def process(
-        self,
-        tool: ToolUse,
-        *,
-        model: "Model",
-        system_prompt: Optional[str],
-        messages: "Messages",
-        tool_config: ToolConfig,
-        kwargs: dict[str, Any],
-    ) -> ToolGenerator:
-        """Process a tool use request and execute the tool.
+    __name__: str
 
-        Args:
-            tool: The tool use request to process.
-            messages: The current conversation history.
-            model: The model being used for the conversation.
-            system_prompt: The system prompt for the conversation.
-            tool_config: The tool configuration for the current session.
-            kwargs: Additional context-specific arguments.
-
-        Yields:
-            Events of the tool invocation.
+    def __call__(
+        self, *args: Any, **kwargs: Any
+    ) -> Union[
+        ToolResult,
+        Awaitable[ToolResult],
+    ]:
+        """Function signature for Python decorated and module based tools.
 
         Returns:
-            The final tool result.
+            Tool result or awaitable tool result.
         """
         ...
 
 ```
 
-#### `process(tool, *, model, system_prompt, messages, tool_config, kwargs)`
+#### `__call__(*args, **kwargs)`
 
-Process a tool use request and execute the tool.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool` | `ToolUse` | The tool use request to process. | *required* | | `messages` | `Messages` | The current conversation history. | *required* | | `model` | `Model` | The model being used for the conversation. | *required* | | `system_prompt` | `Optional[str]` | The system prompt for the conversation. | *required* | | `tool_config` | `ToolConfig` | The tool configuration for the current session. | *required* | | `kwargs` | `dict[str, Any]` | Additional context-specific arguments. | *required* |
-
-Yields:
-
-| Type | Description | | --- | --- | | `ToolGenerator` | Events of the tool invocation. |
+Function signature for Python decorated and module based tools.
 
 Returns:
 
-| Type | Description | | --- | --- | | `ToolGenerator` | The final tool result. |
+| Type | Description | | --- | --- | | `Union[ToolResult, Awaitable[ToolResult]]` | Tool result or awaitable tool result. |
 
 Source code in `strands/types/tools.py`
 
 ```
-@abstractmethod
-def process(
-    self,
-    tool: ToolUse,
-    *,
-    model: "Model",
-    system_prompt: Optional[str],
-    messages: "Messages",
-    tool_config: ToolConfig,
-    kwargs: dict[str, Any],
-) -> ToolGenerator:
-    """Process a tool use request and execute the tool.
-
-    Args:
-        tool: The tool use request to process.
-        messages: The current conversation history.
-        model: The model being used for the conversation.
-        system_prompt: The system prompt for the conversation.
-        tool_config: The tool configuration for the current session.
-        kwargs: Additional context-specific arguments.
-
-    Yields:
-        Events of the tool invocation.
+def __call__(
+    self, *args: Any, **kwargs: Any
+) -> Union[
+    ToolResult,
+    Awaitable[ToolResult],
+]:
+    """Function signature for Python decorated and module based tools.
 
     Returns:
-        The final tool result.
+        Tool result or awaitable tool result.
     """
     ...
 

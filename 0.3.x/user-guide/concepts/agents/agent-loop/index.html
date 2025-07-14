@@ -16,7 +16,7 @@
       <link rel="prev" href="../../../quickstart/">
     
     
-      <link rel="next" href="../state-sessions/">
+      <link rel="next" href="../state/">
     
     
     <link rel="icon" href="../../../../assets/logo-light.png" sizes="any">
@@ -744,12 +744,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../state-sessions/" class="md-nav__link">
+      <a href="../state/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    State & Sessions
+    State
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Session Management
     
   </span>
   
@@ -2319,6 +2342,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/python/multimodal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multi-modal
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2776,7 +2822,6 @@
     <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
     <span class="n">tool_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolConfig</span><span class="p">],</span>
-    <span class="n">thread_pool</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ThreadPoolExecutor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StopReason</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">EventLoopMetrics</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
     <span class="c1"># ... implementation details ...</span>
@@ -2789,22 +2834,16 @@
 <li><strong>Assistant messages</strong>: Responses from the model that may include tool requests</li>
 <li><strong>Tool result messages</strong>: Results from tool executions fed back to the model</li>
 </ol>
-<p>The SDK automatically formats these messages into the appropriate structure for model inputs and <a href="../state-sessions/">session state</a>.</p>
+<p>The SDK automatically formats these messages into the appropriate structure for model inputs and <a href="../state/">session state</a>.</p>
 <h3 id="tool-execution">Tool Execution<a class="headerlink" href="#tool-execution" title="Permanent link">&para;</a></h3>
 <p>The agent loop includes a tool execution system that:</p>
 <ol>
 <li>Validates tool requests from the model</li>
 <li>Looks up tools in the registry</li>
-<li>Executes tools with proper error handling</li>
+<li>Executes tools concurrently with proper error handling</li>
 <li>Captures and formats results</li>
 <li>Feeds results back to the model</li>
 </ol>
-<p>Tools can be executed in parallel or sequentially:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Configure maximum parallel tool execution</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
-    <span class="n">max_parallel_tools</span><span class="o">=</span><span class="mi">4</span>  <span class="c1"># Run up to 4 tools in parallel</span>
-<span class="p">)</span>
-</code></pre></div>
 <h2 id="detailed-flow">Detailed Flow<a class="headerlink" href="#detailed-flow" title="Permanent link">&para;</a></h2>
 <p>Let's dive into the detailed flow of the agent loop:</p>
 <h3 id="1-initialization">1. Initialization<a class="headerlink" href="#1-initialization" title="Permanent link">&para;</a></h3>
@@ -2822,7 +2861,6 @@
 <ul>
 <li>Creates a tool registry and registers tools</li>
 <li>Sets up the conversation manager</li>
-<li>Configures parallel processing capabilities</li>
 <li>Initializes metrics collection</li>
 </ul>
 <h3 id="2-user-input-processing">2. User Input Processing<a class="headerlink" href="#2-user-input-processing" title="Permanent link">&para;</a></h3>
@@ -2860,7 +2898,7 @@
 <ul>
 <li>Extracts and validates the tool request</li>
 <li>Looks up the tool in the registry</li>
-<li>Executes the tool (potentially in parallel with others)</li>
+<li>Executes the tool</li>
 <li>Captures the result and formats it</li>
 </ul>
 <h3 id="5-tool-result-processing">5. Tool Result Processing<a class="headerlink" href="#5-tool-result-processing" title="Permanent link">&para;</a></h3>

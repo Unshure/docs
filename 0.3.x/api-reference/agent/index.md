@@ -105,21 +105,19 @@ class Agent:
                     "input": kwargs.copy(),
                 }
 
-                # Execute the tool
-                events = self._agent.tool_handler.process(
-                    tool=tool_use,
-                    model=self._agent.model,
-                    system_prompt=self._agent.system_prompt,
-                    messages=self._agent.messages,
-                    tool_config=self._agent.tool_config,
-                    kwargs=kwargs,
-                )
+                async def acall() -> ToolResult:
+                    # Pass kwargs as invocation_state
+                    async for event in run_tool(self._agent, tool_use, kwargs):
+                        _ = event
 
-                try:
-                    while True:
-                        next(events)
-                except StopIteration as stop:
-                    tool_result = cast(ToolResult, stop.value)
+                    return cast(ToolResult, event)
+
+                def tcall() -> ToolResult:
+                    return asyncio.run(acall())
+
+                with ThreadPoolExecutor() as executor:
+                    future = executor.submit(tcall)
+                    tool_result = future.result()
 
                 if record_direct_tool_call is not None:
                     should_record_direct_tool_call = record_direct_tool_call
@@ -170,14 +168,15 @@ class Agent:
             Union[Callable[..., Any], _DefaultCallbackHandlerSentinel]
         ] = _DEFAULT_CALLBACK_HANDLER,
         conversation_manager: Optional[ConversationManager] = None,
-        max_parallel_tools: int = os.cpu_count() or 1,
         record_direct_tool_call: bool = True,
-        load_tools_from_directory: bool = True,
+        load_tools_from_directory: bool = False,
         trace_attributes: Optional[Mapping[str, AttributeValue]] = None,
         *,
+        agent_id: Optional[str] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
         state: Optional[Union[AgentState, dict]] = None,
+        hooks: Optional[list[HookProvider]] = None,
     ):
         """Initialize the Agent with the specified configuration.
 
@@ -203,27 +202,29 @@ class Agent:
                 If explicitly set to None, null_callback_handler is used.
             conversation_manager: Manager for conversation history and context window.
                 Defaults to strands.agent.conversation_manager.SlidingWindowConversationManager if None.
-            max_parallel_tools: Maximum number of tools to run in parallel when the model returns multiple tool calls.
-                Defaults to os.cpu_count() or 1.
             record_direct_tool_call: Whether to record direct tool calls in message history.
                 Defaults to True.
             load_tools_from_directory: Whether to load and automatically reload tools in the `./tools/` directory.
-                Defaults to True.
+                Defaults to False.
             trace_attributes: Custom trace attributes to apply to the agent's trace span.
+            agent_id: Optional ID for the agent, useful for multi-agent scenarios.
+                If None, a UUID is generated.
             name: name of the Agent
                 Defaults to None.
             description: description of what the Agent does
                 Defaults to None.
             state: stateful information for the agent. Can be either an AgentState object, or a json serializable dict.
                 Defaults to an empty AgentState object.
-
-        Raises:
-            ValueError: If max_parallel_tools is less than 1.
+            hooks: hooks to be added to the agent hook registry
+                Defaults to None.
         """
         self.model = BedrockModel() if not model else BedrockModel(model_id=model) if isinstance(model, str) else model
         self.messages = messages if messages is not None else []
 
         self.system_prompt = system_prompt
+        self.agent_id = agent_id or str(uuid4())
+        self.name = name or _DEFAULT_AGENT_NAME
+        self.description = description
 
         # If not provided, create a new PrintingCallbackHandler instance
         # If explicitly set to None, use null_callback_handler
@@ -247,19 +248,10 @@ class Agent:
                 ):
                     self.trace_attributes[k] = v
 
-        # If max_parallel_tools is 1, we execute tools sequentially
-        self.thread_pool = None
-        self.thread_pool_wrapper = None
-        if max_parallel_tools > 1:
-            self.thread_pool = ThreadPoolExecutor(max_workers=max_parallel_tools)
-        elif max_parallel_tools < 1:
-            raise ValueError("max_parallel_tools must be greater than 0")
-
         self.record_direct_tool_call = record_direct_tool_call
         self.load_tools_from_directory = load_tools_from_directory
 
         self.tool_registry = ToolRegistry()
-        self.tool_handler = AgentToolHandler(tool_registry=self.tool_registry)
 
         # Process tool list if provided
         if tools is not None:
@@ -288,12 +280,12 @@ class Agent:
             self.state = AgentState()
 
         self.tool_caller = Agent.ToolCaller(self)
-        self.name = name or _DEFAULT_AGENT_NAME
-        self.description = description
 
-        self._hooks = HookRegistry()
-        # Register built-in hook providers (like ConversationManager) here
-        self._hooks.invoke_callbacks(AgentInitializedEvent(agent=self))
+        self.hooks = HookRegistry()
+        if hooks:
+            for hook in hooks:
+                self.hooks.add_hook(hook)
+        self.hooks.invoke_callbacks(AgentInitializedEvent(agent=self))
 
     @property
     def tool(self) -> ToolCaller:
@@ -320,32 +312,14 @@ class Agent:
         all_tools = self.tool_registry.get_all_tools_config()
         return list(all_tools.keys())
 
-    @property
-    def tool_config(self) -> ToolConfig:
-        """Get the tool configuration for this agent.
-
-        Returns:
-            The complete tool configuration.
-        """
-        return self.tool_registry.initialize_tool_config()
-
-    def __del__(self) -> None:
-        """Clean up resources when Agent is garbage collected.
-
-        Ensures proper shutdown of the thread pool executor if one exists.
-        """
-        if self.thread_pool:
-            self.thread_pool.shutdown(wait=False)
-            logger.debug("thread pool executor shutdown complete")
-
-    def __call__(self, prompt: str, **kwargs: Any) -> AgentResult:
+    def __call__(self, prompt: Union[str, list[ContentBlock]], **kwargs: Any) -> AgentResult:
         """Process a natural language prompt through the agent's event loop.
 
         This method implements the conversational interface (e.g., `agent("hello!")`). It adds the user's prompt to
         the conversation history, processes it through the model, executes any tool calls, and returns the final result.
 
         Args:
-            prompt: The natural language prompt from the user.
+            prompt: User input as text or list of ContentBlock objects for multi-modal content.
             **kwargs: Additional parameters to pass through the event loop.
 
         Returns:
@@ -364,14 +338,14 @@ class Agent:
             future = executor.submit(execute)
             return future.result()
 
-    async def invoke_async(self, prompt: str, **kwargs: Any) -> AgentResult:
+    async def invoke_async(self, prompt: Union[str, list[ContentBlock]], **kwargs: Any) -> AgentResult:
         """Process a natural language prompt through the agent's event loop.
 
         This method implements the conversational interface (e.g., `agent("hello!")`). It adds the user's prompt to
         the conversation history, processes it through the model, executes any tool calls, and returns the final result.
 
         Args:
-            prompt: The natural language prompt from the user.
+            prompt: User input as text or list of ContentBlock objects for multi-modal content.
             **kwargs: Additional parameters to pass through the event loop.
 
         Returns:
@@ -388,13 +362,13 @@ class Agent:
 
         return cast(AgentResult, event["result"])
 
-    def structured_output(self, output_model: Type[T], prompt: Optional[str] = None) -> T:
+    def structured_output(self, output_model: Type[T], prompt: Optional[Union[str, list[ContentBlock]]] = None) -> T:
         """This method allows you to get structured output from the agent.
 
         If you pass in a prompt, it will be added to the conversation history and the agent will respond to it.
         If you don't pass in a prompt, it will use only the conversation history to respond.
 
-        For smaller models, you may want to use the optional prompt string to add additional instructions to explicitly
+        For smaller models, you may want to use the optional prompt to add additional instructions to explicitly
         instruct the model to output the structured data.
 
         Args:
@@ -413,13 +387,15 @@ class Agent:
             future = executor.submit(execute)
             return future.result()
 
-    async def structured_output_async(self, output_model: Type[T], prompt: Optional[str] = None) -> T:
+    async def structured_output_async(
+        self, output_model: Type[T], prompt: Optional[Union[str, list[ContentBlock]]] = None
+    ) -> T:
         """This method allows you to get structured output from the agent.
 
         If you pass in a prompt, it will be added to the conversation history and the agent will respond to it.
         If you don't pass in a prompt, it will use only the conversation history to respond.
 
-        For smaller models, you may want to use the optional prompt string to add additional instructions to explicitly
+        For smaller models, you may want to use the optional prompt to add additional instructions to explicitly
         instruct the model to output the structured data.
 
         Args:
@@ -430,7 +406,7 @@ class Agent:
         Raises:
             ValueError: If no conversation history or prompt is provided.
         """
-        self._hooks.invoke_callbacks(StartRequestEvent(agent=self))
+        self.hooks.invoke_callbacks(BeforeInvocationEvent(agent=self))
 
         try:
             if not self.messages and not prompt:
@@ -438,7 +414,8 @@ class Agent:
 
             # add the prompt as the last message
             if prompt:
-                self.messages.append({"role": "user", "content": [{"text": prompt}]})
+                content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
+                self._append_message({"role": "user", "content": content})
 
             events = self.model.structured_output(output_model, self.messages)
             async for event in events:
@@ -448,9 +425,9 @@ class Agent:
             return event["output"]
 
         finally:
-            self._hooks.invoke_callbacks(EndRequestEvent(agent=self))
+            self.hooks.invoke_callbacks(AfterInvocationEvent(agent=self))
 
-    async def stream_async(self, prompt: str, **kwargs: Any) -> AsyncIterator[Any]:
+    async def stream_async(self, prompt: Union[str, list[ContentBlock]], **kwargs: Any) -> AsyncIterator[Any]:
         """Process a natural language prompt and yield events as an async iterator.
 
         This method provides an asynchronous interface for streaming agent events, allowing
@@ -459,7 +436,7 @@ class Agent:
         async environments.
 
         Args:
-            prompt: The natural language prompt from the user.
+            prompt: User input as text or list of ContentBlock objects for multi-modal content.
             **kwargs: Additional parameters to pass to the event loop.
 
         Returns:
@@ -482,10 +459,13 @@ class Agent:
         """
         callback_handler = kwargs.get("callback_handler", self.callback_handler)
 
-        self._start_agent_trace_span(prompt)
+        content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
+        message: Message = {"role": "user", "content": content}
+
+        self._start_agent_trace_span(message)
 
         try:
-            events = self._run_loop(prompt, kwargs)
+            events = self._run_loop(message, invocation_state=kwargs)
             async for event in events:
                 if "callback" in event:
                     callback_handler(**event["callback"])
@@ -501,29 +481,35 @@ class Agent:
             self._end_agent_trace_span(error=e)
             raise
 
-    async def _run_loop(self, prompt: str, kwargs: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
-        """Execute the agent's event loop with the given prompt and parameters."""
-        self._hooks.invoke_callbacks(StartRequestEvent(agent=self))
+    async def _run_loop(
+        self, message: Message, invocation_state: dict[str, Any]
+    ) -> AsyncGenerator[dict[str, Any], None]:
+        """Execute the agent's event loop with the given message and parameters.
+
+        Args:
+            message: The user message to add to the conversation.
+            invocation_state: Additional parameters to pass to the event loop.
+
+        Yields:
+            Events from the event loop cycle.
+        """
+        self.hooks.invoke_callbacks(BeforeInvocationEvent(agent=self))
 
         try:
-            # Extract key parameters
-            yield {"callback": {"init_event_loop": True, **kwargs}}
+            yield {"callback": {"init_event_loop": True, **invocation_state}}
 
-            # Set up the user message with optional knowledge base retrieval
-            message_content: list[ContentBlock] = [{"text": prompt}]
-            new_message: Message = {"role": "user", "content": message_content}
-            self.messages.append(new_message)
+            self._append_message(message)
 
             # Execute the event loop cycle with retry logic for context limits
-            events = self._execute_event_loop_cycle(kwargs)
+            events = self._execute_event_loop_cycle(invocation_state)
             async for event in events:
                 yield event
 
         finally:
             self.conversation_manager.apply_management(self)
-            self._hooks.invoke_callbacks(EndRequestEvent(agent=self))
+            self.hooks.invoke_callbacks(AfterInvocationEvent(agent=self))
 
-    async def _execute_event_loop_cycle(self, kwargs: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
+    async def _execute_event_loop_cycle(self, invocation_state: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
         """Execute the event loop cycle with retry logic for context window limits.
 
         This internal method handles the execution of the event loop cycle and implements
@@ -533,21 +519,14 @@ class Agent:
         Yields:
             Events of the loop cycle.
         """
-        # Add `Agent` to kwargs to keep backwards-compatibility
-        kwargs["agent"] = self
+        # Add `Agent` to invocation_state to keep backwards-compatibility
+        invocation_state["agent"] = self
 
         try:
             # Execute the main event loop cycle
             events = event_loop_cycle(
-                model=self.model,
-                system_prompt=self.system_prompt,
-                messages=self.messages,  # will be modified by event_loop_cycle
-                tool_config=self.tool_config,
-                tool_handler=self.tool_handler,
-                thread_pool=self.thread_pool,
-                event_loop_metrics=self.event_loop_metrics,
-                event_loop_parent_span=self.trace_span,
-                kwargs=kwargs,
+                agent=self,
+                invocation_state=invocation_state,
             )
             async for event in events:
                 yield event
@@ -555,7 +534,7 @@ class Agent:
         except ContextWindowOverflowException as e:
             # Try reducing the context size and retrying
             self.conversation_manager.reduce_context(self, e=e)
-            events = self._execute_event_loop_cycle(kwargs)
+            events = self._execute_event_loop_cycle(invocation_state)
             async for event in events:
                 yield event
 
@@ -609,21 +588,21 @@ class Agent:
         }
 
         # Add to message history
-        messages.append(user_msg)
-        messages.append(tool_use_msg)
-        messages.append(tool_result_msg)
-        messages.append(assistant_msg)
+        self._append_message(user_msg)
+        self._append_message(tool_use_msg)
+        self._append_message(tool_result_msg)
+        self._append_message(assistant_msg)
 
-    def _start_agent_trace_span(self, prompt: str) -> None:
+    def _start_agent_trace_span(self, message: Message) -> None:
         """Starts a trace span for the agent.
 
         Args:
-            prompt: The natural language prompt from the user.
+            message: The user message.
         """
         model_id = self.model.config.get("model_id") if hasattr(self.model, "config") else None
 
         self.trace_span = self.tracer.start_agent_span(
-            prompt=prompt,
+            message=message,
             agent_name=self.name,
             model_id=model_id,
             tools=self.tool_names,
@@ -655,6 +634,11 @@ class Agent:
 
             self.tracer.end_agent_span(**trace_attributes)
 
+    def _append_message(self, message: Message) -> None:
+        """Appends a message to the agent's list of messages and invokes the callbacks for the MessageCreatedEvent."""
+        self.messages.append(message)
+        self.hooks.invoke_callbacks(MessageAddedEvent(agent=self, message=message))
+
 ````
 
 #### `tool`
@@ -672,14 +656,6 @@ agent = Agent(tools=[calculator])
 agent.tool.calculator(...)
 
 ```
-
-#### `tool_config`
-
-Get the tool configuration for this agent.
-
-Returns:
-
-| Type | Description | | --- | --- | | `ToolConfig` | The complete tool configuration. |
 
 #### `tool_names`
 
@@ -754,21 +730,19 @@ class ToolCaller:
                 "input": kwargs.copy(),
             }
 
-            # Execute the tool
-            events = self._agent.tool_handler.process(
-                tool=tool_use,
-                model=self._agent.model,
-                system_prompt=self._agent.system_prompt,
-                messages=self._agent.messages,
-                tool_config=self._agent.tool_config,
-                kwargs=kwargs,
-            )
+            async def acall() -> ToolResult:
+                # Pass kwargs as invocation_state
+                async for event in run_tool(self._agent, tool_use, kwargs):
+                    _ = event
 
-            try:
-                while True:
-                    next(events)
-            except StopIteration as stop:
-                tool_result = cast(ToolResult, stop.value)
+                return cast(ToolResult, event)
+
+            def tcall() -> ToolResult:
+                return asyncio.run(acall())
+
+            with ThreadPoolExecutor() as executor:
+                future = executor.submit(tcall)
+                tool_result = future.result()
 
             if record_direct_tool_call is not None:
                 should_record_direct_tool_call = record_direct_tool_call
@@ -877,21 +851,19 @@ def __getattr__(self, name: str) -> Callable[..., Any]:
             "input": kwargs.copy(),
         }
 
-        # Execute the tool
-        events = self._agent.tool_handler.process(
-            tool=tool_use,
-            model=self._agent.model,
-            system_prompt=self._agent.system_prompt,
-            messages=self._agent.messages,
-            tool_config=self._agent.tool_config,
-            kwargs=kwargs,
-        )
+        async def acall() -> ToolResult:
+            # Pass kwargs as invocation_state
+            async for event in run_tool(self._agent, tool_use, kwargs):
+                _ = event
 
-        try:
-            while True:
-                next(events)
-        except StopIteration as stop:
-            tool_result = cast(ToolResult, stop.value)
+            return cast(ToolResult, event)
+
+        def tcall() -> ToolResult:
+            return asyncio.run(acall())
+
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(tcall)
+            tool_result = future.result()
 
         if record_direct_tool_call is not None:
             should_record_direct_tool_call = record_direct_tool_call
@@ -944,7 +916,7 @@ This method implements the conversational interface (e.g., `agent("hello!")`). I
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `prompt` | `str` | The natural language prompt from the user. | *required* | | `**kwargs` | `Any` | Additional parameters to pass through the event loop. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `prompt` | `Union[str, list[ContentBlock]]` | User input as text or list of ContentBlock objects for multi-modal content. | *required* | | `**kwargs` | `Any` | Additional parameters to pass through the event loop. | `{}` |
 
 Returns:
 
@@ -953,14 +925,14 @@ Returns:
 Source code in `strands/agent/agent.py`
 
 ```
-def __call__(self, prompt: str, **kwargs: Any) -> AgentResult:
+def __call__(self, prompt: Union[str, list[ContentBlock]], **kwargs: Any) -> AgentResult:
     """Process a natural language prompt through the agent's event loop.
 
     This method implements the conversational interface (e.g., `agent("hello!")`). It adds the user's prompt to
     the conversation history, processes it through the model, executes any tool calls, and returns the final result.
 
     Args:
-        prompt: The natural language prompt from the user.
+        prompt: User input as text or list of ContentBlock objects for multi-modal content.
         **kwargs: Additional parameters to pass through the event loop.
 
     Returns:
@@ -981,37 +953,13 @@ def __call__(self, prompt: str, **kwargs: Any) -> AgentResult:
 
 ```
 
-#### `__del__()`
-
-Clean up resources when Agent is garbage collected.
-
-Ensures proper shutdown of the thread pool executor if one exists.
-
-Source code in `strands/agent/agent.py`
-
-```
-def __del__(self) -> None:
-    """Clean up resources when Agent is garbage collected.
-
-    Ensures proper shutdown of the thread pool executor if one exists.
-    """
-    if self.thread_pool:
-        self.thread_pool.shutdown(wait=False)
-        logger.debug("thread pool executor shutdown complete")
-
-```
-
-#### `__init__(model=None, messages=None, tools=None, system_prompt=None, callback_handler=_DEFAULT_CALLBACK_HANDLER, conversation_manager=None, max_parallel_tools=os.cpu_count() or 1, record_direct_tool_call=True, load_tools_from_directory=True, trace_attributes=None, *, name=None, description=None, state=None)`
+#### `__init__(model=None, messages=None, tools=None, system_prompt=None, callback_handler=_DEFAULT_CALLBACK_HANDLER, conversation_manager=None, record_direct_tool_call=True, load_tools_from_directory=False, trace_attributes=None, *, agent_id=None, name=None, description=None, state=None, hooks=None)`
 
 Initialize the Agent with the specified configuration.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `model` | `Union[Model, str, None]` | Provider for running inference or a string representing the model-id for Bedrock to use. Defaults to strands.models.BedrockModel if None. | `None` | | `messages` | `Optional[Messages]` | List of initial messages to pre-load into the conversation. Defaults to an empty list if None. | `None` | | `tools` | `Optional[list[Union[str, dict[str, str], Any]]]` | List of tools to make available to the agent. Can be specified as: String tool names (e.g., "retrieve") File paths (e.g., "/path/to/tool.py") Imported Python modules (e.g., from strands_tools import current_time) Dictionaries with name/path keys (e.g., {"name": "tool_name", "path": "/path/to/tool.py"}) Functions decorated with @strands.tool decorator. If provided, only these tools will be available. If None, all tools will be available. | `None` | | `system_prompt` | `Optional[str]` | System prompt to guide model behavior. If None, the model will behave according to its default settings. | `None` | | `callback_handler` | `Optional[Union[Callable[..., Any], _DefaultCallbackHandlerSentinel]]` | Callback for processing events as they happen during agent execution. If not provided (using the default), a new PrintingCallbackHandler instance is created. If explicitly set to None, null_callback_handler is used. | `_DEFAULT_CALLBACK_HANDLER` | | `conversation_manager` | `Optional[ConversationManager]` | Manager for conversation history and context window. Defaults to strands.agent.conversation_manager.SlidingWindowConversationManager if None. | `None` | | `max_parallel_tools` | `int` | Maximum number of tools to run in parallel when the model returns multiple tool calls. Defaults to os.cpu_count() or 1. | `cpu_count() or 1` | | `record_direct_tool_call` | `bool` | Whether to record direct tool calls in message history. Defaults to True. | `True` | | `load_tools_from_directory` | `bool` | Whether to load and automatically reload tools in the ./tools/ directory. Defaults to True. | `True` | | `trace_attributes` | `Optional[Mapping[str, AttributeValue]]` | Custom trace attributes to apply to the agent's trace span. | `None` | | `name` | `Optional[str]` | name of the Agent Defaults to None. | `None` | | `description` | `Optional[str]` | description of what the Agent does Defaults to None. | `None` | | `state` | `Optional[Union[AgentState, dict]]` | stateful information for the agent. Can be either an AgentState object, or a json serializable dict. Defaults to an empty AgentState object. | `None` |
-
-Raises:
-
-| Type | Description | | --- | --- | | `ValueError` | If max_parallel_tools is less than 1. |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `model` | `Union[Model, str, None]` | Provider for running inference or a string representing the model-id for Bedrock to use. Defaults to strands.models.BedrockModel if None. | `None` | | `messages` | `Optional[Messages]` | List of initial messages to pre-load into the conversation. Defaults to an empty list if None. | `None` | | `tools` | `Optional[list[Union[str, dict[str, str], Any]]]` | List of tools to make available to the agent. Can be specified as: String tool names (e.g., "retrieve") File paths (e.g., "/path/to/tool.py") Imported Python modules (e.g., from strands_tools import current_time) Dictionaries with name/path keys (e.g., {"name": "tool_name", "path": "/path/to/tool.py"}) Functions decorated with @strands.tool decorator. If provided, only these tools will be available. If None, all tools will be available. | `None` | | `system_prompt` | `Optional[str]` | System prompt to guide model behavior. If None, the model will behave according to its default settings. | `None` | | `callback_handler` | `Optional[Union[Callable[..., Any], _DefaultCallbackHandlerSentinel]]` | Callback for processing events as they happen during agent execution. If not provided (using the default), a new PrintingCallbackHandler instance is created. If explicitly set to None, null_callback_handler is used. | `_DEFAULT_CALLBACK_HANDLER` | | `conversation_manager` | `Optional[ConversationManager]` | Manager for conversation history and context window. Defaults to strands.agent.conversation_manager.SlidingWindowConversationManager if None. | `None` | | `record_direct_tool_call` | `bool` | Whether to record direct tool calls in message history. Defaults to True. | `True` | | `load_tools_from_directory` | `bool` | Whether to load and automatically reload tools in the ./tools/ directory. Defaults to False. | `False` | | `trace_attributes` | `Optional[Mapping[str, AttributeValue]]` | Custom trace attributes to apply to the agent's trace span. | `None` | | `agent_id` | `Optional[str]` | Optional ID for the agent, useful for multi-agent scenarios. If None, a UUID is generated. | `None` | | `name` | `Optional[str]` | name of the Agent Defaults to None. | `None` | | `description` | `Optional[str]` | description of what the Agent does Defaults to None. | `None` | | `state` | `Optional[Union[AgentState, dict]]` | stateful information for the agent. Can be either an AgentState object, or a json serializable dict. Defaults to an empty AgentState object. | `None` | | `hooks` | `Optional[list[HookProvider]]` | hooks to be added to the agent hook registry Defaults to None. | `None` |
 
 Source code in `strands/agent/agent.py`
 
@@ -1026,14 +974,15 @@ def __init__(
         Union[Callable[..., Any], _DefaultCallbackHandlerSentinel]
     ] = _DEFAULT_CALLBACK_HANDLER,
     conversation_manager: Optional[ConversationManager] = None,
-    max_parallel_tools: int = os.cpu_count() or 1,
     record_direct_tool_call: bool = True,
-    load_tools_from_directory: bool = True,
+    load_tools_from_directory: bool = False,
     trace_attributes: Optional[Mapping[str, AttributeValue]] = None,
     *,
+    agent_id: Optional[str] = None,
     name: Optional[str] = None,
     description: Optional[str] = None,
     state: Optional[Union[AgentState, dict]] = None,
+    hooks: Optional[list[HookProvider]] = None,
 ):
     """Initialize the Agent with the specified configuration.
 
@@ -1059,27 +1008,29 @@ def __init__(
             If explicitly set to None, null_callback_handler is used.
         conversation_manager: Manager for conversation history and context window.
             Defaults to strands.agent.conversation_manager.SlidingWindowConversationManager if None.
-        max_parallel_tools: Maximum number of tools to run in parallel when the model returns multiple tool calls.
-            Defaults to os.cpu_count() or 1.
         record_direct_tool_call: Whether to record direct tool calls in message history.
             Defaults to True.
         load_tools_from_directory: Whether to load and automatically reload tools in the `./tools/` directory.
-            Defaults to True.
+            Defaults to False.
         trace_attributes: Custom trace attributes to apply to the agent's trace span.
+        agent_id: Optional ID for the agent, useful for multi-agent scenarios.
+            If None, a UUID is generated.
         name: name of the Agent
             Defaults to None.
         description: description of what the Agent does
             Defaults to None.
         state: stateful information for the agent. Can be either an AgentState object, or a json serializable dict.
             Defaults to an empty AgentState object.
-
-    Raises:
-        ValueError: If max_parallel_tools is less than 1.
+        hooks: hooks to be added to the agent hook registry
+            Defaults to None.
     """
     self.model = BedrockModel() if not model else BedrockModel(model_id=model) if isinstance(model, str) else model
     self.messages = messages if messages is not None else []
 
     self.system_prompt = system_prompt
+    self.agent_id = agent_id or str(uuid4())
+    self.name = name or _DEFAULT_AGENT_NAME
+    self.description = description
 
     # If not provided, create a new PrintingCallbackHandler instance
     # If explicitly set to None, use null_callback_handler
@@ -1103,19 +1054,10 @@ def __init__(
             ):
                 self.trace_attributes[k] = v
 
-    # If max_parallel_tools is 1, we execute tools sequentially
-    self.thread_pool = None
-    self.thread_pool_wrapper = None
-    if max_parallel_tools > 1:
-        self.thread_pool = ThreadPoolExecutor(max_workers=max_parallel_tools)
-    elif max_parallel_tools < 1:
-        raise ValueError("max_parallel_tools must be greater than 0")
-
     self.record_direct_tool_call = record_direct_tool_call
     self.load_tools_from_directory = load_tools_from_directory
 
     self.tool_registry = ToolRegistry()
-    self.tool_handler = AgentToolHandler(tool_registry=self.tool_registry)
 
     # Process tool list if provided
     if tools is not None:
@@ -1144,12 +1086,12 @@ def __init__(
         self.state = AgentState()
 
     self.tool_caller = Agent.ToolCaller(self)
-    self.name = name or _DEFAULT_AGENT_NAME
-    self.description = description
 
-    self._hooks = HookRegistry()
-    # Register built-in hook providers (like ConversationManager) here
-    self._hooks.invoke_callbacks(AgentInitializedEvent(agent=self))
+    self.hooks = HookRegistry()
+    if hooks:
+        for hook in hooks:
+            self.hooks.add_hook(hook)
+    self.hooks.invoke_callbacks(AgentInitializedEvent(agent=self))
 
 ```
 
@@ -1161,7 +1103,7 @@ This method implements the conversational interface (e.g., `agent("hello!")`). I
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `prompt` | `str` | The natural language prompt from the user. | *required* | | `**kwargs` | `Any` | Additional parameters to pass through the event loop. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `prompt` | `Union[str, list[ContentBlock]]` | User input as text or list of ContentBlock objects for multi-modal content. | *required* | | `**kwargs` | `Any` | Additional parameters to pass through the event loop. | `{}` |
 
 Returns:
 
@@ -1170,14 +1112,14 @@ Returns:
 Source code in `strands/agent/agent.py`
 
 ```
-async def invoke_async(self, prompt: str, **kwargs: Any) -> AgentResult:
+async def invoke_async(self, prompt: Union[str, list[ContentBlock]], **kwargs: Any) -> AgentResult:
     """Process a natural language prompt through the agent's event loop.
 
     This method implements the conversational interface (e.g., `agent("hello!")`). It adds the user's prompt to
     the conversation history, processes it through the model, executes any tool calls, and returns the final result.
 
     Args:
-        prompt: The natural language prompt from the user.
+        prompt: User input as text or list of ContentBlock objects for multi-modal content.
         **kwargs: Additional parameters to pass through the event loop.
 
     Returns:
@@ -1204,7 +1146,7 @@ This method provides an asynchronous interface for streaming agent events, allow
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `prompt` | `str` | The natural language prompt from the user. | *required* | | `**kwargs` | `Any` | Additional parameters to pass to the event loop. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `prompt` | `Union[str, list[ContentBlock]]` | User input as text or list of ContentBlock objects for multi-modal content. | *required* | | `**kwargs` | `Any` | Additional parameters to pass to the event loop. | `{}` |
 
 Returns:
 
@@ -1226,7 +1168,7 @@ async for event in agent.stream_async("Analyze this data"):
 Source code in `strands/agent/agent.py`
 
 ````
-async def stream_async(self, prompt: str, **kwargs: Any) -> AsyncIterator[Any]:
+async def stream_async(self, prompt: Union[str, list[ContentBlock]], **kwargs: Any) -> AsyncIterator[Any]:
     """Process a natural language prompt and yield events as an async iterator.
 
     This method provides an asynchronous interface for streaming agent events, allowing
@@ -1235,7 +1177,7 @@ async def stream_async(self, prompt: str, **kwargs: Any) -> AsyncIterator[Any]:
     async environments.
 
     Args:
-        prompt: The natural language prompt from the user.
+        prompt: User input as text or list of ContentBlock objects for multi-modal content.
         **kwargs: Additional parameters to pass to the event loop.
 
     Returns:
@@ -1258,10 +1200,13 @@ async def stream_async(self, prompt: str, **kwargs: Any) -> AsyncIterator[Any]:
     """
     callback_handler = kwargs.get("callback_handler", self.callback_handler)
 
-    self._start_agent_trace_span(prompt)
+    content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
+    message: Message = {"role": "user", "content": content}
+
+    self._start_agent_trace_span(message)
 
     try:
-        events = self._run_loop(prompt, kwargs)
+        events = self._run_loop(message, invocation_state=kwargs)
         async for event in events:
             if "callback" in event:
                 callback_handler(**event["callback"])
@@ -1285,11 +1230,11 @@ This method allows you to get structured output from the agent.
 
 If you pass in a prompt, it will be added to the conversation history and the agent will respond to it. If you don't pass in a prompt, it will use only the conversation history to respond.
 
-For smaller models, you may want to use the optional prompt string to add additional instructions to explicitly instruct the model to output the structured data.
+For smaller models, you may want to use the optional prompt to add additional instructions to explicitly instruct the model to output the structured data.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model (a JSON schema written as a Pydantic BaseModel) that the agent will use when responding. | *required* | | `prompt` | `Optional[str]` | The prompt to use for the agent. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model (a JSON schema written as a Pydantic BaseModel) that the agent will use when responding. | *required* | | `prompt` | `Optional[Union[str, list[ContentBlock]]]` | The prompt to use for the agent. | `None` |
 
 Raises:
 
@@ -1298,13 +1243,13 @@ Raises:
 Source code in `strands/agent/agent.py`
 
 ```
-def structured_output(self, output_model: Type[T], prompt: Optional[str] = None) -> T:
+def structured_output(self, output_model: Type[T], prompt: Optional[Union[str, list[ContentBlock]]] = None) -> T:
     """This method allows you to get structured output from the agent.
 
     If you pass in a prompt, it will be added to the conversation history and the agent will respond to it.
     If you don't pass in a prompt, it will use only the conversation history to respond.
 
-    For smaller models, you may want to use the optional prompt string to add additional instructions to explicitly
+    For smaller models, you may want to use the optional prompt to add additional instructions to explicitly
     instruct the model to output the structured data.
 
     Args:
@@ -1331,11 +1276,11 @@ This method allows you to get structured output from the agent.
 
 If you pass in a prompt, it will be added to the conversation history and the agent will respond to it. If you don't pass in a prompt, it will use only the conversation history to respond.
 
-For smaller models, you may want to use the optional prompt string to add additional instructions to explicitly instruct the model to output the structured data.
+For smaller models, you may want to use the optional prompt to add additional instructions to explicitly instruct the model to output the structured data.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model (a JSON schema written as a Pydantic BaseModel) that the agent will use when responding. | *required* | | `prompt` | `Optional[str]` | The prompt to use for the agent. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model (a JSON schema written as a Pydantic BaseModel) that the agent will use when responding. | *required* | | `prompt` | `Optional[Union[str, list[ContentBlock]]]` | The prompt to use for the agent. | `None` |
 
 Raises:
 
@@ -1344,13 +1289,15 @@ Raises:
 Source code in `strands/agent/agent.py`
 
 ```
-async def structured_output_async(self, output_model: Type[T], prompt: Optional[str] = None) -> T:
+async def structured_output_async(
+    self, output_model: Type[T], prompt: Optional[Union[str, list[ContentBlock]]] = None
+) -> T:
     """This method allows you to get structured output from the agent.
 
     If you pass in a prompt, it will be added to the conversation history and the agent will respond to it.
     If you don't pass in a prompt, it will use only the conversation history to respond.
 
-    For smaller models, you may want to use the optional prompt string to add additional instructions to explicitly
+    For smaller models, you may want to use the optional prompt to add additional instructions to explicitly
     instruct the model to output the structured data.
 
     Args:
@@ -1361,7 +1308,7 @@ async def structured_output_async(self, output_model: Type[T], prompt: Optional[
     Raises:
         ValueError: If no conversation history or prompt is provided.
     """
-    self._hooks.invoke_callbacks(StartRequestEvent(agent=self))
+    self.hooks.invoke_callbacks(BeforeInvocationEvent(agent=self))
 
     try:
         if not self.messages and not prompt:
@@ -1369,7 +1316,8 @@ async def structured_output_async(self, output_model: Type[T], prompt: Optional[
 
         # add the prompt as the last message
         if prompt:
-            self.messages.append({"role": "user", "content": [{"text": prompt}]})
+            content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
+            self._append_message({"role": "user", "content": content})
 
         events = self.model.structured_output(output_model, self.messages)
         async for event in events:
@@ -1379,7 +1327,7 @@ async def structured_output_async(self, output_model: Type[T], prompt: Optional[
         return event["output"]
 
     finally:
-        self._hooks.invoke_callbacks(EndRequestEvent(agent=self))
+        self.hooks.invoke_callbacks(AfterInvocationEvent(agent=self))
 
 ```
 
@@ -1514,7 +1462,7 @@ class ConversationManager(ABC):
 
     @abstractmethod
     # pragma: no cover
-    def apply_management(self, agent: "Agent") -> None:
+    def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
         """Applies management strategy to the provided agent.
 
         Processes the conversation history to maintain appropriate size by modifying the messages list in-place.
@@ -1524,12 +1472,13 @@ class ConversationManager(ABC):
         Args:
             agent: The agent whose conversation history will be manage.
                 This list is modified in-place.
+            **kwargs: Additional keyword arguments for future extensibility.
         """
         pass
 
     @abstractmethod
     # pragma: no cover
-    def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
+    def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
         """Called when the model's context window is exceeded.
 
         This method should implement the specific strategy for reducing the window size when a context overflow occurs.
@@ -1546,12 +1495,13 @@ class ConversationManager(ABC):
             agent: The agent whose conversation history will be reduced.
                 This list is modified in-place.
             e: The exception that triggered the context reduction, if any.
+            **kwargs: Additional keyword arguments for future extensibility.
         """
         pass
 
 ```
 
-##### `apply_management(agent)`
+##### `apply_management(agent, **kwargs)`
 
 Applies management strategy to the provided agent.
 
@@ -1559,14 +1509,14 @@ Processes the conversation history to maintain appropriate size by modifying the
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be manage. This list is modified in-place. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be manage. This list is modified in-place. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/agent/conversation_manager/conversation_manager.py`
 
 ```
 @abstractmethod
 # pragma: no cover
-def apply_management(self, agent: "Agent") -> None:
+def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
     """Applies management strategy to the provided agent.
 
     Processes the conversation history to maintain appropriate size by modifying the messages list in-place.
@@ -1576,12 +1526,13 @@ def apply_management(self, agent: "Agent") -> None:
     Args:
         agent: The agent whose conversation history will be manage.
             This list is modified in-place.
+        **kwargs: Additional keyword arguments for future extensibility.
     """
     pass
 
 ```
 
-##### `reduce_context(agent, e=None)`
+##### `reduce_context(agent, e=None, **kwargs)`
 
 Called when the model's context window is exceeded.
 
@@ -1596,14 +1547,14 @@ Implementations might use strategies such as:
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be reduced. This list is modified in-place. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be reduced. This list is modified in-place. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/agent/conversation_manager/conversation_manager.py`
 
 ```
 @abstractmethod
 # pragma: no cover
-def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
+def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
     """Called when the model's context window is exceeded.
 
     This method should implement the specific strategy for reducing the window size when a context overflow occurs.
@@ -1620,6 +1571,7 @@ def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
         agent: The agent whose conversation history will be reduced.
             This list is modified in-place.
         e: The exception that triggered the context reduction, if any.
+        **kwargs: Additional keyword arguments for future extensibility.
     """
     pass
 
@@ -1654,20 +1606,22 @@ class NullConversationManager(ConversationManager):
     - Situations where the full conversation history should be preserved
     """
 
-    def apply_management(self, _agent: "Agent") -> None:
+    def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
         """Does nothing to the conversation history.
 
         Args:
-            _agent: The agent whose conversation history will remain unmodified.
+            agent: The agent whose conversation history will remain unmodified.
+            **kwargs: Additional keyword arguments for future extensibility.
         """
         pass
 
-    def reduce_context(self, _agent: "Agent", e: Optional[Exception] = None) -> None:
+    def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
         """Does not reduce context and raises an exception.
 
         Args:
-            _agent: The agent whose conversation history will remain unmodified.
+            agent: The agent whose conversation history will remain unmodified.
             e: The exception that triggered the context reduction, if any.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Raises:
             e: If provided.
@@ -1680,34 +1634,35 @@ class NullConversationManager(ConversationManager):
 
 ```
 
-##### `apply_management(_agent)`
+##### `apply_management(agent, **kwargs)`
 
 Does nothing to the conversation history.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `_agent` | `Agent` | The agent whose conversation history will remain unmodified. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will remain unmodified. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/agent/conversation_manager/null_conversation_manager.py`
 
 ```
-def apply_management(self, _agent: "Agent") -> None:
+def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
     """Does nothing to the conversation history.
 
     Args:
-        _agent: The agent whose conversation history will remain unmodified.
+        agent: The agent whose conversation history will remain unmodified.
+        **kwargs: Additional keyword arguments for future extensibility.
     """
     pass
 
 ```
 
-##### `reduce_context(_agent, e=None)`
+##### `reduce_context(agent, e=None, **kwargs)`
 
 Does not reduce context and raises an exception.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `_agent` | `Agent` | The agent whose conversation history will remain unmodified. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will remain unmodified. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Raises:
 
@@ -1716,12 +1671,13 @@ Raises:
 Source code in `strands/agent/conversation_manager/null_conversation_manager.py`
 
 ```
-def reduce_context(self, _agent: "Agent", e: Optional[Exception] = None) -> None:
+def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
     """Does not reduce context and raises an exception.
 
     Args:
-        _agent: The agent whose conversation history will remain unmodified.
+        agent: The agent whose conversation history will remain unmodified.
         e: The exception that triggered the context reduction, if any.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Raises:
         e: If provided.
@@ -1767,63 +1723,27 @@ class SlidingWindowConversationManager(ConversationManager):
         self.window_size = window_size
         self.should_truncate_results = should_truncate_results
 
-    def apply_management(self, agent: "Agent") -> None:
+    def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
         """Apply the sliding window to the agent's messages array to maintain a manageable history size.
 
-        This method is called after every event loop cycle, as the messages array may have been modified with tool
-        results and assistant responses. It first removes any dangling messages that might create an invalid
-        conversation state, then applies the sliding window if the message count exceeds the window size.
-
-        Special handling is implemented to ensure we don't leave a user message with toolResult
-        as the first message in the array. It also ensures that all toolUse blocks have corresponding toolResult
-        blocks to maintain conversation coherence.
+        This method is called after every event loop cycle to apply a sliding window if the message count
+        exceeds the window size.
 
         Args:
             agent: The agent whose messages will be managed.
                 This list is modified in-place.
+            **kwargs: Additional keyword arguments for future extensibility.
         """
         messages = agent.messages
-        self._remove_dangling_messages(messages)
 
         if len(messages) <= self.window_size:
             logger.debug(
-                "window_size=<%s>, message_count=<%s> | skipping context reduction", len(messages), self.window_size
+                "message_count=<%s>, window_size=<%s> | skipping context reduction", len(messages), self.window_size
             )
             return
         self.reduce_context(agent)
 
-    def _remove_dangling_messages(self, messages: Messages) -> None:
-        """Remove dangling messages that would create an invalid conversation state.
-
-        After the event loop cycle is executed, we expect the messages array to end with either an assistant tool use
-        request followed by the pairing user tool result or an assistant response with no tool use request. If the
-        event loop cycle fails, we may end up in an invalid message state, and so this method will remove problematic
-        messages from the end of the array.
-
-        This method handles two specific cases:
-
-        - User with no tool result: Indicates that event loop failed to generate an assistant tool use request
-        - Assistant with tool use request: Indicates that event loop failed to generate a pairing user tool result
-
-        Args:
-            messages: The messages to clean up.
-                This list is modified in-place.
-        """
-        # remove any dangling user messages with no ToolResult
-        if len(messages) > 0 and is_user_message(messages[-1]):
-            if not any("toolResult" in content for content in messages[-1]["content"]):
-                messages.pop()
-
-        # remove any dangling assistant messages with ToolUse
-        if len(messages) > 0 and is_assistant_message(messages[-1]):
-            if any("toolUse" in content for content in messages[-1]["content"]):
-                messages.pop()
-                # remove remaining dangling user messages with no ToolResult after we popped off an assistant message
-                if len(messages) > 0 and is_user_message(messages[-1]):
-                    if not any("toolResult" in content for content in messages[-1]["content"]):
-                        messages.pop()
-
-    def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
+    def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
         """Trim the oldest messages to reduce the conversation context size.
 
         The method handles special cases where trimming the messages leads to:
@@ -1834,6 +1754,7 @@ class SlidingWindowConversationManager(ConversationManager):
             agent: The agent whose messages will be reduce.
                 This list is modified in-place.
             e: The exception that triggered the context reduction, if any.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Raises:
             ContextWindowOverflowException: If the context cannot be reduced further.
@@ -1971,49 +1892,42 @@ def __init__(self, window_size: int = 40, should_truncate_results: bool = True):
 
 ```
 
-##### `apply_management(agent)`
+##### `apply_management(agent, **kwargs)`
 
 Apply the sliding window to the agent's messages array to maintain a manageable history size.
 
-This method is called after every event loop cycle, as the messages array may have been modified with tool results and assistant responses. It first removes any dangling messages that might create an invalid conversation state, then applies the sliding window if the message count exceeds the window size.
-
-Special handling is implemented to ensure we don't leave a user message with toolResult as the first message in the array. It also ensures that all toolUse blocks have corresponding toolResult blocks to maintain conversation coherence.
+This method is called after every event loop cycle to apply a sliding window if the message count exceeds the window size.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose messages will be managed. This list is modified in-place. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose messages will be managed. This list is modified in-place. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/agent/conversation_manager/sliding_window_conversation_manager.py`
 
 ```
-def apply_management(self, agent: "Agent") -> None:
+def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
     """Apply the sliding window to the agent's messages array to maintain a manageable history size.
 
-    This method is called after every event loop cycle, as the messages array may have been modified with tool
-    results and assistant responses. It first removes any dangling messages that might create an invalid
-    conversation state, then applies the sliding window if the message count exceeds the window size.
-
-    Special handling is implemented to ensure we don't leave a user message with toolResult
-    as the first message in the array. It also ensures that all toolUse blocks have corresponding toolResult
-    blocks to maintain conversation coherence.
+    This method is called after every event loop cycle to apply a sliding window if the message count
+    exceeds the window size.
 
     Args:
         agent: The agent whose messages will be managed.
             This list is modified in-place.
+        **kwargs: Additional keyword arguments for future extensibility.
     """
     messages = agent.messages
-    self._remove_dangling_messages(messages)
 
     if len(messages) <= self.window_size:
         logger.debug(
-            "window_size=<%s>, message_count=<%s> | skipping context reduction", len(messages), self.window_size
+            "message_count=<%s>, window_size=<%s> | skipping context reduction", len(messages), self.window_size
         )
         return
     self.reduce_context(agent)
 
 ```
 
-##### `reduce_context(agent, e=None)`
+##### `reduce_context(agent, e=None, **kwargs)`
 
 Trim the oldest messages to reduce the conversation context size.
 
@@ -2024,7 +1938,7 @@ The method handles special cases where trimming the messages leads to
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose messages will be reduce. This list is modified in-place. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose messages will be reduce. This list is modified in-place. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Raises:
 
@@ -2033,7 +1947,7 @@ Raises:
 Source code in `strands/agent/conversation_manager/sliding_window_conversation_manager.py`
 
 ```
-def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
+def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
     """Trim the oldest messages to reduce the conversation context size.
 
     The method handles special cases where trimming the messages leads to:
@@ -2044,6 +1958,7 @@ def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
         agent: The agent whose messages will be reduce.
             This list is modified in-place.
         e: The exception that triggered the context reduction, if any.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Raises:
         ContextWindowOverflowException: If the context cannot be reduced further.
@@ -2200,7 +2115,7 @@ class SummarizingConversationManager(ConversationManager):
         self.summarization_agent = summarization_agent
         self.summarization_system_prompt = summarization_system_prompt
 
-    def apply_management(self, agent: "Agent") -> None:
+    def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
         """Apply management strategy to conversation history.
 
         For the summarizing conversation manager, no proactive management is performed.
@@ -2209,17 +2124,19 @@ class SummarizingConversationManager(ConversationManager):
         Args:
             agent: The agent whose conversation history will be managed.
                 The agent's messages list is modified in-place.
+            **kwargs: Additional keyword arguments for future extensibility.
         """
         # No proactive management - summarization only happens on context overflow
         pass
 
-    def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
+    def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
         """Reduce context using summarization.
 
         Args:
             agent: The agent whose conversation history will be reduced.
                 The agent's messages list is modified in-place.
             e: The exception that triggered the context reduction, if any.
+            **kwargs: Additional keyword arguments for future extensibility.
 
         Raises:
             ContextWindowOverflowException: If the context cannot be summarized.
@@ -2388,7 +2305,7 @@ def __init__(
 
 ```
 
-##### `apply_management(agent)`
+##### `apply_management(agent, **kwargs)`
 
 Apply management strategy to conversation history.
 
@@ -2396,12 +2313,12 @@ For the summarizing conversation manager, no proactive management is performed. 
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be managed. The agent's messages list is modified in-place. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be managed. The agent's messages list is modified in-place. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/agent/conversation_manager/summarizing_conversation_manager.py`
 
 ```
-def apply_management(self, agent: "Agent") -> None:
+def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
     """Apply management strategy to conversation history.
 
     For the summarizing conversation manager, no proactive management is performed.
@@ -2410,19 +2327,20 @@ def apply_management(self, agent: "Agent") -> None:
     Args:
         agent: The agent whose conversation history will be managed.
             The agent's messages list is modified in-place.
+        **kwargs: Additional keyword arguments for future extensibility.
     """
     # No proactive management - summarization only happens on context overflow
     pass
 
 ```
 
-##### `reduce_context(agent, e=None)`
+##### `reduce_context(agent, e=None, **kwargs)`
 
 Reduce context using summarization.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be reduced. The agent's messages list is modified in-place. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent whose conversation history will be reduced. The agent's messages list is modified in-place. | *required* | | `e` | `Optional[Exception]` | The exception that triggered the context reduction, if any. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Raises:
 
@@ -2431,13 +2349,14 @@ Raises:
 Source code in `strands/agent/conversation_manager/summarizing_conversation_manager.py`
 
 ```
-def reduce_context(self, agent: "Agent", e: Optional[Exception] = None) -> None:
+def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
     """Reduce context using summarization.
 
     Args:
         agent: The agent whose conversation history will be reduced.
             The agent's messages list is modified in-place.
         e: The exception that triggered the context reduction, if any.
+        **kwargs: Additional keyword arguments for future extensibility.
 
     Raises:
         ContextWindowOverflowException: If the context cannot be summarized.
