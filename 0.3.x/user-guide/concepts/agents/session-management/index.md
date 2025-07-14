@@ -123,36 +123,6 @@ Here's a sample IAM policy that grants these permissions for a specific bucket:
 
 ```
 
-If you're using a prefix for organization (as shown in the example with `prefix="production/"`), you can further restrict the policy to that prefix:
-
-```
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:DeleteObject"
-            ],
-            "Resource": "arn:aws:s3:::my-agent-sessions/production/*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "s3:ListBucket",
-            "Resource": "arn:aws:s3:::my-agent-sessions",
-            "Condition": {
-                "StringLike": {
-                    "s3:prefix": "production/*"
-                }
-            }
-        }
-    ]
-}
-
-```
-
 ## How Session Management Works
 
 The session management system in Strands Agents works through a combination of events, repositories, and data models:
