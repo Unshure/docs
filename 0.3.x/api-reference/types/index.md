@@ -2153,3 +2153,7 @@ class ToolUse(TypedDict):
     toolUseId: str
 
 ```
+
+## `strands.types.traces`
+
+Tracing type definitions for the SDK.

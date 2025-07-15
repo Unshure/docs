@@ -684,12 +684,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/context-management/" class="md-nav__link">
+      <a href="../../agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2430,6 +2430,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2453,12 +2476,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2662,7 +2731,7 @@
 
 
 <h1 id="async-iterators-for-streaming">Async Iterators for Streaming<a class="headerlink" href="#async-iterators-for-streaming" title="Permanent link">&para;</a></h1>
-<p>Strands Agents SDK provides support for asynchronous iterators through the <code>stream_async</code> method, enabling real-time streaming of agent responses in asynchronous environments like web servers, APIs, and other async applications.</p>
+<p>Strands Agents SDK provides support for asynchronous iterators through the <a href="../../../../api-reference/agent/#strands.agent.agent.Agent.stream_async"><code>stream_async</code></a> method, enabling real-time streaming of agent responses in asynchronous environments like web servers, APIs, and other async applications.</p>
 <blockquote>
 <p><strong>Note</strong>: If you want to use callbacks instead of async iterators, take a look at the <a href="../callback-handlers/">callback handlers</a> documentation. Async iterators are ideal for asynchronous frameworks like FastAPI, aiohttp, or Django Channels. For these environments, Strands Agents SDK offers the <code>stream_async</code> method which returns an asynchronous iterator.</p>
 </blockquote>
@@ -2686,12 +2755,14 @@
 <span class="c1"># Run the agent</span>
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">process_streaming_response</span><span class="p">())</span>
 </code></pre></div>
+<blockquote>
+<p>Note, Strands also offers an <a href="../../../../api-reference/agent/#strands.agent.agent.Agent.invoke_async"><code>invoke_async</code></a> method for non-iterative async invocations.</p>
+</blockquote>
 <h2 id="event-types">Event Types<a class="headerlink" href="#event-types" title="Permanent link">&para;</a></h2>
 <p>The async iterator yields the same event types as <a href="../callback-handlers/#callback-handler-events">callback handlers</a>, including:</p>
 <h3 id="text-generation-events">Text Generation Events<a class="headerlink" href="#text-generation-events" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>data</code>: Text chunk from the model's output</li>
-<li><code>complete</code>: Boolean indicating if this is the final chunk</li>
 <li><code>delta</code>: Raw delta content from the model</li>
 </ul>
 <h3 id="tool-events">Tool Events<a class="headerlink" href="#tool-events" title="Permanent link">&para;</a></h3>
@@ -2712,6 +2783,7 @@
 <li><code>event</code>: Raw event from the model stream</li>
 <li><code>force_stop</code>: True if the event loop was forced to stop</li>
 <li><code>force_stop_reason</code>: Reason for forced stop</li>
+<li><code>result</code>: The final <a href="../../../../api-reference/agent/#strands.agent.agent_result.AgentResult"><code>AgentResult</code></a></li>
 </ul>
 <h3 id="reasoning-events">Reasoning Events<a class="headerlink" href="#reasoning-events" title="Permanent link">&para;</a></h3>
 <ul>

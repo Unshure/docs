@@ -6,7 +6,7 @@
 
 - [Welcome](https://strandsagents.com/latest/index.md)
 - [Agent Loop](https://strandsagents.com/latest/user-guide/concepts/agents/agent-loop/index.md)
-- [Context Management](https://strandsagents.com/latest/user-guide/concepts/agents/context-management/index.md)
+- [Conversation Management](https://strandsagents.com/latest/user-guide/concepts/agents/conversation-management/index.md)
 - [Hooks](https://strandsagents.com/latest/user-guide/concepts/agents/hooks/index.md)
 - [Prompts](https://strandsagents.com/latest/user-guide/concepts/agents/prompts/index.md)
 - [Session Management](https://strandsagents.com/latest/user-guide/concepts/agents/session-management/index.md)
@@ -70,8 +70,11 @@
 
 - [Agent](https://strandsagents.com/latest/api-reference/agent/index.md)
 - [Event Loop](https://strandsagents.com/latest/api-reference/event-loop/index.md)
+- [Experimental](https://strandsagents.com/latest/api-reference/experimental/index.md)
 - [Handlers](https://strandsagents.com/latest/api-reference/handlers/index.md)
+- [Hooks](https://strandsagents.com/latest/api-reference/hooks/index.md)
 - [Models](https://strandsagents.com/latest/api-reference/models/index.md)
+- [Multiagent](https://strandsagents.com/latest/api-reference/multiagent/index.md)
 - [Telemetry](https://strandsagents.com/latest/api-reference/telemetry/index.md)
 - [Tools](https://strandsagents.com/latest/api-reference/tools/index.md)
 - [Types](https://strandsagents.com/latest/api-reference/types/index.md)

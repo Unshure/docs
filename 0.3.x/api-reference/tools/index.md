@@ -3171,6 +3171,73 @@ def validate_tool_spec(self, tool_spec: ToolSpec) -> None:
 
 ```
 
+## `strands.tools.structured_output`
+
+Tools for converting Pydantic models to Bedrock tools.
+
+### `convert_pydantic_to_tool_spec(model, description=None)`
+
+Converts a Pydantic model to a tool description for the Amazon Bedrock Converse API.
+
+Handles optional vs. required fields, resolves $refs, and uses docstrings.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `model` | `Type[BaseModel]` | The Pydantic model class to convert | *required* | | `description` | `Optional[str]` | Optional description of the tool's purpose | `None` |
+
+Returns:
+
+| Name | Type | Description | | --- | --- | --- | | `ToolSpec` | `ToolSpec` | Dict containing the Bedrock tool specification |
+
+Source code in `strands/tools/structured_output.py`
+
+```
+def convert_pydantic_to_tool_spec(
+    model: Type[BaseModel],
+    description: Optional[str] = None,
+) -> ToolSpec:
+    """Converts a Pydantic model to a tool description for the Amazon Bedrock Converse API.
+
+    Handles optional vs. required fields, resolves $refs, and uses docstrings.
+
+    Args:
+        model: The Pydantic model class to convert
+        description: Optional description of the tool's purpose
+
+    Returns:
+        ToolSpec: Dict containing the Bedrock tool specification
+    """
+    name = model.__name__
+
+    # Get the JSON schema
+    input_schema = model.model_json_schema()
+
+    # Get model docstring for description if not provided
+    model_description = description
+    if not model_description and model.__doc__:
+        model_description = model.__doc__.strip()
+
+    # Process all referenced models to ensure proper docstrings
+    # This step is important for gathering descriptions from referenced models
+    _process_referenced_models(input_schema, model)
+
+    # Now, let's fully expand the nested models with all their properties
+    _expand_nested_properties(input_schema, model)
+
+    # Flatten the schema
+    flattened_schema = _flatten_schema(input_schema)
+
+    final_schema = flattened_schema
+
+    # Construct the tool specification
+    return ToolSpec(
+        name=name,
+        description=model_description or f"{name} structured output tool",
+        inputSchema={"json": final_schema},
+    )
+
+```
+
 ## `strands.tools.watcher`
 
 Tool watcher for hot reloading tools during development.

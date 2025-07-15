@@ -13,7 +13,7 @@
       <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/tools/tools_overview/">
     
     
-      <link rel="prev" href="../../agents/context-management/">
+      <link rel="prev" href="../../agents/conversation-management/">
     
     
       <link rel="next" href="../python-tools/">
@@ -684,12 +684,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/context-management/" class="md-nav__link">
+      <a href="../../agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2502,6 +2502,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2525,12 +2548,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2863,19 +2932,21 @@
 <p>Build your own Python tools using the Strands SDK's tool interfaces.</p>
 <h4 id="function-decorator-approach">Function Decorator Approach<a class="headerlink" href="#function-decorator-approach" title="Permanent link">&para;</a></h4>
 <p>Function decorated tools can be placed anywhere in your codebase and imported in to your agent's list of tools. Define any Python function as a tool by using the <a href="../../../../api-reference/tools/#strands.tools.decorator.tool"><code>@tool</code></a> decorator.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">tool</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">tool</span>
+
 
 <span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_user_location</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the user&#39;s location</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the user&#39;s location.&quot;&quot;&quot;</span>
 
     <span class="c1"># Implement user location lookup logic here</span>
     <span class="k">return</span> <span class="s2">&quot;Seattle, USA&quot;</span>
 
+
 <span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">weather</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get weather information for a location</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get weather information for a location.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        location: City or location name</span>
@@ -2884,25 +2955,33 @@
     <span class="c1"># Implement weather lookup logic here</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Weather for </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">: Sunny, 72°F&quot;</span>
 
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_user_location</span><span class="p">,</span> <span class="n">weather</span><span class="p">])</span>
-
-<span class="c1"># Use the agent with the custom tools</span>
-<span class="n">agent</span><span class="p">(</span><span class="s2">&quot;What is the weather like in my location?&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h4 id="module-based-approach">Module-Based Approach<a class="headerlink" href="#module-based-approach" title="Permanent link">&para;</a></h4>
-<p>Tool modules can contain function decorated tools, in this example <code>get_user_location.py</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># get_user_location.py</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">tool</span>
 
 <span class="nd">@tool</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_user_location</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the user&#39;s location</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">call_api</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call API asynchronously.</span>
+
+<span class="sd">    Strands will invoke all async tools concurrently.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># Implement user location lookup logic here</span>
-    <span class="k">return</span> <span class="s2">&quot;Seattle, USA&quot;</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># simulated api call</span>
+    <span class="k">return</span> <span class="s2">&quot;API result&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">basic_example</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">get_user_location</span><span class="p">,</span> <span class="n">weather</span><span class="p">])</span>
+    <span class="n">agent</span><span class="p">(</span><span class="s2">&quot;What is the weather like in my location?&quot;</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_example</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">call_api</span><span class="p">])</span>
+    <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">invoke_async</span><span class="p">(</span><span class="s2">&quot;Can you call my API?&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">basic_example</span><span class="p">()</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">async_example</span><span class="p">())</span>
 </code></pre></div>
+<h4 id="module-based-approach">Module-Based Approach<a class="headerlink" href="#module-based-approach" title="Permanent link">&para;</a></h4>
 <p>Tool modules can also provide single tools that don't use the decorator pattern, instead they define the <code>TOOL_SPEC</code> variable and a function matching the tool's name. In this example <code>weather.py</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># weather.py</span>
 
@@ -2927,6 +3006,7 @@
 <span class="p">}</span>
 
 <span class="c1"># Function name must match tool name</span>
+<span class="c1"># May also be defined async similar to decorated tools</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">weather</span><span class="p">(</span><span class="n">tool</span><span class="p">:</span> <span class="n">ToolUse</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolResult</span><span class="p">:</span>
     <span class="n">tool_use_id</span> <span class="o">=</span> <span class="n">tool</span><span class="p">[</span><span class="s2">&quot;toolUseId&quot;</span><span class="p">]</span>
     <span class="n">location</span> <span class="o">=</span> <span class="n">tool</span><span class="p">[</span><span class="s2">&quot;input&quot;</span><span class="p">][</span><span class="s2">&quot;location&quot;</span><span class="p">]</span>

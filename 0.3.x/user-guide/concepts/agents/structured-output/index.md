@@ -198,6 +198,31 @@ except ValidationError as e:
 
 ```
 
+### Async
+
+Strands also supports obtaining structured output asynchronously through [`structured_output_async`](../../../../api-reference/agent/#strands.agent.agent.Agent.structured_output_async):
+
+```
+import asyncio
+from pydantic import BaseModel
+from strands import Agent
+
+class PersonInfo(BaseModel):
+    name: str
+    age: int
+    occupation: str
+
+async def structured_output():
+    agent = Agent()
+    return await agent.structured_output_async(
+        PersonInfo,
+        "John Smith is a 30-year-old software engineer"
+    )
+
+result = asyncio.run(structured_output())
+
+```
+
 ## Best Practices
 
 - **Keep models focused**: Define specific models for clear purposes

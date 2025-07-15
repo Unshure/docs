@@ -3453,6 +3453,1021 @@ def update_config(self, **model_config: Unpack[LlamaConfig]) -> None:  # type: i
 
 ```
 
+## `strands.models.mistral`
+
+Mistral AI model provider.
+
+- Docs: https://docs.mistral.ai/
+
+### `MistralModel`
+
+Bases: `Model`
+
+Mistral API model provider implementation.
+
+The implementation handles Mistral-specific features such as:
+
+- Chat and text completions
+- Streaming responses
+- Tool/function calling
+- System prompts
+
+Source code in `strands/models/mistral.py`
+
+```
+class MistralModel(Model):
+    """Mistral API model provider implementation.
+
+    The implementation handles Mistral-specific features such as:
+
+    - Chat and text completions
+    - Streaming responses
+    - Tool/function calling
+    - System prompts
+    """
+
+    class MistralConfig(TypedDict, total=False):
+        """Configuration parameters for Mistral models.
+
+        Attributes:
+            model_id: Mistral model ID (e.g., "mistral-large-latest", "mistral-medium-latest").
+            max_tokens: Maximum number of tokens to generate in the response.
+            temperature: Controls randomness in generation (0.0 to 1.0).
+            top_p: Controls diversity via nucleus sampling.
+            stream: Whether to enable streaming responses.
+        """
+
+        model_id: str
+        max_tokens: Optional[int]
+        temperature: Optional[float]
+        top_p: Optional[float]
+        stream: Optional[bool]
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        *,
+        client_args: Optional[dict[str, Any]] = None,
+        **model_config: Unpack[MistralConfig],
+    ) -> None:
+        """Initialize provider instance.
+
+        Args:
+            api_key: Mistral API key. If not provided, will use MISTRAL_API_KEY env var.
+            client_args: Additional arguments for the Mistral client.
+            **model_config: Configuration options for the Mistral model.
+        """
+        if "temperature" in model_config and model_config["temperature"] is not None:
+            temp = model_config["temperature"]
+            if not 0.0 <= temp <= 1.0:
+                raise ValueError(f"temperature must be between 0.0 and 1.0, got {temp}")
+            # Warn if temperature is above recommended range
+            if temp > 0.7:
+                logger.warning(
+                    "temperature=%s is above the recommended range (0.0-0.7). "
+                    "High values may produce unpredictable results.",
+                    temp,
+                )
+
+        if "top_p" in model_config and model_config["top_p"] is not None:
+            top_p = model_config["top_p"]
+            if not 0.0 <= top_p <= 1.0:
+                raise ValueError(f"top_p must be between 0.0 and 1.0, got {top_p}")
+
+        self.config = MistralModel.MistralConfig(**model_config)
+
+        # Set default stream to True if not specified
+        if "stream" not in self.config:
+            self.config["stream"] = True
+
+        logger.debug("config=<%s> | initializing", self.config)
+
+        client_args = client_args or {}
+        if api_key:
+            client_args["api_key"] = api_key
+
+        self.client = mistralai.Mistral(**client_args)
+
+    @override
+    def update_config(self, **model_config: Unpack[MistralConfig]) -> None:  # type: ignore
+        """Update the Mistral Model configuration with the provided arguments.
+
+        Args:
+            **model_config: Configuration overrides.
+        """
+        self.config.update(model_config)
+
+    @override
+    def get_config(self) -> MistralConfig:
+        """Get the Mistral model configuration.
+
+        Returns:
+            The Mistral model configuration.
+        """
+        return self.config
+
+    def _format_request_message_content(self, content: ContentBlock) -> Union[str, dict[str, Any]]:
+        """Format a Mistral content block.
+
+        Args:
+            content: Message content.
+
+        Returns:
+            Mistral formatted content.
+
+        Raises:
+            TypeError: If the content block type cannot be converted to a Mistral-compatible format.
+        """
+        if "text" in content:
+            return content["text"]
+
+        if "image" in content:
+            image_data = content["image"]
+
+            if "source" in image_data:
+                image_bytes = image_data["source"]["bytes"]
+                base64_data = base64.b64encode(image_bytes).decode("utf-8")
+                format_value = image_data.get("format", "jpeg")
+                media_type = f"image/{format_value}"
+                return {"type": "image_url", "image_url": f"data:{media_type};base64,{base64_data}"}
+
+            raise TypeError("content_type=<image> | unsupported image format")
+
+        raise TypeError(f"content_type=<{next(iter(content))}> | unsupported type")
+
+    def _format_request_message_tool_call(self, tool_use: ToolUse) -> dict[str, Any]:
+        """Format a Mistral tool call.
+
+        Args:
+            tool_use: Tool use requested by the model.
+
+        Returns:
+            Mistral formatted tool call.
+        """
+        return {
+            "function": {
+                "name": tool_use["name"],
+                "arguments": json.dumps(tool_use["input"]),
+            },
+            "id": tool_use["toolUseId"],
+            "type": "function",
+        }
+
+    def _format_request_tool_message(self, tool_result: ToolResult) -> dict[str, Any]:
+        """Format a Mistral tool message.
+
+        Args:
+            tool_result: Tool result collected from a tool execution.
+
+        Returns:
+            Mistral formatted tool message.
+        """
+        content_parts: list[str] = []
+        for content in tool_result["content"]:
+            if "json" in content:
+                content_parts.append(json.dumps(content["json"]))
+            elif "text" in content:
+                content_parts.append(content["text"])
+
+        return {
+            "role": "tool",
+            "name": tool_result["toolUseId"].split("_")[0]
+            if "_" in tool_result["toolUseId"]
+            else tool_result["toolUseId"],
+            "content": "\n".join(content_parts),
+            "tool_call_id": tool_result["toolUseId"],
+        }
+
+    def _format_request_messages(self, messages: Messages, system_prompt: Optional[str] = None) -> list[dict[str, Any]]:
+        """Format a Mistral compatible messages array.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            system_prompt: System prompt to provide context to the model.
+
+        Returns:
+            A Mistral compatible messages array.
+        """
+        formatted_messages: list[dict[str, Any]] = []
+
+        if system_prompt:
+            formatted_messages.append({"role": "system", "content": system_prompt})
+
+        for message in messages:
+            role = message["role"]
+            contents = message["content"]
+
+            text_contents: list[str] = []
+            tool_calls: list[dict[str, Any]] = []
+            tool_messages: list[dict[str, Any]] = []
+
+            for content in contents:
+                if "text" in content:
+                    formatted_content = self._format_request_message_content(content)
+                    if isinstance(formatted_content, str):
+                        text_contents.append(formatted_content)
+                elif "toolUse" in content:
+                    tool_calls.append(self._format_request_message_tool_call(content["toolUse"]))
+                elif "toolResult" in content:
+                    tool_messages.append(self._format_request_tool_message(content["toolResult"]))
+
+            if text_contents or tool_calls:
+                formatted_message: dict[str, Any] = {
+                    "role": role,
+                    "content": " ".join(text_contents) if text_contents else "",
+                }
+
+                if tool_calls:
+                    formatted_message["tool_calls"] = tool_calls
+
+                formatted_messages.append(formatted_message)
+
+            formatted_messages.extend(tool_messages)
+
+        return formatted_messages
+
+    def format_request(
+        self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+    ) -> dict[str, Any]:
+        """Format a Mistral chat streaming request.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+
+        Returns:
+            A Mistral chat streaming request.
+
+        Raises:
+            TypeError: If a message contains a content block type that cannot be converted to a Mistral-compatible
+                format.
+        """
+        request: dict[str, Any] = {
+            "model": self.config["model_id"],
+            "messages": self._format_request_messages(messages, system_prompt),
+        }
+
+        if "max_tokens" in self.config:
+            request["max_tokens"] = self.config["max_tokens"]
+        if "temperature" in self.config:
+            request["temperature"] = self.config["temperature"]
+        if "top_p" in self.config:
+            request["top_p"] = self.config["top_p"]
+        if "stream" in self.config:
+            request["stream"] = self.config["stream"]
+
+        if tool_specs:
+            request["tools"] = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool_spec["name"],
+                        "description": tool_spec["description"],
+                        "parameters": tool_spec["inputSchema"]["json"],
+                    },
+                }
+                for tool_spec in tool_specs
+            ]
+
+        return request
+
+    def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
+        """Format the Mistral response events into standardized message chunks.
+
+        Args:
+            event: A response event from the Mistral model.
+
+        Returns:
+            The formatted chunk.
+
+        Raises:
+            RuntimeError: If chunk_type is not recognized.
+        """
+        match event["chunk_type"]:
+            case "message_start":
+                return {"messageStart": {"role": "assistant"}}
+
+            case "content_start":
+                if event["data_type"] == "text":
+                    return {"contentBlockStart": {"start": {}}}
+
+                tool_call = event["data"]
+                return {
+                    "contentBlockStart": {
+                        "start": {
+                            "toolUse": {
+                                "name": tool_call.function.name,
+                                "toolUseId": tool_call.id,
+                            }
+                        }
+                    }
+                }
+
+            case "content_delta":
+                if event["data_type"] == "text":
+                    return {"contentBlockDelta": {"delta": {"text": event["data"]}}}
+
+                return {"contentBlockDelta": {"delta": {"toolUse": {"input": event["data"]}}}}
+
+            case "content_stop":
+                return {"contentBlockStop": {}}
+
+            case "message_stop":
+                reason: StopReason
+                if event["data"] == "tool_calls":
+                    reason = "tool_use"
+                elif event["data"] == "length":
+                    reason = "max_tokens"
+                else:
+                    reason = "end_turn"
+
+                return {"messageStop": {"stopReason": reason}}
+
+            case "metadata":
+                usage = event["data"]
+                return {
+                    "metadata": {
+                        "usage": {
+                            "inputTokens": usage.prompt_tokens,
+                            "outputTokens": usage.completion_tokens,
+                            "totalTokens": usage.total_tokens,
+                        },
+                        "metrics": {
+                            "latencyMs": event.get("latency_ms", 0),
+                        },
+                    },
+                }
+
+            case _:
+                raise RuntimeError(f"chunk_type=<{event['chunk_type']}> | unknown type")
+
+    def _handle_non_streaming_response(self, response: Any) -> Iterable[dict[str, Any]]:
+        """Handle non-streaming response from Mistral API.
+
+        Args:
+            response: The non-streaming response from Mistral.
+
+        Yields:
+            Formatted events that match the streaming format.
+        """
+        yield {"chunk_type": "message_start"}
+
+        content_started = False
+
+        if response.choices and response.choices[0].message:
+            message = response.choices[0].message
+
+            if hasattr(message, "content") and message.content:
+                if not content_started:
+                    yield {"chunk_type": "content_start", "data_type": "text"}
+                    content_started = True
+
+                yield {"chunk_type": "content_delta", "data_type": "text", "data": message.content}
+
+                yield {"chunk_type": "content_stop"}
+
+            if hasattr(message, "tool_calls") and message.tool_calls:
+                for tool_call in message.tool_calls:
+                    yield {"chunk_type": "content_start", "data_type": "tool", "data": tool_call}
+
+                    if hasattr(tool_call.function, "arguments"):
+                        yield {"chunk_type": "content_delta", "data_type": "tool", "data": tool_call.function.arguments}
+
+                    yield {"chunk_type": "content_stop"}
+
+            finish_reason = response.choices[0].finish_reason if response.choices[0].finish_reason else "stop"
+            yield {"chunk_type": "message_stop", "data": finish_reason}
+
+        if hasattr(response, "usage") and response.usage:
+            yield {"chunk_type": "metadata", "data": response.usage}
+
+    @override
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the Mistral model.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
+
+        Yields:
+            Formatted message chunks from the model.
+
+        Raises:
+            ModelThrottledException: When the model service is throttling requests.
+        """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("request=<%s>", request)
+
+        logger.debug("invoking model")
+        try:
+            logger.debug("got response from model")
+            if not self.config.get("stream", True):
+                # Use non-streaming API
+                response = await self.client.chat.complete_async(**request)
+                for event in self._handle_non_streaming_response(response):
+                    yield self.format_chunk(event)
+                return
+
+            # Use the streaming API
+            stream_response = await self.client.chat.stream_async(**request)
+
+            yield self.format_chunk({"chunk_type": "message_start"})
+
+            content_started = False
+            tool_calls: dict[str, list[Any]] = {}
+            accumulated_text = ""
+
+            async for chunk in stream_response:
+                if hasattr(chunk, "data") and hasattr(chunk.data, "choices") and chunk.data.choices:
+                    choice = chunk.data.choices[0]
+
+                    if hasattr(choice, "delta"):
+                        delta = choice.delta
+
+                        if hasattr(delta, "content") and delta.content:
+                            if not content_started:
+                                yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+                                content_started = True
+
+                            yield self.format_chunk(
+                                {"chunk_type": "content_delta", "data_type": "text", "data": delta.content}
+                            )
+                            accumulated_text += delta.content
+
+                        if hasattr(delta, "tool_calls") and delta.tool_calls:
+                            for tool_call in delta.tool_calls:
+                                tool_id = tool_call.id
+                                tool_calls.setdefault(tool_id, []).append(tool_call)
+
+                    if hasattr(choice, "finish_reason") and choice.finish_reason:
+                        if content_started:
+                            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+
+                        for tool_deltas in tool_calls.values():
+                            yield self.format_chunk(
+                                {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
+                            )
+
+                            for tool_delta in tool_deltas:
+                                if hasattr(tool_delta.function, "arguments"):
+                                    yield self.format_chunk(
+                                        {
+                                            "chunk_type": "content_delta",
+                                            "data_type": "tool",
+                                            "data": tool_delta.function.arguments,
+                                        }
+                                    )
+
+                            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+
+                        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+
+                        if hasattr(chunk, "usage"):
+                            yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
+
+        except Exception as e:
+            if "rate" in str(e).lower() or "429" in str(e):
+                raise ModelThrottledException(str(e)) from e
+            raise
+
+        logger.debug("finished streaming response from model")
+
+    @override
+    async def structured_output(
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
+        """Get structured output from the model.
+
+        Args:
+            output_model: The output model to use for the agent.
+            prompt: The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
+
+        Returns:
+            An instance of the output model with the generated data.
+
+        Raises:
+            ValueError: If the response cannot be parsed into the output model.
+        """
+        tool_spec: ToolSpec = {
+            "name": f"extract_{output_model.__name__.lower()}",
+            "description": f"Extract structured data in the format of {output_model.__name__}",
+            "inputSchema": {"json": output_model.model_json_schema()},
+        }
+
+        formatted_request = self.format_request(messages=prompt, tool_specs=[tool_spec])
+
+        formatted_request["tool_choice"] = "any"
+        formatted_request["parallel_tool_calls"] = False
+
+        response = await self.client.chat.complete_async(**formatted_request)
+
+        if response.choices and response.choices[0].message.tool_calls:
+            tool_call = response.choices[0].message.tool_calls[0]
+            try:
+                # Handle both string and dict arguments
+                if isinstance(tool_call.function.arguments, str):
+                    arguments = json.loads(tool_call.function.arguments)
+                else:
+                    arguments = tool_call.function.arguments
+                yield {"output": output_model(**arguments)}
+                return
+            except (json.JSONDecodeError, TypeError, ValueError) as e:
+                raise ValueError(f"Failed to parse tool call arguments into model: {e}") from e
+
+        raise ValueError("No tool calls found in response")
+
+```
+
+#### `MistralConfig`
+
+Bases: `TypedDict`
+
+Configuration parameters for Mistral models.
+
+Attributes:
+
+| Name | Type | Description | | --- | --- | --- | | `model_id` | `str` | Mistral model ID (e.g., "mistral-large-latest", "mistral-medium-latest"). | | `max_tokens` | `Optional[int]` | Maximum number of tokens to generate in the response. | | `temperature` | `Optional[float]` | Controls randomness in generation (0.0 to 1.0). | | `top_p` | `Optional[float]` | Controls diversity via nucleus sampling. | | `stream` | `Optional[bool]` | Whether to enable streaming responses. |
+
+Source code in `strands/models/mistral.py`
+
+```
+class MistralConfig(TypedDict, total=False):
+    """Configuration parameters for Mistral models.
+
+    Attributes:
+        model_id: Mistral model ID (e.g., "mistral-large-latest", "mistral-medium-latest").
+        max_tokens: Maximum number of tokens to generate in the response.
+        temperature: Controls randomness in generation (0.0 to 1.0).
+        top_p: Controls diversity via nucleus sampling.
+        stream: Whether to enable streaming responses.
+    """
+
+    model_id: str
+    max_tokens: Optional[int]
+    temperature: Optional[float]
+    top_p: Optional[float]
+    stream: Optional[bool]
+
+```
+
+#### `__init__(api_key=None, *, client_args=None, **model_config)`
+
+Initialize provider instance.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `api_key` | `Optional[str]` | Mistral API key. If not provided, will use MISTRAL_API_KEY env var. | `None` | | `client_args` | `Optional[dict[str, Any]]` | Additional arguments for the Mistral client. | `None` | | `**model_config` | `Unpack[MistralConfig]` | Configuration options for the Mistral model. | `{}` |
+
+Source code in `strands/models/mistral.py`
+
+```
+def __init__(
+    self,
+    api_key: Optional[str] = None,
+    *,
+    client_args: Optional[dict[str, Any]] = None,
+    **model_config: Unpack[MistralConfig],
+) -> None:
+    """Initialize provider instance.
+
+    Args:
+        api_key: Mistral API key. If not provided, will use MISTRAL_API_KEY env var.
+        client_args: Additional arguments for the Mistral client.
+        **model_config: Configuration options for the Mistral model.
+    """
+    if "temperature" in model_config and model_config["temperature"] is not None:
+        temp = model_config["temperature"]
+        if not 0.0 <= temp <= 1.0:
+            raise ValueError(f"temperature must be between 0.0 and 1.0, got {temp}")
+        # Warn if temperature is above recommended range
+        if temp > 0.7:
+            logger.warning(
+                "temperature=%s is above the recommended range (0.0-0.7). "
+                "High values may produce unpredictable results.",
+                temp,
+            )
+
+    if "top_p" in model_config and model_config["top_p"] is not None:
+        top_p = model_config["top_p"]
+        if not 0.0 <= top_p <= 1.0:
+            raise ValueError(f"top_p must be between 0.0 and 1.0, got {top_p}")
+
+    self.config = MistralModel.MistralConfig(**model_config)
+
+    # Set default stream to True if not specified
+    if "stream" not in self.config:
+        self.config["stream"] = True
+
+    logger.debug("config=<%s> | initializing", self.config)
+
+    client_args = client_args or {}
+    if api_key:
+        client_args["api_key"] = api_key
+
+    self.client = mistralai.Mistral(**client_args)
+
+```
+
+#### `format_chunk(event)`
+
+Format the Mistral response events into standardized message chunks.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `event` | `dict[str, Any]` | A response event from the Mistral model. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `StreamEvent` | The formatted chunk. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `RuntimeError` | If chunk_type is not recognized. |
+
+Source code in `strands/models/mistral.py`
+
+```
+def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
+    """Format the Mistral response events into standardized message chunks.
+
+    Args:
+        event: A response event from the Mistral model.
+
+    Returns:
+        The formatted chunk.
+
+    Raises:
+        RuntimeError: If chunk_type is not recognized.
+    """
+    match event["chunk_type"]:
+        case "message_start":
+            return {"messageStart": {"role": "assistant"}}
+
+        case "content_start":
+            if event["data_type"] == "text":
+                return {"contentBlockStart": {"start": {}}}
+
+            tool_call = event["data"]
+            return {
+                "contentBlockStart": {
+                    "start": {
+                        "toolUse": {
+                            "name": tool_call.function.name,
+                            "toolUseId": tool_call.id,
+                        }
+                    }
+                }
+            }
+
+        case "content_delta":
+            if event["data_type"] == "text":
+                return {"contentBlockDelta": {"delta": {"text": event["data"]}}}
+
+            return {"contentBlockDelta": {"delta": {"toolUse": {"input": event["data"]}}}}
+
+        case "content_stop":
+            return {"contentBlockStop": {}}
+
+        case "message_stop":
+            reason: StopReason
+            if event["data"] == "tool_calls":
+                reason = "tool_use"
+            elif event["data"] == "length":
+                reason = "max_tokens"
+            else:
+                reason = "end_turn"
+
+            return {"messageStop": {"stopReason": reason}}
+
+        case "metadata":
+            usage = event["data"]
+            return {
+                "metadata": {
+                    "usage": {
+                        "inputTokens": usage.prompt_tokens,
+                        "outputTokens": usage.completion_tokens,
+                        "totalTokens": usage.total_tokens,
+                    },
+                    "metrics": {
+                        "latencyMs": event.get("latency_ms", 0),
+                    },
+                },
+            }
+
+        case _:
+            raise RuntimeError(f"chunk_type=<{event['chunk_type']}> | unknown type")
+
+```
+
+#### `format_request(messages, tool_specs=None, system_prompt=None)`
+
+Format a Mistral chat streaming request.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` |
+
+Returns:
+
+| Type | Description | | --- | --- | | `dict[str, Any]` | A Mistral chat streaming request. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `TypeError` | If a message contains a content block type that cannot be converted to a Mistral-compatible format. |
+
+Source code in `strands/models/mistral.py`
+
+```
+def format_request(
+    self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+) -> dict[str, Any]:
+    """Format a Mistral chat streaming request.
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+
+    Returns:
+        A Mistral chat streaming request.
+
+    Raises:
+        TypeError: If a message contains a content block type that cannot be converted to a Mistral-compatible
+            format.
+    """
+    request: dict[str, Any] = {
+        "model": self.config["model_id"],
+        "messages": self._format_request_messages(messages, system_prompt),
+    }
+
+    if "max_tokens" in self.config:
+        request["max_tokens"] = self.config["max_tokens"]
+    if "temperature" in self.config:
+        request["temperature"] = self.config["temperature"]
+    if "top_p" in self.config:
+        request["top_p"] = self.config["top_p"]
+    if "stream" in self.config:
+        request["stream"] = self.config["stream"]
+
+    if tool_specs:
+        request["tools"] = [
+            {
+                "type": "function",
+                "function": {
+                    "name": tool_spec["name"],
+                    "description": tool_spec["description"],
+                    "parameters": tool_spec["inputSchema"]["json"],
+                },
+            }
+            for tool_spec in tool_specs
+        ]
+
+    return request
+
+```
+
+#### `get_config()`
+
+Get the Mistral model configuration.
+
+Returns:
+
+| Type | Description | | --- | --- | | `MistralConfig` | The Mistral model configuration. |
+
+Source code in `strands/models/mistral.py`
+
+```
+@override
+def get_config(self) -> MistralConfig:
+    """Get the Mistral model configuration.
+
+    Returns:
+        The Mistral model configuration.
+    """
+    return self.config
+
+```
+
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+
+Stream conversation with the Mistral model.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Yields:
+
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Formatted message chunks from the model. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `ModelThrottledException` | When the model service is throttling requests. |
+
+Source code in `strands/models/mistral.py`
+
+```
+@override
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the Mistral model.
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
+
+    Yields:
+        Formatted message chunks from the model.
+
+    Raises:
+        ModelThrottledException: When the model service is throttling requests.
+    """
+    logger.debug("formatting request")
+    request = self.format_request(messages, tool_specs, system_prompt)
+    logger.debug("request=<%s>", request)
+
+    logger.debug("invoking model")
+    try:
+        logger.debug("got response from model")
+        if not self.config.get("stream", True):
+            # Use non-streaming API
+            response = await self.client.chat.complete_async(**request)
+            for event in self._handle_non_streaming_response(response):
+                yield self.format_chunk(event)
+            return
+
+        # Use the streaming API
+        stream_response = await self.client.chat.stream_async(**request)
+
+        yield self.format_chunk({"chunk_type": "message_start"})
+
+        content_started = False
+        tool_calls: dict[str, list[Any]] = {}
+        accumulated_text = ""
+
+        async for chunk in stream_response:
+            if hasattr(chunk, "data") and hasattr(chunk.data, "choices") and chunk.data.choices:
+                choice = chunk.data.choices[0]
+
+                if hasattr(choice, "delta"):
+                    delta = choice.delta
+
+                    if hasattr(delta, "content") and delta.content:
+                        if not content_started:
+                            yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+                            content_started = True
+
+                        yield self.format_chunk(
+                            {"chunk_type": "content_delta", "data_type": "text", "data": delta.content}
+                        )
+                        accumulated_text += delta.content
+
+                    if hasattr(delta, "tool_calls") and delta.tool_calls:
+                        for tool_call in delta.tool_calls:
+                            tool_id = tool_call.id
+                            tool_calls.setdefault(tool_id, []).append(tool_call)
+
+                if hasattr(choice, "finish_reason") and choice.finish_reason:
+                    if content_started:
+                        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+
+                    for tool_deltas in tool_calls.values():
+                        yield self.format_chunk(
+                            {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
+                        )
+
+                        for tool_delta in tool_deltas:
+                            if hasattr(tool_delta.function, "arguments"):
+                                yield self.format_chunk(
+                                    {
+                                        "chunk_type": "content_delta",
+                                        "data_type": "tool",
+                                        "data": tool_delta.function.arguments,
+                                    }
+                                )
+
+                        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+
+                    yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+
+                    if hasattr(chunk, "usage"):
+                        yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
+
+    except Exception as e:
+        if "rate" in str(e).lower() or "429" in str(e):
+            raise ModelThrottledException(str(e)) from e
+        raise
+
+    logger.debug("finished streaming response from model")
+
+```
+
+#### `structured_output(output_model, prompt, **kwargs)`
+
+Get structured output from the model.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Returns:
+
+| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Union[T, Any]], None]` | An instance of the output model with the generated data. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `ValueError` | If the response cannot be parsed into the output model. |
+
+Source code in `strands/models/mistral.py`
+
+```
+@override
+async def structured_output(
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
+    """Get structured output from the model.
+
+    Args:
+        output_model: The output model to use for the agent.
+        prompt: The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
+
+    Returns:
+        An instance of the output model with the generated data.
+
+    Raises:
+        ValueError: If the response cannot be parsed into the output model.
+    """
+    tool_spec: ToolSpec = {
+        "name": f"extract_{output_model.__name__.lower()}",
+        "description": f"Extract structured data in the format of {output_model.__name__}",
+        "inputSchema": {"json": output_model.model_json_schema()},
+    }
+
+    formatted_request = self.format_request(messages=prompt, tool_specs=[tool_spec])
+
+    formatted_request["tool_choice"] = "any"
+    formatted_request["parallel_tool_calls"] = False
+
+    response = await self.client.chat.complete_async(**formatted_request)
+
+    if response.choices and response.choices[0].message.tool_calls:
+        tool_call = response.choices[0].message.tool_calls[0]
+        try:
+            # Handle both string and dict arguments
+            if isinstance(tool_call.function.arguments, str):
+                arguments = json.loads(tool_call.function.arguments)
+            else:
+                arguments = tool_call.function.arguments
+            yield {"output": output_model(**arguments)}
+            return
+        except (json.JSONDecodeError, TypeError, ValueError) as e:
+            raise ValueError(f"Failed to parse tool call arguments into model: {e}") from e
+
+    raise ValueError("No tool calls found in response")
+
+```
+
+#### `update_config(**model_config)`
+
+Update the Mistral Model configuration with the provided arguments.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `**model_config` | `Unpack[MistralConfig]` | Configuration overrides. | `{}` |
+
+Source code in `strands/models/mistral.py`
+
+```
+@override
+def update_config(self, **model_config: Unpack[MistralConfig]) -> None:  # type: ignore
+    """Update the Mistral Model configuration with the provided arguments.
+
+    Args:
+        **model_config: Configuration overrides.
+    """
+    self.config.update(model_config)
+
+```
+
 ## `strands.models.ollama`
 
 Ollama model provider.
@@ -5219,6 +6234,825 @@ Source code in `strands/models/openai.py`
 @override
 def update_config(self, **model_config: Unpack[OpenAIConfig]) -> None:  # type: ignore[override]
     """Update the OpenAI model configuration with the provided arguments.
+
+    Args:
+        **model_config: Configuration overrides.
+    """
+    self.config.update(model_config)
+
+```
+
+## `strands.models.writer`
+
+Writer model provider.
+
+- Docs: https://dev.writer.com/home/introduction
+
+### `WriterModel`
+
+Bases: `Model`
+
+Writer API model provider implementation.
+
+Source code in `strands/models/writer.py`
+
+```
+class WriterModel(Model):
+    """Writer API model provider implementation."""
+
+    class WriterConfig(TypedDict, total=False):
+        """Configuration options for Writer API.
+
+        Attributes:
+            model_id: Model name to use (e.g. palmyra-x5, palmyra-x4, etc.).
+            max_tokens: Maximum number of tokens to generate.
+            stop: Default stop sequences.
+            stream_options: Additional options for streaming.
+            temperature: What sampling temperature to use.
+            top_p: Threshold for 'nucleus sampling'
+        """
+
+        model_id: str
+        max_tokens: Optional[int]
+        stop: Optional[Union[str, List[str]]]
+        stream_options: Dict[str, Any]
+        temperature: Optional[float]
+        top_p: Optional[float]
+
+    def __init__(self, client_args: Optional[dict[str, Any]] = None, **model_config: Unpack[WriterConfig]):
+        """Initialize provider instance.
+
+        Args:
+            client_args: Arguments for the Writer client (e.g., api_key, base_url, timeout, etc.).
+            **model_config: Configuration options for the Writer model.
+        """
+        self.config = WriterModel.WriterConfig(**model_config)
+
+        logger.debug("config=<%s> | initializing", self.config)
+
+        client_args = client_args or {}
+        self.client = writerai.AsyncClient(**client_args)
+
+    @override
+    def update_config(self, **model_config: Unpack[WriterConfig]) -> None:  # type: ignore[override]
+        """Update the Writer Model configuration with the provided arguments.
+
+        Args:
+            **model_config: Configuration overrides.
+        """
+        self.config.update(model_config)
+
+    @override
+    def get_config(self) -> WriterConfig:
+        """Get the Writer model configuration.
+
+        Returns:
+            The Writer model configuration.
+        """
+        return self.config
+
+    def _format_request_message_contents_vision(self, contents: list[ContentBlock]) -> list[dict[str, Any]]:
+        def _format_content_vision(content: ContentBlock) -> dict[str, Any]:
+            """Format a Writer content block for Palmyra V5 request.
+
+            - NOTE: "reasoningContent", "document" and "video" are not supported currently.
+
+            Args:
+                content: Message content.
+
+            Returns:
+                Writer formatted content block for models, which support vision content format.
+
+            Raises:
+                TypeError: If the content block type cannot be converted to a Writer-compatible format.
+            """
+            if "text" in content:
+                return {"text": content["text"], "type": "text"}
+
+            if "image" in content:
+                mime_type = mimetypes.types_map.get(f".{content['image']['format']}", "application/octet-stream")
+                image_data = base64.b64encode(content["image"]["source"]["bytes"]).decode("utf-8")
+
+                return {
+                    "image_url": {
+                        "url": f"data:{mime_type};base64,{image_data}",
+                    },
+                    "type": "image_url",
+                }
+
+            raise TypeError(f"content_type=<{next(iter(content))}> | unsupported type")
+
+        return [
+            _format_content_vision(content)
+            for content in contents
+            if not any(block_type in content for block_type in ["toolResult", "toolUse"])
+        ]
+
+    def _format_request_message_contents(self, contents: list[ContentBlock]) -> str:
+        def _format_content(content: ContentBlock) -> str:
+            """Format a Writer content block for Palmyra models (except V5) request.
+
+            - NOTE: "reasoningContent", "document", "video" and "image" are not supported currently.
+
+            Args:
+                content: Message content.
+
+            Returns:
+                Writer formatted content block.
+
+            Raises:
+                TypeError: If the content block type cannot be converted to a Writer-compatible format.
+            """
+            if "text" in content:
+                return content["text"]
+
+            raise TypeError(f"content_type=<{next(iter(content))}> | unsupported type")
+
+        content_blocks = list(
+            filter(
+                lambda content: content.get("text")
+                and not any(block_type in content for block_type in ["toolResult", "toolUse"]),
+                contents,
+            )
+        )
+
+        if len(content_blocks) > 1:
+            raise ValueError(
+                f"Model with name {self.get_config().get('model_id', 'N/A')} doesn't support multiple contents"
+            )
+        elif len(content_blocks) == 1:
+            return _format_content(content_blocks[0])
+        else:
+            return ""
+
+    def _format_request_message_tool_call(self, tool_use: ToolUse) -> dict[str, Any]:
+        """Format a Writer tool call.
+
+        Args:
+            tool_use: Tool use requested by the model.
+
+        Returns:
+            Writer formatted tool call.
+        """
+        return {
+            "function": {
+                "arguments": json.dumps(tool_use["input"]),
+                "name": tool_use["name"],
+            },
+            "id": tool_use["toolUseId"],
+            "type": "function",
+        }
+
+    def _format_request_tool_message(self, tool_result: ToolResult) -> dict[str, Any]:
+        """Format a Writer tool message.
+
+        Args:
+            tool_result: Tool result collected from a tool execution.
+
+        Returns:
+            Writer formatted tool message.
+        """
+        contents = cast(
+            list[ContentBlock],
+            [
+                {"text": json.dumps(content["json"])} if "json" in content else content
+                for content in tool_result["content"]
+            ],
+        )
+
+        if self.get_config().get("model_id", "") == "palmyra-x5":
+            formatted_contents = self._format_request_message_contents_vision(contents)
+        else:
+            formatted_contents = self._format_request_message_contents(contents)  # type: ignore [assignment]
+
+        return {
+            "role": "tool",
+            "tool_call_id": tool_result["toolUseId"],
+            "content": formatted_contents,
+        }
+
+    def _format_request_messages(self, messages: Messages, system_prompt: Optional[str] = None) -> list[dict[str, Any]]:
+        """Format a Writer compatible messages array.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            system_prompt: System prompt to provide context to the model.
+
+        Returns:
+            Writer compatible messages array.
+        """
+        formatted_messages: list[dict[str, Any]]
+        formatted_messages = [{"role": "system", "content": system_prompt}] if system_prompt else []
+
+        for message in messages:
+            contents = message["content"]
+
+            # Only palmyra V5 support multiple content. Other models support only '{"content": "text_content"}'
+            if self.get_config().get("model_id", "") == "palmyra-x5":
+                formatted_contents: str | list[dict[str, Any]] = self._format_request_message_contents_vision(contents)
+            else:
+                formatted_contents = self._format_request_message_contents(contents)
+
+            formatted_tool_calls = [
+                self._format_request_message_tool_call(content["toolUse"])
+                for content in contents
+                if "toolUse" in content
+            ]
+            formatted_tool_messages = [
+                self._format_request_tool_message(content["toolResult"])
+                for content in contents
+                if "toolResult" in content
+            ]
+
+            formatted_message = {
+                "role": message["role"],
+                "content": formatted_contents if len(formatted_contents) > 0 else "",
+                **({"tool_calls": formatted_tool_calls} if formatted_tool_calls else {}),
+            }
+            formatted_messages.append(formatted_message)
+            formatted_messages.extend(formatted_tool_messages)
+
+        return [message for message in formatted_messages if message["content"] or "tool_calls" in message]
+
+    def format_request(
+        self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+    ) -> Any:
+        """Format a streaming request to the underlying model.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+
+        Returns:
+            The formatted request.
+        """
+        request = {
+            **{k: v for k, v in self.config.items()},
+            "messages": self._format_request_messages(messages, system_prompt),
+            "stream": True,
+        }
+        try:
+            request["model"] = request.pop(
+                "model_id"
+            )  # To be consisted with other models WriterConfig use 'model_id' arg, but Writer API wait for 'model' arg
+        except KeyError as e:
+            raise KeyError("Please specify a model ID. Use 'model_id' keyword argument.") from e
+
+        # Writer don't support empty tools attribute
+        if tool_specs:
+            request["tools"] = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool_spec["name"],
+                        "description": tool_spec["description"],
+                        "parameters": tool_spec["inputSchema"]["json"],
+                    },
+                }
+                for tool_spec in tool_specs
+            ]
+
+        return request
+
+    def format_chunk(self, event: Any) -> StreamEvent:
+        """Format the model response events into standardized message chunks.
+
+        Args:
+            event: A response event from the model.
+
+        Returns:
+            The formatted chunk.
+        """
+        match event.get("chunk_type", ""):
+            case "message_start":
+                return {"messageStart": {"role": "assistant"}}
+
+            case "content_block_start":
+                if event["data_type"] == "text":
+                    return {"contentBlockStart": {"start": {}}}
+
+                return {
+                    "contentBlockStart": {
+                        "start": {
+                            "toolUse": {
+                                "name": event["data"].function.name,
+                                "toolUseId": event["data"].id,
+                            }
+                        }
+                    }
+                }
+
+            case "content_block_delta":
+                if event["data_type"] == "text":
+                    return {"contentBlockDelta": {"delta": {"text": event["data"]}}}
+
+                return {"contentBlockDelta": {"delta": {"toolUse": {"input": event["data"].function.arguments}}}}
+
+            case "content_block_stop":
+                return {"contentBlockStop": {}}
+
+            case "message_stop":
+                match event["data"]:
+                    case "tool_calls":
+                        return {"messageStop": {"stopReason": "tool_use"}}
+                    case "length":
+                        return {"messageStop": {"stopReason": "max_tokens"}}
+                    case _:
+                        return {"messageStop": {"stopReason": "end_turn"}}
+
+            case "metadata":
+                return {
+                    "metadata": {
+                        "usage": {
+                            "inputTokens": event["data"].prompt_tokens if event["data"] else 0,
+                            "outputTokens": event["data"].completion_tokens if event["data"] else 0,
+                            "totalTokens": event["data"].total_tokens if event["data"] else 0,
+                        },  # If 'stream_options' param is unset, empty metadata will be provided.
+                        # To avoid errors replacing expected fields with default zero value
+                        "metrics": {
+                            "latencyMs": 0,  # All palmyra models don't provide 'latency' metadata
+                        },
+                    },
+                }
+
+            case _:
+                raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
+
+    @override
+    async def stream(
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Stream conversation with the Writer model.
+
+        Args:
+            messages: List of message objects to be processed by the model.
+            tool_specs: List of tool specifications to make available to the model.
+            system_prompt: System prompt to provide context to the model.
+            **kwargs: Additional keyword arguments for future extensibility.
+
+        Yields:
+            Formatted message chunks from the model.
+
+        Raises:
+            ModelThrottledException: When the model service is throttling requests from the client.
+        """
+        logger.debug("formatting request")
+        request = self.format_request(messages, tool_specs, system_prompt)
+        logger.debug("request=<%s>", request)
+
+        logger.debug("invoking model")
+        try:
+            response = await self.client.chat.chat(**request)
+        except writerai.RateLimitError as e:
+            raise ModelThrottledException(str(e)) from e
+
+        yield self.format_chunk({"chunk_type": "message_start"})
+        yield self.format_chunk({"chunk_type": "content_block_start", "data_type": "text"})
+
+        tool_calls: dict[int, list[Any]] = {}
+
+        async for chunk in response:
+            if not getattr(chunk, "choices", None):
+                continue
+            choice = chunk.choices[0]
+
+            if choice.delta.content:
+                yield self.format_chunk(
+                    {"chunk_type": "content_block_delta", "data_type": "text", "data": choice.delta.content}
+                )
+
+            for tool_call in choice.delta.tool_calls or []:
+                tool_calls.setdefault(tool_call.index, []).append(tool_call)
+
+            if choice.finish_reason:
+                break
+
+        yield self.format_chunk({"chunk_type": "content_block_stop", "data_type": "text"})
+
+        for tool_deltas in tool_calls.values():
+            tool_start, tool_deltas = tool_deltas[0], tool_deltas[1:]
+            yield self.format_chunk({"chunk_type": "content_block_start", "data_type": "tool", "data": tool_start})
+
+            for tool_delta in tool_deltas:
+                yield self.format_chunk({"chunk_type": "content_block_delta", "data_type": "tool", "data": tool_delta})
+
+            yield self.format_chunk({"chunk_type": "content_block_stop", "data_type": "tool"})
+
+        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+
+        # Iterating until the end to fetch metadata chunk
+        async for chunk in response:
+            _ = chunk
+
+        yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
+
+        logger.debug("finished streaming response from model")
+
+    @override
+    async def structured_output(
+        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
+        """Get structured output from the model.
+
+        Args:
+            output_model(Type[BaseModel]): The output model to use for the agent.
+            prompt(Messages): The prompt messages to use for the agent.
+            **kwargs: Additional keyword arguments for future extensibility.
+        """
+        formatted_request = self.format_request(messages=prompt, tool_specs=None, system_prompt=None)
+        formatted_request["response_format"] = {
+            "type": "json_schema",
+            "json_schema": {"schema": output_model.model_json_schema()},
+        }
+        formatted_request["stream"] = False
+        formatted_request.pop("stream_options", None)
+
+        response = await self.client.chat.chat(**formatted_request)
+
+        try:
+            content = response.choices[0].message.content.strip()
+            yield {"output": output_model.model_validate_json(content)}
+        except Exception as e:
+            raise ValueError(f"Failed to parse or load content into model: {e}") from e
+
+```
+
+#### `WriterConfig`
+
+Bases: `TypedDict`
+
+Configuration options for Writer API.
+
+Attributes:
+
+| Name | Type | Description | | --- | --- | --- | | `model_id` | `str` | Model name to use (e.g. palmyra-x5, palmyra-x4, etc.). | | `max_tokens` | `Optional[int]` | Maximum number of tokens to generate. | | `stop` | `Optional[Union[str, List[str]]]` | Default stop sequences. | | `stream_options` | `Dict[str, Any]` | Additional options for streaming. | | `temperature` | `Optional[float]` | What sampling temperature to use. | | `top_p` | `Optional[float]` | Threshold for 'nucleus sampling' |
+
+Source code in `strands/models/writer.py`
+
+```
+class WriterConfig(TypedDict, total=False):
+    """Configuration options for Writer API.
+
+    Attributes:
+        model_id: Model name to use (e.g. palmyra-x5, palmyra-x4, etc.).
+        max_tokens: Maximum number of tokens to generate.
+        stop: Default stop sequences.
+        stream_options: Additional options for streaming.
+        temperature: What sampling temperature to use.
+        top_p: Threshold for 'nucleus sampling'
+    """
+
+    model_id: str
+    max_tokens: Optional[int]
+    stop: Optional[Union[str, List[str]]]
+    stream_options: Dict[str, Any]
+    temperature: Optional[float]
+    top_p: Optional[float]
+
+```
+
+#### `__init__(client_args=None, **model_config)`
+
+Initialize provider instance.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `client_args` | `Optional[dict[str, Any]]` | Arguments for the Writer client (e.g., api_key, base_url, timeout, etc.). | `None` | | `**model_config` | `Unpack[WriterConfig]` | Configuration options for the Writer model. | `{}` |
+
+Source code in `strands/models/writer.py`
+
+```
+def __init__(self, client_args: Optional[dict[str, Any]] = None, **model_config: Unpack[WriterConfig]):
+    """Initialize provider instance.
+
+    Args:
+        client_args: Arguments for the Writer client (e.g., api_key, base_url, timeout, etc.).
+        **model_config: Configuration options for the Writer model.
+    """
+    self.config = WriterModel.WriterConfig(**model_config)
+
+    logger.debug("config=<%s> | initializing", self.config)
+
+    client_args = client_args or {}
+    self.client = writerai.AsyncClient(**client_args)
+
+```
+
+#### `format_chunk(event)`
+
+Format the model response events into standardized message chunks.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `event` | `Any` | A response event from the model. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `StreamEvent` | The formatted chunk. |
+
+Source code in `strands/models/writer.py`
+
+```
+def format_chunk(self, event: Any) -> StreamEvent:
+    """Format the model response events into standardized message chunks.
+
+    Args:
+        event: A response event from the model.
+
+    Returns:
+        The formatted chunk.
+    """
+    match event.get("chunk_type", ""):
+        case "message_start":
+            return {"messageStart": {"role": "assistant"}}
+
+        case "content_block_start":
+            if event["data_type"] == "text":
+                return {"contentBlockStart": {"start": {}}}
+
+            return {
+                "contentBlockStart": {
+                    "start": {
+                        "toolUse": {
+                            "name": event["data"].function.name,
+                            "toolUseId": event["data"].id,
+                        }
+                    }
+                }
+            }
+
+        case "content_block_delta":
+            if event["data_type"] == "text":
+                return {"contentBlockDelta": {"delta": {"text": event["data"]}}}
+
+            return {"contentBlockDelta": {"delta": {"toolUse": {"input": event["data"].function.arguments}}}}
+
+        case "content_block_stop":
+            return {"contentBlockStop": {}}
+
+        case "message_stop":
+            match event["data"]:
+                case "tool_calls":
+                    return {"messageStop": {"stopReason": "tool_use"}}
+                case "length":
+                    return {"messageStop": {"stopReason": "max_tokens"}}
+                case _:
+                    return {"messageStop": {"stopReason": "end_turn"}}
+
+        case "metadata":
+            return {
+                "metadata": {
+                    "usage": {
+                        "inputTokens": event["data"].prompt_tokens if event["data"] else 0,
+                        "outputTokens": event["data"].completion_tokens if event["data"] else 0,
+                        "totalTokens": event["data"].total_tokens if event["data"] else 0,
+                    },  # If 'stream_options' param is unset, empty metadata will be provided.
+                    # To avoid errors replacing expected fields with default zero value
+                    "metrics": {
+                        "latencyMs": 0,  # All palmyra models don't provide 'latency' metadata
+                    },
+                },
+            }
+
+        case _:
+            raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
+
+```
+
+#### `format_request(messages, tool_specs=None, system_prompt=None)`
+
+Format a streaming request to the underlying model.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` |
+
+Returns:
+
+| Type | Description | | --- | --- | | `Any` | The formatted request. |
+
+Source code in `strands/models/writer.py`
+
+```
+def format_request(
+    self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+) -> Any:
+    """Format a streaming request to the underlying model.
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+
+    Returns:
+        The formatted request.
+    """
+    request = {
+        **{k: v for k, v in self.config.items()},
+        "messages": self._format_request_messages(messages, system_prompt),
+        "stream": True,
+    }
+    try:
+        request["model"] = request.pop(
+            "model_id"
+        )  # To be consisted with other models WriterConfig use 'model_id' arg, but Writer API wait for 'model' arg
+    except KeyError as e:
+        raise KeyError("Please specify a model ID. Use 'model_id' keyword argument.") from e
+
+    # Writer don't support empty tools attribute
+    if tool_specs:
+        request["tools"] = [
+            {
+                "type": "function",
+                "function": {
+                    "name": tool_spec["name"],
+                    "description": tool_spec["description"],
+                    "parameters": tool_spec["inputSchema"]["json"],
+                },
+            }
+            for tool_spec in tool_specs
+        ]
+
+    return request
+
+```
+
+#### `get_config()`
+
+Get the Writer model configuration.
+
+Returns:
+
+| Type | Description | | --- | --- | | `WriterConfig` | The Writer model configuration. |
+
+Source code in `strands/models/writer.py`
+
+```
+@override
+def get_config(self) -> WriterConfig:
+    """Get the Writer model configuration.
+
+    Returns:
+        The Writer model configuration.
+    """
+    return self.config
+
+```
+
+#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+
+Stream conversation with the Writer model.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Yields:
+
+| Type | Description | | --- | --- | | `AsyncGenerator[StreamEvent, None]` | Formatted message chunks from the model. |
+
+Raises:
+
+| Type | Description | | --- | --- | | `ModelThrottledException` | When the model service is throttling requests from the client. |
+
+Source code in `strands/models/writer.py`
+
+```
+@override
+async def stream(
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
+) -> AsyncGenerator[StreamEvent, None]:
+    """Stream conversation with the Writer model.
+
+    Args:
+        messages: List of message objects to be processed by the model.
+        tool_specs: List of tool specifications to make available to the model.
+        system_prompt: System prompt to provide context to the model.
+        **kwargs: Additional keyword arguments for future extensibility.
+
+    Yields:
+        Formatted message chunks from the model.
+
+    Raises:
+        ModelThrottledException: When the model service is throttling requests from the client.
+    """
+    logger.debug("formatting request")
+    request = self.format_request(messages, tool_specs, system_prompt)
+    logger.debug("request=<%s>", request)
+
+    logger.debug("invoking model")
+    try:
+        response = await self.client.chat.chat(**request)
+    except writerai.RateLimitError as e:
+        raise ModelThrottledException(str(e)) from e
+
+    yield self.format_chunk({"chunk_type": "message_start"})
+    yield self.format_chunk({"chunk_type": "content_block_start", "data_type": "text"})
+
+    tool_calls: dict[int, list[Any]] = {}
+
+    async for chunk in response:
+        if not getattr(chunk, "choices", None):
+            continue
+        choice = chunk.choices[0]
+
+        if choice.delta.content:
+            yield self.format_chunk(
+                {"chunk_type": "content_block_delta", "data_type": "text", "data": choice.delta.content}
+            )
+
+        for tool_call in choice.delta.tool_calls or []:
+            tool_calls.setdefault(tool_call.index, []).append(tool_call)
+
+        if choice.finish_reason:
+            break
+
+    yield self.format_chunk({"chunk_type": "content_block_stop", "data_type": "text"})
+
+    for tool_deltas in tool_calls.values():
+        tool_start, tool_deltas = tool_deltas[0], tool_deltas[1:]
+        yield self.format_chunk({"chunk_type": "content_block_start", "data_type": "tool", "data": tool_start})
+
+        for tool_delta in tool_deltas:
+            yield self.format_chunk({"chunk_type": "content_block_delta", "data_type": "tool", "data": tool_delta})
+
+        yield self.format_chunk({"chunk_type": "content_block_stop", "data_type": "tool"})
+
+    yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+
+    # Iterating until the end to fetch metadata chunk
+    async for chunk in response:
+        _ = chunk
+
+    yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
+
+    logger.debug("finished streaming response from model")
+
+```
+
+#### `structured_output(output_model, prompt, **kwargs)`
+
+Get structured output from the model.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model(Type[BaseModel])` | | The output model to use for the agent. | *required* | | `prompt(Messages)` | | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+
+Source code in `strands/models/writer.py`
+
+```
+@override
+async def structured_output(
+    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
+    """Get structured output from the model.
+
+    Args:
+        output_model(Type[BaseModel]): The output model to use for the agent.
+        prompt(Messages): The prompt messages to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
+    """
+    formatted_request = self.format_request(messages=prompt, tool_specs=None, system_prompt=None)
+    formatted_request["response_format"] = {
+        "type": "json_schema",
+        "json_schema": {"schema": output_model.model_json_schema()},
+    }
+    formatted_request["stream"] = False
+    formatted_request.pop("stream_options", None)
+
+    response = await self.client.chat.chat(**formatted_request)
+
+    try:
+        content = response.choices[0].message.content.strip()
+        yield {"output": output_model.model_validate_json(content)}
+    except Exception as e:
+        raise ValueError(f"Failed to parse or load content into model: {e}") from e
+
+```
+
+#### `update_config(**model_config)`
+
+Update the Writer Model configuration with the provided arguments.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `**model_config` | `Unpack[WriterConfig]` | Configuration overrides. | `{}` |
+
+Source code in `strands/models/writer.py`
+
+```
+@override
+def update_config(self, **model_config: Unpack[WriterConfig]) -> None:  # type: ignore[override]
+    """Update the Writer Model configuration with the provided arguments.
 
     Args:
         **model_config: Configuration overrides.

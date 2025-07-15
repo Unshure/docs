@@ -82,7 +82,7 @@ agent = Agent(
 
 ```
 
-The [`SlidingWindowConversationManager`](../../concepts/agents/context-management/#slidingwindowconversationmanager) helps prevent context window overflow exceptions by maintaining a reasonable conversation history size.
+The [`SlidingWindowConversationManager`](../../concepts/agents/conversation-management/#slidingwindowconversationmanager) helps prevent context window overflow exceptions by maintaining a reasonable conversation history size.
 
 ### Streaming for Responsiveness
 
@@ -102,18 +102,6 @@ async def stream_agent_response(prompt):
 ```
 
 See [Async Iterators](../../concepts/streaming/async-iterators/) for more information.
-
-### Parallelism Settings
-
-Control parallelism for optimal resource utilization:
-
-```
-# Limit parallel tool execution based on your infrastructure capacity
-agent = Agent(
-    max_parallel_tools=4  # Adjust based on available resources
-)
-
-```
 
 ### Error Handling
 
@@ -160,7 +148,7 @@ Operating Strands agents in production requires careful consideration of configu
 
 ## Related Topics
 
-- [Context Management](../../concepts/agents/context-management/)
+- [Context Management](../../concepts/agents/conversation-management/)
 - [Streaming - Async Iterator](../../concepts/streaming/async-iterators/)
 - [Tool Development](../../concepts/tools/tools_overview/)
 - [Guardrails](../../safety-security/guardrails/)

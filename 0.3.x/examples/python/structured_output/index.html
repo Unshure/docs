@@ -674,12 +674,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/concepts/agents/context-management/" class="md-nav__link">
+      <a href="../../../user-guide/concepts/agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2390,6 +2390,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2413,12 +2436,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2620,6 +2689,7 @@
 <span class="sd">This example demonstrates how to use structured output with Strands Agents to</span>
 <span class="sd">get type-safe, validated responses using Pydantic models.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
@@ -2748,6 +2818,26 @@
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skills: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">skills</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>                <span class="c1"># [&quot;systems admin&quot;]</span>
 
 
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_example</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basic example extracting structured information from text asynchronously.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Async Example ---&quot;</span><span class="p">)</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">PersonInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">age</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="n">occupation</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">structured_output_async</span><span class="p">(</span>
+        <span class="n">PersonInfo</span><span class="p">,</span>
+        <span class="s2">&quot;John Smith is a 30-year-old software engineer&quot;</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Name: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>      <span class="c1"># &quot;John Smith&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Age: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">age</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>        <span class="c1"># 30</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Job: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">occupation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="c1"># &quot;software engineer&quot;</span>
+
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Structured Output Examples</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -2755,6 +2845,7 @@
     <span class="n">multimodal_example</span><span class="p">()</span>
     <span class="n">conversation_history_example</span><span class="p">()</span>
     <span class="n">complex_nested_model_example</span><span class="p">()</span>
+    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">async_example</span><span class="p">())</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Examples completed.&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -2762,6 +2853,7 @@
 <ol>
 <li><strong>Define a Schema</strong>: Create a Pydantic model that defines the structure you want</li>
 <li><strong>Call structured_output()</strong>: Pass your model and optionally a prompt to the agent</li>
+<li>If running async, call <code>structured_output_async()</code> instead.</li>
 <li><strong>Get Validated Results</strong>: Receive a properly typed Python object matching your schema</li>
 </ol>
 <p>The <code>structured_output()</code> method ensures that the language model generates a response that conforms to your specified schema. It handles converting your Pydantic model into a format the model understands and validates the response.</p>

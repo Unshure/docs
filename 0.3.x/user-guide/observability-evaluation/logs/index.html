@@ -682,12 +682,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/agents/context-management/" class="md-nav__link">
+      <a href="../../concepts/agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -1734,15 +1734,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#agent-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      Agent Lifecycle
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#tool-registry-and-execution" class="md-nav__link">
     <span class="md-ellipsis">
       Tool Registry and Execution
@@ -2485,6 +2476,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2508,12 +2522,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2661,15 +2721,6 @@
   
     <nav class="md-nav" aria-label="Key Logging Areas">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#agent-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      Agent Lifecycle
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#tool-registry-and-execution" class="md-nav__link">
@@ -2829,10 +2880,6 @@
 <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="s2">&quot;What is 125 * 37?&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>When running this code with logging enabled, you'll see logs from different components of the SDK as the agent processes the request, calls the calculator tool, and generates a response. The following sections show examples of these logs:</p>
-<h3 id="agent-lifecycle">Agent Lifecycle<a class="headerlink" href="#agent-lifecycle" title="Permanent link">&para;</a></h3>
-<p>Logs related to agent initialization and shutdown:</p>
-<div class="highlight"><pre><span></span><code>DEBUG | strands.agent.agent | thread pool executor shutdown complete
-</code></pre></div>
 <h3 id="tool-registry-and-execution">Tool Registry and Execution<a class="headerlink" href="#tool-registry-and-execution" title="Permanent link">&para;</a></h3>
 <p>Logs related to tool discovery, registration, and execution:</p>
 <div class="highlight"><pre><span></span><code># Tool registration
@@ -2851,8 +2898,7 @@ WARNING | strands.tools.registry | tool_name=&lt;invalid_tool&gt; | spec validat
 DEBUG | strands.tools.registry | tool_name=&lt;calculator&gt; | loaded dynamic tool config
 
 # Tool execution
-DEBUG | strands.tools.executor | tool_name=&lt;calculator&gt; | executing tool with parameters: {&quot;expression&quot;: &quot;125 * 37&quot;}
-DEBUG | strands.tools.executor | tool_count=&lt;1&gt; | submitted tasks to parallel executor
+DEBUG | strands.event_loop.event_loop | tool_use=&lt;calculator_tool_use_id&gt; | streaming
 
 # Tool hot reloading
 DEBUG | strands.tools.registry | tool_name=&lt;calculator&gt; | searching directories for tool

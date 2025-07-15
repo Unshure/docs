@@ -10,7 +10,7 @@
     
     
     
-      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/agents/context-management/">
+      <link rel="canonical" href="https://strandsagents.com/latest/user-guide/concepts/agents/conversation-management/">
     
     
       <link rel="prev" href="../structured-output/">
@@ -25,7 +25,7 @@
 
     
       
-        <title>Context Management - Strands Agents SDK</title>
+        <title>Conversation Management - Strands Agents SDK</title>
       
     
     
@@ -81,7 +81,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#context-management" class="md-skip">
+        <a href="#conversation-management" class="md-skip">
           Skip to content
         </a>
       
@@ -122,7 +122,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Context Management
+              Conversation Management
             
           </span>
         </div>
@@ -700,7 +700,7 @@
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -713,7 +713,7 @@
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2403,6 +2403,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2426,12 +2449,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2607,8 +2676,8 @@
   
 
 
-<h1 id="context-management">Context Management<a class="headerlink" href="#context-management" title="Permanent link">&para;</a></h1>
-<p>In the Strands Agents SDK, context refers to the conversation history that provides the foundation for the agent's understanding and reasoning. This includes:</p>
+<h1 id="conversation-management">Conversation Management<a class="headerlink" href="#conversation-management" title="Permanent link">&para;</a></h1>
+<p>In the Strands Agents SDK, context refers to the information provided to the agent for understanding and reasoning. This includes:</p>
 <ul>
 <li>User messages</li>
 <li>Agent responses</li>
@@ -2623,13 +2692,16 @@
 <li><strong>Coherence</strong>: Maintaining logical flow and preserving important information</li>
 </ol>
 <h2 id="conversation-managers">Conversation Managers<a class="headerlink" href="#conversation-managers" title="Permanent link">&para;</a></h2>
-<p>The SDK provides a flexible system for context management through the <a href="../../../../api-reference/agent/#strands.agent.conversation_manager.conversation_manager.ConversationManager"><code>ConversationManager</code></a> interface. This allows you to implement different strategies for managing conversation history. There are two key methods to implement:</p>
+<p>The SDK provides a flexible system for context management through the <a href="../../../../api-reference/agent/#strands.agent.conversation_manager.conversation_manager.ConversationManager"><code>ConversationManager</code></a> interface. This allows you to implement different strategies for managing conversation history. There are three key elements to implement:</p>
 <ol>
 <li>
 <p><a href="../../../../api-reference/agent/#strands.agent.conversation_manager.conversation_manager.ConversationManager.apply_management"><code>apply_management</code></a>: This method is called after each event loop cycle completes to manage the conversation history. It's responsible for applying your management strategy to the messages array, which may have been modified with tool results and assistant responses. The agent runs this method automatically after processing each user input and generating a response.</p>
 </li>
 <li>
 <p><a href="../../../../api-reference/agent/#strands.agent.conversation_manager.conversation_manager.ConversationManager.reduce_context"><code>reduce_context</code></a>: This method is called when the model's context window is exceeded (typically due to token limits). It implements the specific strategy for reducing the window size when necessary. The agent calls this method when it encounters a context window overflow exception, giving your implementation a chance to trim the conversation history before retrying.</p>
+</li>
+<li>
+<p><code>removed_messages_count</code> This attribute is tracked by conversation managers, and utilized by <a href="../session-management/">Session Management</a> to efficiently load messages from the session storage. The count represent messages provided by the user or LLM that have been removed from the agent's messages, but not messages included by the conversation manager through something like summarization.</p>
 </li>
 </ol>
 <p>To manage conversations, you can either leverage one of Strands's provided managers or build your own manager that matches your requirements.</p>

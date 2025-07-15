@@ -684,12 +684,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/context-management/" class="md-nav__link">
+      <a href="../../agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2532,6 +2532,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2555,12 +2578,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2980,12 +3049,12 @@
 <li><code>SystemPrompt</code>: A system prompt string given to the Model to prompt it how to answer the user.</li>
 </ul>
 <div class="highlight"><pre><span></span><code>    <span class="nd">@override</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">stream</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> 
-        <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> 
-        <span class="n">tool_specs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
+        <span class="n">tool_specs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterable</span><span class="p">[</span><span class="n">StreamEvent</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stream responses from the Custom model.</span>
 
 <span class="sd">        Args:</span>
@@ -3011,7 +3080,7 @@
 
         <span class="c1"># Invoke your model</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="o">**</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="o">**</span><span class="n">request</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">OverflowException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ContextWindowOverflowException</span><span class="p">()</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
@@ -3026,7 +3095,7 @@
         <span class="p">}</span>
 
         <span class="c1"># Process each chunk from your model&#39;s response</span>
-        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">]:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;stream&quot;</span><span class="p">]:</span>
             <span class="c1"># Convert your model&#39;s event format to Strands Agents StreamEvent</span>
             <span class="k">if</span> <span class="n">chunk</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;text_delta&quot;</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="p">{</span>
@@ -3047,9 +3116,9 @@
 </code></pre></div>
 <p>For more complex implementations, you may want to create helper methods to organize your code:</p>
 <div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">_format_request</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> 
-        <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span> 
-        <span class="n">tool_specs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="n">Messages</span><span class="p">,</span>
+        <span class="n">tool_specs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ToolSpec</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">system_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional helper method to format requests for your model API.&quot;&quot;&quot;</span>
@@ -3078,6 +3147,9 @@
             <span class="p">}</span>
         <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
+<blockquote>
+<p>Note, <code>stream</code> must be implemented async. If your client does not support async invocation, you may consider wrapping the relevant calls in a thread so as not to block the async event loop. For an example on how to achieve this, you can check out the <a href="https://github.com/strands-agents/sdk-python/blob/main/src/strands/models/bedrock.py">BedrockModel</a> provider implementation.</p>
+</blockquote>
 <h3 id="3-understanding-streamevent-types">3. Understanding StreamEvent Types<a class="headerlink" href="#3-understanding-streamevent-types" title="Permanent link">&para;</a></h3>
 <p>Your custom model provider needs to convert model's response events to Strands Agents <a href="../../../../api-reference/types/#strands.types.streaming.StreamEvent">StreamEvent</a> format. The StreamEvent type supports these event types:</p>
 <ul>
@@ -3153,7 +3225,7 @@
 <div class="highlight"><pre><span></span><code><span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">BaseModel</span><span class="p">)</span>
 
 <span class="nd">@override</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">structured_output</span><span class="p">(</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">structured_output</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">output_model</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">prompt</span><span class="p">:</span> <span class="n">Messages</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get structured output using tool calling.&quot;&quot;&quot;</span>
@@ -3162,10 +3234,10 @@
     <span class="n">tool_spec</span> <span class="o">=</span> <span class="n">convert_pydantic_to_tool_spec</span><span class="p">(</span><span class="n">output_model</span><span class="p">)</span>
 
     <span class="c1"># Use the stream method with tool specification</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tool_specs</span><span class="o">=</span><span class="p">[</span><span class="n">tool_spec</span><span class="p">])</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span><span class="n">messages</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span> <span class="n">tool_specs</span><span class="o">=</span><span class="p">[</span><span class="n">tool_spec</span><span class="p">])</span>
 
     <span class="c1"># Process streaming response</span>
-    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">process_stream</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">prompt</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">process_stream</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">prompt</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">event</span>  <span class="c1"># Passed to callback handler configured in Agent instance</span>
 
     <span class="n">stop_reason</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">]</span>
@@ -3190,6 +3262,9 @@
 <li><strong>Error Handling</strong>: Provide clear error messages for parsing and validation failures</li>
 </ol>
 <p>For detailed structured output usage patterns, see the <a href="../../agents/structured-output/">Structured Output documentation</a>.</p>
+<blockquote>
+<p>Note, similar to the <code>stream</code> method, <code>structured_output</code> must be implemented async. If your client does not support async invocation, you may consider wrapping the relevant calls in a thread so as not to block the async event loop. Again, for an example on how to achieve this, you can check out the <a href="https://github.com/strands-agents/sdk-python/blob/main/src/strands/models/bedrock.py">BedrockModel</a> provider implementation.</p>
+</blockquote>
 <h3 id="5-use-your-custom-model-provider">5. Use Your Custom Model Provider<a class="headerlink" href="#5-use-your-custom-model-provider" title="Permanent link">&para;</a></h3>
 <p>Once implemented, you can use your custom model provider in your applications for regular agent invocation:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>

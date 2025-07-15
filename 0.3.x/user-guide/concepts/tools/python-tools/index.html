@@ -684,12 +684,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/context-management/" class="md-nav__link">
+      <a href="../../agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -880,6 +880,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#async-invocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async Invocation
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -908,6 +917,15 @@
   <a href="#loading-module-tools" class="md-nav__link">
     <span class="md-ellipsis">
       Loading Module Tools
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async-invocation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async Invocation
     </span>
   </a>
   
@@ -2505,6 +2523,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2528,12 +2569,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2694,6 +2781,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#async-invocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async Invocation
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2722,6 +2818,15 @@
   <a href="#loading-module-tools" class="md-nav__link">
     <span class="md-ellipsis">
       Loading Module Tools
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async-invocation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async Invocation
     </span>
   </a>
   
@@ -2883,6 +2988,27 @@
         <span class="p">}</span>
 </code></pre></div>
 <p>For more details, see the <a href="#tool-response-format">Tool Response Format</a> section below.</p>
+<h3 id="async-invocation">Async Invocation<a class="headerlink" href="#async-invocation" title="Permanent link">&para;</a></h3>
+<p>Decorated tools may also be defined async. Strands will invoke all async tools concurrently.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">tool</span>
+
+
+<span class="nd">@tool</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">call_api</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call API asynchronously.&quot;&quot;&quot;</span>
+
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># simulated api call</span>
+    <span class="k">return</span> <span class="s2">&quot;API result&quot;</span>
+
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_example</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">call_api</span><span class="p">])</span>
+    <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">invoke_async</span><span class="p">(</span><span class="s2">&quot;Can you call my API?&quot;</span><span class="p">)</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">async_example</span><span class="p">())</span>
+</code></pre></div>
 <h2 id="python-modules-as-tools">Python Modules as Tools<a class="headerlink" href="#python-modules-as-tools" title="Permanent link">&para;</a></h2>
 <p>An alternative approach is to define a tool as a Python module with a specific structure. This enables creating tools that don't depend on the SDK directly.</p>
 <p>A Python module tool requires two key components:</p>
@@ -2952,6 +3078,30 @@
 <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
     <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;./weather_forecast.py&quot;</span><span class="p">]</span>
 <span class="p">)</span>
+</code></pre></div>
+<h3 id="async-invocation_1">Async Invocation<a class="headerlink" href="#async-invocation_1" title="Permanent link">&para;</a></h3>
+<p>Similar to decorated tools, users may define their module tools async.</p>
+<div class="highlight"><pre><span></span><code><span class="n">TOOL_SPEC</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;call_api&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Call my API asynchronously.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;inputSchema&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">call_api</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># simulated api call</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;API result&quot;</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;toolUseId&quot;</span><span class="p">:</span> <span class="n">tool</span><span class="p">[</span><span class="s2">&quot;toolUseId&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">}],</span>
+    <span class="p">}</span>
 </code></pre></div>
 <h3 id="tool-response-format">Tool Response Format<a class="headerlink" href="#tool-response-format" title="Permanent link">&para;</a></h3>
 <p>Tools can return responses in various formats using the <a href="../../../../api-reference/types/#strands.types.tools.ToolResult"><code>ToolResult</code></a> structure. This structure provides flexibility for returning different types of content while maintaining a consistent interface.</p>

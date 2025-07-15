@@ -674,12 +674,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/concepts/agents/context-management/" class="md-nav__link">
+      <a href="../../user-guide/concepts/agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2301,6 +2301,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../handlers/" class="md-nav__link">
         
   
@@ -2324,12 +2347,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2914,6 +2983,30 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strands.tools.structured_output" class="md-nav__link">
+    <span class="md-ellipsis">
+      structured_output
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="structured_output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strands.tools.structured_output.convert_pydantic_to_tool_spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert_pydantic_to_tool_spec
+    </span>
+  </a>
   
 </li>
         
@@ -3797,6 +3890,30 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strands.tools.structured_output" class="md-nav__link">
+    <span class="md-ellipsis">
+      structured_output
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="structured_output">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strands.tools.structured_output.convert_pydantic_to_tool_spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert_pydantic_to_tool_spec
+    </span>
+  </a>
   
 </li>
         
@@ -12366,6 +12483,224 @@ Can be:</p>
 
 </div>
 
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="strands.tools.structured_output" class="doc doc-heading">
+            <code>strands.tools.structured_output</code>
+
+
+<a href="#strands.tools.structured_output" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Tools for converting Pydantic models to Bedrock tools.</p>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="strands.tools.structured_output.convert_pydantic_to_tool_spec" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">convert_pydantic_to_tool_spec</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#strands.tools.structured_output.convert_pydantic_to_tool_spec" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts a Pydantic model to a tool description for the Amazon Bedrock Converse API.</p>
+<p>Handles optional vs. required fields, resolves $refs, and uses docstrings.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td>
+                  <code><span title="typing.Type">Type</span>[<span title="pydantic.BaseModel">BaseModel</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The Pydantic model class to convert</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>description</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional description of the tool's purpose</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>ToolSpec</code></td>            <td>
+                  <code><a class="autorefs autorefs-internal" title="ToolSpec (strands.types.tools.ToolSpec)" href="../types/#strands.types.tools.ToolSpec">ToolSpec</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dict containing the Bedrock tool specification</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>strands/tools/structured_output.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">convert_pydantic_to_tool_spec</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolSpec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a Pydantic model to a tool description for the Amazon Bedrock Converse API.</span>
+
+<span class="sd">    Handles optional vs. required fields, resolves $refs, and uses docstrings.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model: The Pydantic model class to convert</span>
+<span class="sd">        description: Optional description of the tool&#39;s purpose</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ToolSpec: Dict containing the Bedrock tool specification</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="c1"># Get the JSON schema</span>
+    <span class="n">input_schema</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+
+    <span class="c1"># Get model docstring for description if not provided</span>
+    <span class="n">model_description</span> <span class="o">=</span> <span class="n">description</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">model_description</span> <span class="ow">and</span> <span class="n">model</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">:</span>
+        <span class="n">model_description</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="vm">__doc__</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># Process all referenced models to ensure proper docstrings</span>
+    <span class="c1"># This step is important for gathering descriptions from referenced models</span>
+    <span class="n">_process_referenced_models</span><span class="p">(</span><span class="n">input_schema</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Now, let&#39;s fully expand the nested models with all their properties</span>
+    <span class="n">_expand_nested_properties</span><span class="p">(</span><span class="n">input_schema</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Flatten the schema</span>
+    <span class="n">flattened_schema</span> <span class="o">=</span> <span class="n">_flatten_schema</span><span class="p">(</span><span class="n">input_schema</span><span class="p">)</span>
+
+    <span class="n">final_schema</span> <span class="o">=</span> <span class="n">flattened_schema</span>
+
+    <span class="c1"># Construct the tool specification</span>
+    <span class="k">return</span> <span class="n">ToolSpec</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">model_description</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> structured output tool&quot;</span><span class="p">,</span>
+        <span class="n">inputSchema</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;json&quot;</span><span class="p">:</span> <span class="n">final_schema</span><span class="p">},</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 

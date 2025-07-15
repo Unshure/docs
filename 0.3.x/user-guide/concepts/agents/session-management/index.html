@@ -680,6 +680,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="FileSessionManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-storage-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Storage Structure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -691,6 +706,15 @@
   
     <nav class="md-nav" aria-label="S3SessionManager">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#s3-storage-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      S3 Storage Structure
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#required-s3-permissions" class="md-nav__link">
@@ -734,15 +758,6 @@
   <a href="#2-data-models" class="md-nav__link">
     <span class="md-ellipsis">
       2. Data Models
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-storage-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Storage Structure
     </span>
   </a>
   
@@ -856,12 +871,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../context-management/" class="md-nav__link">
+      <a href="../conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2487,6 +2502,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2510,12 +2548,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2665,6 +2749,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="FileSessionManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-storage-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Storage Structure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2676,6 +2775,15 @@
   
     <nav class="md-nav" aria-label="S3SessionManager">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#s3-storage-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      S3 Storage Structure
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#required-s3-permissions" class="md-nav__link">
@@ -2719,15 +2827,6 @@
   <a href="#2-data-models" class="md-nav__link">
     <span class="md-ellipsis">
       2. Data Models
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-storage-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Storage Structure
     </span>
   </a>
   
@@ -2786,7 +2885,7 @@
 </ul>
 <p>Strands provides built-in session persistence capabilities that automatically capture and restore this information, allowing agents to seamlessly continue conversations where they left off.</p>
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
-<p>First, create an agent with a session manager and use it:</p>
+<p>Simply create an agent with a session manager and use it:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">strands.session.file_session_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileSessionManager</span>
 
@@ -2799,6 +2898,7 @@
 <span class="c1"># Use the agent - all messages and state are automatically persisted</span>
 <span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Hello!&quot;</span><span class="p">)</span>  <span class="c1"># This conversation is persisted</span>
 </code></pre></div>
+<p>The conversation, and associated state, is persisted ot the underlying filesystem.</p>
 <h2 id="built-in-session-managers">Built-in Session Managers<a class="headerlink" href="#built-in-session-managers" title="Permanent link">&para;</a></h2>
 <p>Strands offers two built-in session managers for persisting agent sessions:</p>
 <ol>
@@ -2821,6 +2921,18 @@
 
 <span class="c1"># Use the agent normally - state and messages will be persisted automatically</span>
 <span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Hello, I&#39;m a new user!&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="file-storage-structure">File Storage Structure<a class="headerlink" href="#file-storage-structure" title="Permanent link">&para;</a></h4>
+<p>When using <code>FileSessionManager</code>, sessions are stored in the following directory structure:</p>
+<div class="highlight"><pre><span></span><code>/&lt;sessions_dir&gt;/
+└── session_&lt;session_id&gt;/
+    ├── session.json                # Session metadata
+    └── agents/
+        └── agent_&lt;agent_id&gt;/
+            ├── agent.json          # Agent metadata and state
+            └── messages/
+                ├── message_&lt;message_id&gt;.json
+                └── message_&lt;message_id&gt;.json
 </code></pre></div>
 <h3 id="s3sessionmanager">S3SessionManager<a class="headerlink" href="#s3sessionmanager" title="Permanent link">&para;</a></h3>
 <p>For cloud-based persistence, especially in distributed environments, use the <code>S3SessionManager</code>:</p>
@@ -2845,6 +2957,18 @@
 
 <span class="c1"># Use the agent normally - state and messages will be persisted to S3</span>
 <span class="n">agent</span><span class="p">(</span><span class="s2">&quot;Tell me about AWS S3&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="s3-storage-structure">S3 Storage Structure<a class="headerlink" href="#s3-storage-structure" title="Permanent link">&para;</a></h4>
+<p>Just like in the  <code>FileSessionManager</code>, sessions are stored with the following structure in the s3 bucket:</p>
+<div class="highlight"><pre><span></span><code>&lt;s3_key_prefix&gt;/
+└── session_&lt;session_id&gt;/
+    ├── session.json                # Session metadata
+    └── agents/
+        └── agent_&lt;agent_id&gt;/
+            ├── agent.json          # Agent metadata and state
+            └── messages/
+                ├── message_&lt;message_id&gt;.json
+                └── message_&lt;message_id&gt;.json
 </code></pre></div>
 <h4 id="required-s3-permissions">Required S3 Permissions<a class="headerlink" href="#required-s3-permissions" title="Permanent link">&para;</a></h4>
 <p>To use the <code>S3SessionManager</code>, your AWS credentials must have the following S3 permissions:</p>
@@ -2885,9 +3009,9 @@
 <li><strong>Agent Invocation</strong>: After each agent invocation, the agent state is synchronized with the session to capture any updates.</li>
 <li><strong>Message Redaction</strong>: When sensitive information needs to be redacted, the session manager can replace the original message with a redacted version while maintaining conversation flow.</li>
 </ul>
-<blockquote>
-<p><strong>Warning</strong>: Changes to agent state or messages are only persisted during these specific lifecycle events, not immediately when made directly. Direct modifications will only be saved after the next trigger event occurs.</p>
-</blockquote>
+<div class="admonition warning">
+<p class="admonition-title">After initializing the agent, direct modifications to <code>agent.messages</code> will not be persisted. Utilize the <a href="../conversation-management/">Conversation Manager</a> to help manage context of the agent in a way that can be persisted.</p>
+</div>
 <h3 id="2-data-models">2. Data Models<a class="headerlink" href="#2-data-models" title="Permanent link">&para;</a></h3>
 <p>Session data is stored using these key data models:</p>
 <p><strong>Session</strong></p>
@@ -2922,26 +3046,13 @@
 <li><strong>Key Fields</strong>:<ul>
 <li><code>message</code>: The original message content (role, content blocks)</li>
 <li><code>redact_message</code>: Optional redacted version of the message (used when sensitive information is detected)</li>
-<li><code>message_id</code>: Unique identifier for the message</li>
+<li><code>message_id</code>: Index of the message in the agent's messages array</li>
 <li><code>created_at</code>: ISO format timestamp of when the message was created</li>
 <li><code>updated_at</code>: ISO format timestamp of when the message was last updated</li>
 </ul>
 </li>
 </ul>
 <p>These data models work together to provide a complete representation of an agent's state and conversation history. The session management system handles serialization and deserialization of these models, including special handling for binary data using base64 encoding.</p>
-<h3 id="3-storage-structure">3. Storage Structure<a class="headerlink" href="#3-storage-structure" title="Permanent link">&para;</a></h3>
-<p>When using <code>FileSessionManager</code>, sessions are stored in the following directory structure:</p>
-<div class="highlight"><pre><span></span><code>/&lt;sessions_dir&gt;/
-└── session_&lt;session_id&gt;/
-    ├── session.json                # Session metadata
-    └── agents/
-        └── agent_&lt;agent_id&gt;/
-            ├── agent.json          # Agent metadata and state
-            └── messages/
-                ├── message_&lt;created_timestamp&gt;_&lt;id1&gt;.json
-                └── message_&lt;created_timestamp&gt;_&lt;id2&gt;.json
-</code></pre></div>
-<p>When using <code>S3SessionManager</code>, a similar structure is maintained using S3 object keys.</p>
 <h2 id="custom-session-repositories">Custom Session Repositories<a class="headerlink" href="#custom-session-repositories" title="Permanent link">&para;</a></h2>
 <p>For advanced use cases, you can implement your own session storage backend by creating a custom session repository:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
@@ -2986,39 +3097,17 @@
 <p>This approach allows you to store session data in any backend system while leveraging the built-in session management logic.</p>
 <h2 id="session-persistence-best-practices">Session Persistence Best Practices<a class="headerlink" href="#session-persistence-best-practices" title="Permanent link">&para;</a></h2>
 <p>When implementing session persistence in your applications, consider these best practices:</p>
-<ol>
+<ul>
 <li>
 <p><strong>Use Unique Session IDs</strong>: Generate unique session IDs for each user or conversation context to prevent data overlap.</p>
 </li>
 <li>
-<p><strong>Consider Storage Requirements</strong>:</p>
-<ul>
-<li><code>FileSessionManager</code> is ideal for development, testing, or single-server deployments</li>
-<li><code>S3SessionManager</code> is better for production, distributed systems, or when high availability is required</li>
-</ul>
+<p><strong>Session Cleanup</strong>: Implement a strategy for cleaning up old or inactive sessions. Consider adding TTL (Time To Live) for sessions in production environments</p>
 </li>
 <li>
-<p><strong>Security Considerations</strong>:</p>
-<ul>
-<li>For <code>FileSessionManager</code>, ensure the storage directory has appropriate file permissions</li>
-<li>For <code>S3SessionManager</code>, use IAM roles with least privilege and consider server-side encryption</li>
-<li>Be mindful of storing sensitive user data in sessions</li>
-</ul>
+<p><strong>Understand Persistence Triggers</strong>: Remember that changes to agent state or messages are only persisted during specific lifecycle events</p>
 </li>
-<li>
-<p><strong>Session Cleanup</strong>:</p>
-<ul>
-<li>Implement a strategy for cleaning up old or inactive sessions</li>
-<li>Consider adding TTL (Time To Live) for sessions in production environments</li>
 </ul>
-</li>
-<li>
-<p><strong>Understand Persistence Triggers</strong>:</p>
-<ul>
-<li>Remember that changes to agent state or messages are only persisted during specific lifecycle events</li>
-</ul>
-</li>
-</ol>
 
 
 

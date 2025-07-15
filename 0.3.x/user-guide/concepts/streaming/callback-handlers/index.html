@@ -684,12 +684,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../agents/context-management/" class="md-nav__link">
+      <a href="../../agents/conversation-management/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Context Management
+    Conversation Management
     
   </span>
   
@@ -2481,6 +2481,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/experimental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Experimental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/handlers/" class="md-nav__link">
         
   
@@ -2504,12 +2527,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../../api-reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../../api-reference/models/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../api-reference/multiagent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Multiagent
     
   </span>
   
@@ -2800,7 +2869,6 @@
 <h3 id="text-generation-events">Text Generation Events<a class="headerlink" href="#text-generation-events" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>data</code>: Text chunk from the model's output</li>
-<li><code>complete</code>: Boolean indicating if this is the final chunk</li>
 <li><code>delta</code>: Raw delta content from the model</li>
 </ul>
 <h3 id="tool-events">Tool Events<a class="headerlink" href="#tool-events" title="Permanent link">&para;</a></h3>
@@ -2821,6 +2889,7 @@
 <li><code>event</code>: Raw event from the model stream</li>
 <li><code>force_stop</code>: True if the event loop was forced to stop</li>
 <li><code>force_stop_reason</code>: Reason for forced stop</li>
+<li><code>result</code>: The final <a href="../../../../api-reference/agent/#strands.agent.agent_result.AgentResult"><code>AgentResult</code></a></li>
 </ul>
 <h3 id="reasoning-events">Reasoning Events<a class="headerlink" href="#reasoning-events" title="Permanent link">&para;</a></h3>
 <ul>

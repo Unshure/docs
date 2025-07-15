@@ -43,7 +43,6 @@ Callback handlers receive the same event types as [async iterators](../async-ite
 ### Text Generation Events
 
 - `data`: Text chunk from the model's output
-- `complete`: Boolean indicating if this is the final chunk
 - `delta`: Raw delta content from the model
 
 ### Tool Events
@@ -62,6 +61,7 @@ Callback handlers receive the same event types as [async iterators](../async-ite
 - `event`: Raw event from the model stream
 - `force_stop`: True if the event loop was forced to stop
 - `force_stop_reason`: Reason for forced stop
+- `result`: The final [`AgentResult`](../../../../api-reference/agent/#strands.agent.agent_result.AgentResult)
 
 ### Reasoning Events
 
