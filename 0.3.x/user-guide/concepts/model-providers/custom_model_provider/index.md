@@ -147,7 +147,8 @@ The `stream` method accepts three parameters directly:
         self,
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
-        system_prompt: Optional[str] = None
+        system_prompt: Optional[str] = None,
+        **kwargs: Any
     ) -> AsyncIterable[StreamEvent]:
         """Stream responses from the Custom model.
 
@@ -155,6 +156,7 @@ The `stream` method accepts three parameters directly:
             messages: List of conversation messages
             tool_specs: Optional list of available tools
             system_prompt: Optional system prompt
+            **kwargs: Additional keyword arguments for future extensibility
 
         Returns:
             Iterator of StreamEvent objects
@@ -356,15 +358,26 @@ T = TypeVar('T', bound=BaseModel)
 
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages
+    self,
+    output_model: Type[T],
+    prompt: Messages,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any
 ) -> Generator[dict[str, Union[T, Any]], None, None]:
-    """Get structured output using tool calling."""
+    """Get structured output using tool calling.
+
+    Args:
+        output_model: The output model to use for the agent.
+        prompt: The prompt messages to use for the agent.
+        system_prompt: The system prompt to use for the agent.
+        **kwargs: Additional keyword arguments for future extensibility.
+    """
 
     # Convert Pydantic model to tool specification
     tool_spec = convert_pydantic_to_tool_spec(output_model)
 
     # Use the stream method with tool specification
-    response = await self.stream(messages=prompt, tool_specs=[tool_spec])
+    response = await self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
 
     # Process streaming response
     async for event in process_stream(response, prompt):

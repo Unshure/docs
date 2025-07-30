@@ -126,9 +126,7 @@ class Agent:
 
                 if should_record_direct_tool_call:
                     # Create a record of this tool execution in the message history
-                    self._agent._record_tool_execution(
-                        tool_use, tool_result, user_message_override, self._agent.messages
-                    )
+                    self._agent._record_tool_execution(tool_use, tool_result, user_message_override)
 
                 # Apply window management
                 self._agent.conversation_manager.apply_management(self._agent)
@@ -177,6 +175,7 @@ class Agent:
         description: Optional[str] = None,
         state: Optional[Union[AgentState, dict]] = None,
         hooks: Optional[list[HookProvider]] = None,
+        session_manager: Optional[SessionManager] = None,
     ):
         """Initialize the Agent with the specified configuration.
 
@@ -207,22 +206,24 @@ class Agent:
             load_tools_from_directory: Whether to load and automatically reload tools in the `./tools/` directory.
                 Defaults to False.
             trace_attributes: Custom trace attributes to apply to the agent's trace span.
-            agent_id: Optional ID for the agent, useful for multi-agent scenarios.
-                If None, a UUID is generated.
+            agent_id: Optional ID for the agent, useful for session management and multi-agent scenarios.
+                Defaults to "default".
             name: name of the Agent
-                Defaults to None.
+                Defaults to "Strands Agents".
             description: description of what the Agent does
                 Defaults to None.
             state: stateful information for the agent. Can be either an AgentState object, or a json serializable dict.
                 Defaults to an empty AgentState object.
             hooks: hooks to be added to the agent hook registry
                 Defaults to None.
+            session_manager: Manager for handling agent sessions including conversation history and state.
+                If provided, enables session-based persistence and state management.
         """
         self.model = BedrockModel() if not model else BedrockModel(model_id=model) if isinstance(model, str) else model
         self.messages = messages if messages is not None else []
 
         self.system_prompt = system_prompt
-        self.agent_id = agent_id or str(uuid4())
+        self.agent_id = agent_id or _DEFAULT_AGENT_ID
         self.name = name or _DEFAULT_AGENT_NAME
         self.description = description
 
@@ -266,7 +267,7 @@ class Agent:
 
         # Initialize tracer instance (no-op if not configured)
         self.tracer = get_tracer()
-        self.trace_span: Optional[trace.Span] = None
+        self.trace_span: Optional[trace_api.Span] = None
 
         # Initialize agent state management
         if state is not None:
@@ -282,6 +283,12 @@ class Agent:
         self.tool_caller = Agent.ToolCaller(self)
 
         self.hooks = HookRegistry()
+
+        # Initialize session management functionality
+        self._session_manager = session_manager
+        if self._session_manager:
+            self.hooks.add_hook(self._session_manager)
+
         if hooks:
             for hook in hooks:
                 self.hooks.add_hook(hook)
@@ -417,7 +424,7 @@ class Agent:
                 content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
                 self._append_message({"role": "user", "content": content})
 
-            events = self.model.structured_output(output_model, self.messages)
+            events = self.model.structured_output(output_model, self.messages, system_prompt=self.system_prompt)
             async for event in events:
                 if "callback" in event:
                     self.callback_handler(**cast(dict, event["callback"]))
@@ -439,9 +446,10 @@ class Agent:
             prompt: User input as text or list of ContentBlock objects for multi-modal content.
             **kwargs: Additional parameters to pass to the event loop.
 
-        Returns:
+        Yields:
             An async iterator that yields events. Each event is a dictionary containing
             information about the current state of processing, such as:
+
             - data: Text content being generated
             - complete: Whether this is the final chunk
             - current_tool_use: Information about tools being executed
@@ -462,24 +470,24 @@ class Agent:
         content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
         message: Message = {"role": "user", "content": content}
 
-        self._start_agent_trace_span(message)
+        self.trace_span = self._start_agent_trace_span(message)
+        with trace_api.use_span(self.trace_span):
+            try:
+                events = self._run_loop(message, invocation_state=kwargs)
+                async for event in events:
+                    if "callback" in event:
+                        callback_handler(**event["callback"])
+                        yield event["callback"]
 
-        try:
-            events = self._run_loop(message, invocation_state=kwargs)
-            async for event in events:
-                if "callback" in event:
-                    callback_handler(**event["callback"])
-                    yield event["callback"]
+                result = AgentResult(*event["stop"])
+                callback_handler(result=result)
+                yield {"result": result}
 
-            result = AgentResult(*event["stop"])
-            callback_handler(result=result)
-            yield {"result": result}
+                self._end_agent_trace_span(response=result)
 
-            self._end_agent_trace_span(response=result)
-
-        except Exception as e:
-            self._end_agent_trace_span(error=e)
-            raise
+            except Exception as e:
+                self._end_agent_trace_span(error=e)
+                raise
 
     async def _run_loop(
         self, message: Message, invocation_state: dict[str, Any]
@@ -503,6 +511,19 @@ class Agent:
             # Execute the event loop cycle with retry logic for context limits
             events = self._execute_event_loop_cycle(invocation_state)
             async for event in events:
+                # Signal from the model provider that the message sent by the user should be redacted,
+                # likely due to a guardrail.
+                if (
+                    event.get("callback")
+                    and event["callback"].get("event")
+                    and event["callback"]["event"].get("redactContent")
+                    and event["callback"]["event"]["redactContent"].get("redactUserContentMessage")
+                ):
+                    self.messages[-1]["content"] = [
+                        {"text": event["callback"]["event"]["redactContent"]["redactUserContentMessage"]}
+                    ]
+                    if self._session_manager:
+                        self._session_manager.redact_latest_message(self.messages[-1], self)
                 yield event
 
         finally:
@@ -534,6 +555,11 @@ class Agent:
         except ContextWindowOverflowException as e:
             # Try reducing the context size and retrying
             self.conversation_manager.reduce_context(self, e=e)
+
+            # Sync agent after reduce_context to keep conversation_manager_state up to date in the session
+            if self._session_manager:
+                self._session_manager.sync_agent(self)
+
             events = self._execute_event_loop_cycle(invocation_state)
             async for event in events:
                 yield event
@@ -543,7 +569,6 @@ class Agent:
         tool: ToolUse,
         tool_result: ToolResult,
         user_message_override: Optional[str],
-        messages: Messages,
     ) -> None:
         """Record a tool execution in the message history.
 
@@ -558,11 +583,12 @@ class Agent:
             tool: The tool call information.
             tool_result: The result returned by the tool.
             user_message_override: Optional custom message to include.
-            messages: The message history to append to.
         """
         # Create user message describing the tool call
+        input_parameters = json.dumps(tool["input"], default=lambda o: f"<<non-serializable: {type(o).__qualname__}>>")
+
         user_msg_content: list[ContentBlock] = [
-            {"text": (f"agent.tool.{tool['name']} direct tool call.\nInput parameters: {json.dumps(tool['input'])}\n")}
+            {"text": (f"agent.tool.{tool['name']} direct tool call.\nInput parameters: {input_parameters}\n")}
         ]
 
         # Add override message if provided
@@ -584,7 +610,7 @@ class Agent:
         }
         assistant_msg: Message = {
             "role": "assistant",
-            "content": [{"text": f"agent.{tool['name']} was called"}],
+            "content": [{"text": f"agent.tool.{tool['name']} was called."}],
         }
 
         # Add to message history
@@ -593,15 +619,14 @@ class Agent:
         self._append_message(tool_result_msg)
         self._append_message(assistant_msg)
 
-    def _start_agent_trace_span(self, message: Message) -> None:
+    def _start_agent_trace_span(self, message: Message) -> trace_api.Span:
         """Starts a trace span for the agent.
 
         Args:
             message: The user message.
         """
         model_id = self.model.config.get("model_id") if hasattr(self.model, "config") else None
-
-        self.trace_span = self.tracer.start_agent_span(
+        return self.tracer.start_agent_span(
             message=message,
             agent_name=self.name,
             model_id=model_id,
@@ -751,9 +776,7 @@ class ToolCaller:
 
             if should_record_direct_tool_call:
                 # Create a record of this tool execution in the message history
-                self._agent._record_tool_execution(
-                    tool_use, tool_result, user_message_override, self._agent.messages
-                )
+                self._agent._record_tool_execution(tool_use, tool_result, user_message_override)
 
             # Apply window management
             self._agent.conversation_manager.apply_management(self._agent)
@@ -872,9 +895,7 @@ def __getattr__(self, name: str) -> Callable[..., Any]:
 
         if should_record_direct_tool_call:
             # Create a record of this tool execution in the message history
-            self._agent._record_tool_execution(
-                tool_use, tool_result, user_message_override, self._agent.messages
-            )
+            self._agent._record_tool_execution(tool_use, tool_result, user_message_override)
 
         # Apply window management
         self._agent.conversation_manager.apply_management(self._agent)
@@ -953,13 +974,13 @@ def __call__(self, prompt: Union[str, list[ContentBlock]], **kwargs: Any) -> Age
 
 ```
 
-#### `__init__(model=None, messages=None, tools=None, system_prompt=None, callback_handler=_DEFAULT_CALLBACK_HANDLER, conversation_manager=None, record_direct_tool_call=True, load_tools_from_directory=False, trace_attributes=None, *, agent_id=None, name=None, description=None, state=None, hooks=None)`
+#### `__init__(model=None, messages=None, tools=None, system_prompt=None, callback_handler=_DEFAULT_CALLBACK_HANDLER, conversation_manager=None, record_direct_tool_call=True, load_tools_from_directory=False, trace_attributes=None, *, agent_id=None, name=None, description=None, state=None, hooks=None, session_manager=None)`
 
 Initialize the Agent with the specified configuration.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `model` | `Union[Model, str, None]` | Provider for running inference or a string representing the model-id for Bedrock to use. Defaults to strands.models.BedrockModel if None. | `None` | | `messages` | `Optional[Messages]` | List of initial messages to pre-load into the conversation. Defaults to an empty list if None. | `None` | | `tools` | `Optional[list[Union[str, dict[str, str], Any]]]` | List of tools to make available to the agent. Can be specified as: String tool names (e.g., "retrieve") File paths (e.g., "/path/to/tool.py") Imported Python modules (e.g., from strands_tools import current_time) Dictionaries with name/path keys (e.g., {"name": "tool_name", "path": "/path/to/tool.py"}) Functions decorated with @strands.tool decorator. If provided, only these tools will be available. If None, all tools will be available. | `None` | | `system_prompt` | `Optional[str]` | System prompt to guide model behavior. If None, the model will behave according to its default settings. | `None` | | `callback_handler` | `Optional[Union[Callable[..., Any], _DefaultCallbackHandlerSentinel]]` | Callback for processing events as they happen during agent execution. If not provided (using the default), a new PrintingCallbackHandler instance is created. If explicitly set to None, null_callback_handler is used. | `_DEFAULT_CALLBACK_HANDLER` | | `conversation_manager` | `Optional[ConversationManager]` | Manager for conversation history and context window. Defaults to strands.agent.conversation_manager.SlidingWindowConversationManager if None. | `None` | | `record_direct_tool_call` | `bool` | Whether to record direct tool calls in message history. Defaults to True. | `True` | | `load_tools_from_directory` | `bool` | Whether to load and automatically reload tools in the ./tools/ directory. Defaults to False. | `False` | | `trace_attributes` | `Optional[Mapping[str, AttributeValue]]` | Custom trace attributes to apply to the agent's trace span. | `None` | | `agent_id` | `Optional[str]` | Optional ID for the agent, useful for multi-agent scenarios. If None, a UUID is generated. | `None` | | `name` | `Optional[str]` | name of the Agent Defaults to None. | `None` | | `description` | `Optional[str]` | description of what the Agent does Defaults to None. | `None` | | `state` | `Optional[Union[AgentState, dict]]` | stateful information for the agent. Can be either an AgentState object, or a json serializable dict. Defaults to an empty AgentState object. | `None` | | `hooks` | `Optional[list[HookProvider]]` | hooks to be added to the agent hook registry Defaults to None. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `model` | `Union[Model, str, None]` | Provider for running inference or a string representing the model-id for Bedrock to use. Defaults to strands.models.BedrockModel if None. | `None` | | `messages` | `Optional[Messages]` | List of initial messages to pre-load into the conversation. Defaults to an empty list if None. | `None` | | `tools` | `Optional[list[Union[str, dict[str, str], Any]]]` | List of tools to make available to the agent. Can be specified as: String tool names (e.g., "retrieve") File paths (e.g., "/path/to/tool.py") Imported Python modules (e.g., from strands_tools import current_time) Dictionaries with name/path keys (e.g., {"name": "tool_name", "path": "/path/to/tool.py"}) Functions decorated with @strands.tool decorator. If provided, only these tools will be available. If None, all tools will be available. | `None` | | `system_prompt` | `Optional[str]` | System prompt to guide model behavior. If None, the model will behave according to its default settings. | `None` | | `callback_handler` | `Optional[Union[Callable[..., Any], _DefaultCallbackHandlerSentinel]]` | Callback for processing events as they happen during agent execution. If not provided (using the default), a new PrintingCallbackHandler instance is created. If explicitly set to None, null_callback_handler is used. | `_DEFAULT_CALLBACK_HANDLER` | | `conversation_manager` | `Optional[ConversationManager]` | Manager for conversation history and context window. Defaults to strands.agent.conversation_manager.SlidingWindowConversationManager if None. | `None` | | `record_direct_tool_call` | `bool` | Whether to record direct tool calls in message history. Defaults to True. | `True` | | `load_tools_from_directory` | `bool` | Whether to load and automatically reload tools in the ./tools/ directory. Defaults to False. | `False` | | `trace_attributes` | `Optional[Mapping[str, AttributeValue]]` | Custom trace attributes to apply to the agent's trace span. | `None` | | `agent_id` | `Optional[str]` | Optional ID for the agent, useful for session management and multi-agent scenarios. Defaults to "default". | `None` | | `name` | `Optional[str]` | name of the Agent Defaults to "Strands Agents". | `None` | | `description` | `Optional[str]` | description of what the Agent does Defaults to None. | `None` | | `state` | `Optional[Union[AgentState, dict]]` | stateful information for the agent. Can be either an AgentState object, or a json serializable dict. Defaults to an empty AgentState object. | `None` | | `hooks` | `Optional[list[HookProvider]]` | hooks to be added to the agent hook registry Defaults to None. | `None` | | `session_manager` | `Optional[SessionManager]` | Manager for handling agent sessions including conversation history and state. If provided, enables session-based persistence and state management. | `None` |
 
 Source code in `strands/agent/agent.py`
 
@@ -983,6 +1004,7 @@ def __init__(
     description: Optional[str] = None,
     state: Optional[Union[AgentState, dict]] = None,
     hooks: Optional[list[HookProvider]] = None,
+    session_manager: Optional[SessionManager] = None,
 ):
     """Initialize the Agent with the specified configuration.
 
@@ -1013,22 +1035,24 @@ def __init__(
         load_tools_from_directory: Whether to load and automatically reload tools in the `./tools/` directory.
             Defaults to False.
         trace_attributes: Custom trace attributes to apply to the agent's trace span.
-        agent_id: Optional ID for the agent, useful for multi-agent scenarios.
-            If None, a UUID is generated.
+        agent_id: Optional ID for the agent, useful for session management and multi-agent scenarios.
+            Defaults to "default".
         name: name of the Agent
-            Defaults to None.
+            Defaults to "Strands Agents".
         description: description of what the Agent does
             Defaults to None.
         state: stateful information for the agent. Can be either an AgentState object, or a json serializable dict.
             Defaults to an empty AgentState object.
         hooks: hooks to be added to the agent hook registry
             Defaults to None.
+        session_manager: Manager for handling agent sessions including conversation history and state.
+            If provided, enables session-based persistence and state management.
     """
     self.model = BedrockModel() if not model else BedrockModel(model_id=model) if isinstance(model, str) else model
     self.messages = messages if messages is not None else []
 
     self.system_prompt = system_prompt
-    self.agent_id = agent_id or str(uuid4())
+    self.agent_id = agent_id or _DEFAULT_AGENT_ID
     self.name = name or _DEFAULT_AGENT_NAME
     self.description = description
 
@@ -1072,7 +1096,7 @@ def __init__(
 
     # Initialize tracer instance (no-op if not configured)
     self.tracer = get_tracer()
-    self.trace_span: Optional[trace.Span] = None
+    self.trace_span: Optional[trace_api.Span] = None
 
     # Initialize agent state management
     if state is not None:
@@ -1088,6 +1112,12 @@ def __init__(
     self.tool_caller = Agent.ToolCaller(self)
 
     self.hooks = HookRegistry()
+
+    # Initialize session management functionality
+    self._session_manager = session_manager
+    if self._session_manager:
+        self.hooks.add_hook(self._session_manager)
+
     if hooks:
         for hook in hooks:
             self.hooks.add_hook(hook)
@@ -1148,7 +1178,7 @@ Parameters:
 
 | Name | Type | Description | Default | | --- | --- | --- | --- | | `prompt` | `Union[str, list[ContentBlock]]` | User input as text or list of ContentBlock objects for multi-modal content. | *required* | | `**kwargs` | `Any` | Additional parameters to pass to the event loop. | `{}` |
 
-Returns:
+Yields:
 
 | Type | Description | | --- | --- | | `AsyncIterator[Any]` | An async iterator that yields events. Each event is a dictionary containing | | `AsyncIterator[Any]` | information about the current state of processing, such as: | | `AsyncIterator[Any]` | data: Text content being generated | | `AsyncIterator[Any]` | complete: Whether this is the final chunk | | `AsyncIterator[Any]` | current_tool_use: Information about tools being executed | | `AsyncIterator[Any]` | And other event data provided by the callback handler |
 
@@ -1180,9 +1210,10 @@ async def stream_async(self, prompt: Union[str, list[ContentBlock]], **kwargs: A
         prompt: User input as text or list of ContentBlock objects for multi-modal content.
         **kwargs: Additional parameters to pass to the event loop.
 
-    Returns:
+    Yields:
         An async iterator that yields events. Each event is a dictionary containing
         information about the current state of processing, such as:
+
         - data: Text content being generated
         - complete: Whether this is the final chunk
         - current_tool_use: Information about tools being executed
@@ -1203,24 +1234,24 @@ async def stream_async(self, prompt: Union[str, list[ContentBlock]], **kwargs: A
     content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
     message: Message = {"role": "user", "content": content}
 
-    self._start_agent_trace_span(message)
+    self.trace_span = self._start_agent_trace_span(message)
+    with trace_api.use_span(self.trace_span):
+        try:
+            events = self._run_loop(message, invocation_state=kwargs)
+            async for event in events:
+                if "callback" in event:
+                    callback_handler(**event["callback"])
+                    yield event["callback"]
 
-    try:
-        events = self._run_loop(message, invocation_state=kwargs)
-        async for event in events:
-            if "callback" in event:
-                callback_handler(**event["callback"])
-                yield event["callback"]
+            result = AgentResult(*event["stop"])
+            callback_handler(result=result)
+            yield {"result": result}
 
-        result = AgentResult(*event["stop"])
-        callback_handler(result=result)
-        yield {"result": result}
+            self._end_agent_trace_span(response=result)
 
-        self._end_agent_trace_span(response=result)
-
-    except Exception as e:
-        self._end_agent_trace_span(error=e)
-        raise
+        except Exception as e:
+            self._end_agent_trace_span(error=e)
+            raise
 
 ````
 
@@ -1319,7 +1350,7 @@ async def structured_output_async(
             content: list[ContentBlock] = [{"text": prompt}] if isinstance(prompt, str) else prompt
             self._append_message({"role": "user", "content": content})
 
-        events = self.model.structured_output(output_model, self.messages)
+        events = self.model.structured_output(output_model, self.messages, system_prompt=self.system_prompt)
         async for event in events:
             if "callback" in event:
                 self.callback_handler(**cast(dict, event["callback"]))
@@ -1460,8 +1491,37 @@ class ConversationManager(ABC):
     - Maintain relevant conversation state
     """
 
+    def __init__(self) -> None:
+        """Initialize the ConversationManager.
+
+        Attributes:
+          removed_message_count: The messages that have been removed from the agents messages array.
+              These represent messages provided by the user or LLM that have been removed, not messages
+              included by the conversation manager through something like summarization.
+        """
+        self.removed_message_count = 0
+
+    def restore_from_session(self, state: dict[str, Any]) -> Optional[list[Message]]:
+        """Restore the Conversation Manager's state from a session.
+
+        Args:
+            state: Previous state of the conversation manager
+        Returns:
+            Optional list of messages to prepend to the agents messages. By default returns None.
+        """
+        if state.get("__name__") != self.__class__.__name__:
+            raise ValueError("Invalid conversation manager state.")
+        self.removed_message_count = state["removed_message_count"]
+        return None
+
+    def get_state(self) -> dict[str, Any]:
+        """Get the current state of a Conversation Manager as a Json serializable dictionary."""
+        return {
+            "__name__": self.__class__.__name__,
+            "removed_message_count": self.removed_message_count,
+        }
+
     @abstractmethod
-    # pragma: no cover
     def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
         """Applies management strategy to the provided agent.
 
@@ -1477,7 +1537,6 @@ class ConversationManager(ABC):
         pass
 
     @abstractmethod
-    # pragma: no cover
     def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
         """Called when the model's context window is exceeded.
 
@@ -1501,6 +1560,29 @@ class ConversationManager(ABC):
 
 ```
 
+##### `__init__()`
+
+Initialize the ConversationManager.
+
+Attributes:
+
+| Name | Type | Description | | --- | --- | --- | | `removed_message_count` | | The messages that have been removed from the agents messages array. These represent messages provided by the user or LLM that have been removed, not messages included by the conversation manager through something like summarization. |
+
+Source code in `strands/agent/conversation_manager/conversation_manager.py`
+
+```
+def __init__(self) -> None:
+    """Initialize the ConversationManager.
+
+    Attributes:
+      removed_message_count: The messages that have been removed from the agents messages array.
+          These represent messages provided by the user or LLM that have been removed, not messages
+          included by the conversation manager through something like summarization.
+    """
+    self.removed_message_count = 0
+
+```
+
 ##### `apply_management(agent, **kwargs)`
 
 Applies management strategy to the provided agent.
@@ -1515,7 +1597,6 @@ Source code in `strands/agent/conversation_manager/conversation_manager.py`
 
 ```
 @abstractmethod
-# pragma: no cover
 def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
     """Applies management strategy to the provided agent.
 
@@ -1529,6 +1610,22 @@ def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
         **kwargs: Additional keyword arguments for future extensibility.
     """
     pass
+
+```
+
+##### `get_state()`
+
+Get the current state of a Conversation Manager as a Json serializable dictionary.
+
+Source code in `strands/agent/conversation_manager/conversation_manager.py`
+
+```
+def get_state(self) -> dict[str, Any]:
+    """Get the current state of a Conversation Manager as a Json serializable dictionary."""
+    return {
+        "__name__": self.__class__.__name__,
+        "removed_message_count": self.removed_message_count,
+    }
 
 ```
 
@@ -1553,7 +1650,6 @@ Source code in `strands/agent/conversation_manager/conversation_manager.py`
 
 ```
 @abstractmethod
-# pragma: no cover
 def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs: Any) -> None:
     """Called when the model's context window is exceeded.
 
@@ -1574,6 +1670,34 @@ def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs
         **kwargs: Additional keyword arguments for future extensibility.
     """
     pass
+
+```
+
+##### `restore_from_session(state)`
+
+Restore the Conversation Manager's state from a session.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `state` | `dict[str, Any]` | Previous state of the conversation manager | *required* |
+
+Returns: Optional list of messages to prepend to the agents messages. By default returns None.
+
+Source code in `strands/agent/conversation_manager/conversation_manager.py`
+
+```
+def restore_from_session(self, state: dict[str, Any]) -> Optional[list[Message]]:
+    """Restore the Conversation Manager's state from a session.
+
+    Args:
+        state: Previous state of the conversation manager
+    Returns:
+        Optional list of messages to prepend to the agents messages. By default returns None.
+    """
+    if state.get("__name__") != self.__class__.__name__:
+        raise ValueError("Invalid conversation manager state.")
+    self.removed_message_count = state["removed_message_count"]
+    return None
 
 ```
 
@@ -1720,6 +1844,7 @@ class SlidingWindowConversationManager(ConversationManager):
                 Defaults to 40 messages.
             should_truncate_results: Truncate tool results when a message is too large for the model's context window
         """
+        super().__init__()
         self.window_size = window_size
         self.should_truncate_results = should_truncate_results
 
@@ -1796,6 +1921,9 @@ class SlidingWindowConversationManager(ConversationManager):
         else:
             # If we didn't find a valid trim_index, then we throw
             raise ContextWindowOverflowException("Unable to trim conversation context!") from e
+
+        # trim_index represents the number of messages being removed from the agents messages array
+        self.removed_message_count += trim_index
 
         # Overwrite message history
         messages[:] = messages[trim_index:]
@@ -1887,6 +2015,7 @@ def __init__(self, window_size: int = 40, should_truncate_results: bool = True):
             Defaults to 40 messages.
         should_truncate_results: Truncate tool results when a message is too large for the model's context window
     """
+    super().__init__()
     self.window_size = window_size
     self.should_truncate_results = should_truncate_results
 
@@ -2001,64 +2130,11 @@ def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs
         # If we didn't find a valid trim_index, then we throw
         raise ContextWindowOverflowException("Unable to trim conversation context!") from e
 
+    # trim_index represents the number of messages being removed from the agents messages array
+    self.removed_message_count += trim_index
+
     # Overwrite message history
     messages[:] = messages[trim_index:]
-
-```
-
-#### `is_assistant_message(message)`
-
-Check if a message is from an assistant.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `message` | `Message` | The message object to check. | *required* |
-
-Returns:
-
-| Type | Description | | --- | --- | | `bool` | True if the message has the assistant role, False otherwise. |
-
-Source code in `strands/agent/conversation_manager/sliding_window_conversation_manager.py`
-
-```
-def is_assistant_message(message: Message) -> bool:
-    """Check if a message is from an assistant.
-
-    Args:
-        message: The message object to check.
-
-    Returns:
-        True if the message has the assistant role, False otherwise.
-    """
-    return message["role"] == "assistant"
-
-```
-
-#### `is_user_message(message)`
-
-Check if a message is from a user.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `message` | `Message` | The message object to check. | *required* |
-
-Returns:
-
-| Type | Description | | --- | --- | | `bool` | True if the message has the user role, False otherwise. |
-
-Source code in `strands/agent/conversation_manager/sliding_window_conversation_manager.py`
-
-```
-def is_user_message(message: Message) -> bool:
-    """Check if a message is from a user.
-
-    Args:
-        message: The message object to check.
-
-    Returns:
-        True if the message has the user role, False otherwise.
-    """
-    return message["role"] == "user"
 
 ```
 
@@ -2104,6 +2180,7 @@ class SummarizingConversationManager(ConversationManager):
             summarization_system_prompt: Optional system prompt override for summarization.
                 If None, uses the default summarization prompt.
         """
+        super().__init__()
         if summarization_agent is not None and summarization_system_prompt is not None:
             raise ValueError(
                 "Cannot provide both summarization_agent and summarization_system_prompt. "
@@ -2114,6 +2191,25 @@ class SummarizingConversationManager(ConversationManager):
         self.preserve_recent_messages = preserve_recent_messages
         self.summarization_agent = summarization_agent
         self.summarization_system_prompt = summarization_system_prompt
+        self._summary_message: Optional[Message] = None
+
+    @override
+    def restore_from_session(self, state: dict[str, Any]) -> Optional[list[Message]]:
+        """Restores the Summarizing Conversation manager from its previous state in a session.
+
+        Args:
+            state: The previous state of the Summarizing Conversation Manager.
+
+        Returns:
+            Optionally returns the previous conversation summary if it exists.
+        """
+        super().restore_from_session(state)
+        self._summary_message = state.get("summary_message")
+        return [self._summary_message] if self._summary_message else None
+
+    def get_state(self) -> dict[str, Any]:
+        """Returns a dictionary representation of the state for the Summarizing Conversation Manager."""
+        return {"summary_message": self._summary_message, **super().get_state()}
 
     def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
         """Apply management strategy to conversation history.
@@ -2165,11 +2261,17 @@ class SummarizingConversationManager(ConversationManager):
             messages_to_summarize = agent.messages[:messages_to_summarize_count]
             remaining_messages = agent.messages[messages_to_summarize_count:]
 
+            # Keep track of the number of messages that have been summarized thus far.
+            self.removed_message_count += len(messages_to_summarize)
+            # If there is a summary message, don't count it in the removed_message_count.
+            if self._summary_message:
+                self.removed_message_count -= 1
+
             # Generate summary
-            summary_message = self._generate_summary(messages_to_summarize, agent)
+            self._summary_message = self._generate_summary(messages_to_summarize, agent)
 
             # Replace the summarized messages with the summary
-            agent.messages[:] = [summary_message] + remaining_messages
+            agent.messages[:] = [self._summary_message] + remaining_messages
 
         except Exception as summarization_error:
             logger.error("Summarization failed: %s", summarization_error)
@@ -2292,6 +2394,7 @@ def __init__(
         summarization_system_prompt: Optional system prompt override for summarization.
             If None, uses the default summarization prompt.
     """
+    super().__init__()
     if summarization_agent is not None and summarization_system_prompt is not None:
         raise ValueError(
             "Cannot provide both summarization_agent and summarization_system_prompt. "
@@ -2302,6 +2405,7 @@ def __init__(
     self.preserve_recent_messages = preserve_recent_messages
     self.summarization_agent = summarization_agent
     self.summarization_system_prompt = summarization_system_prompt
+    self._summary_message: Optional[Message] = None
 
 ```
 
@@ -2331,6 +2435,19 @@ def apply_management(self, agent: "Agent", **kwargs: Any) -> None:
     """
     # No proactive management - summarization only happens on context overflow
     pass
+
+```
+
+##### `get_state()`
+
+Returns a dictionary representation of the state for the Summarizing Conversation Manager.
+
+Source code in `strands/agent/conversation_manager/summarizing_conversation_manager.py`
+
+```
+def get_state(self) -> dict[str, Any]:
+    """Returns a dictionary representation of the state for the Summarizing Conversation Manager."""
+    return {"summary_message": self._summary_message, **super().get_state()}
 
 ```
 
@@ -2385,15 +2502,52 @@ def reduce_context(self, agent: "Agent", e: Optional[Exception] = None, **kwargs
         messages_to_summarize = agent.messages[:messages_to_summarize_count]
         remaining_messages = agent.messages[messages_to_summarize_count:]
 
+        # Keep track of the number of messages that have been summarized thus far.
+        self.removed_message_count += len(messages_to_summarize)
+        # If there is a summary message, don't count it in the removed_message_count.
+        if self._summary_message:
+            self.removed_message_count -= 1
+
         # Generate summary
-        summary_message = self._generate_summary(messages_to_summarize, agent)
+        self._summary_message = self._generate_summary(messages_to_summarize, agent)
 
         # Replace the summarized messages with the summary
-        agent.messages[:] = [summary_message] + remaining_messages
+        agent.messages[:] = [self._summary_message] + remaining_messages
 
     except Exception as summarization_error:
         logger.error("Summarization failed: %s", summarization_error)
         raise summarization_error from e
+
+```
+
+##### `restore_from_session(state)`
+
+Restores the Summarizing Conversation manager from its previous state in a session.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `state` | `dict[str, Any]` | The previous state of the Summarizing Conversation Manager. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `Optional[list[Message]]` | Optionally returns the previous conversation summary if it exists. |
+
+Source code in `strands/agent/conversation_manager/summarizing_conversation_manager.py`
+
+```
+@override
+def restore_from_session(self, state: dict[str, Any]) -> Optional[list[Message]]:
+    """Restores the Summarizing Conversation manager from its previous state in a session.
+
+    Args:
+        state: The previous state of the Summarizing Conversation Manager.
+
+    Returns:
+        Optionally returns the previous conversation summary if it exists.
+    """
+    super().restore_from_session(state)
+    self._summary_message = state.get("summary_message")
+    return [self._summary_message] if self._summary_message else None
 
 ```
 

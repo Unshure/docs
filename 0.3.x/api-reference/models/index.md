@@ -49,13 +49,14 @@ class Model(abc.ABC):
     @abc.abstractmethod
     # pragma: no cover
     def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -78,6 +79,7 @@ class Model(abc.ABC):
         """Stream conversation with the model.
 
         This method handles the full lifecycle of conversing with the model:
+
         1. Format the messages, tool specs, and configuration into a streaming request
         2. Send the request to the model
         3. Yield the formatted message chunks
@@ -158,6 +160,7 @@ def stream(
     """Stream conversation with the model.
 
     This method handles the full lifecycle of conversing with the model:
+
     1. Format the messages, tool specs, and configuration into a streaming request
     2. Send the request to the model
     3. Yield the formatted message chunks
@@ -178,13 +181,13 @@ def stream(
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -200,13 +203,14 @@ Source code in `strands/models/model.py`
 @abc.abstractmethod
 # pragma: no cover
 def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -295,7 +299,7 @@ class BedrockModel(Model):
             guardrail_redact_output: Flag to redact output if guardrail is triggered. Defaults to False.
             guardrail_redact_output_message: If a Bedrock Output guardrail triggers, replace output with this message.
             max_tokens: Maximum number of tokens to generate in the response
-            model_id: The Bedrock model ID (e.g., "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+            model_id: The Bedrock model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0")
             stop_sequences: List of sequences that will stop generation when encountered
             streaming: Flag to enable/disable streaming. Defaults to True.
             temperature: Controls randomness in generation (higher = more random)
@@ -409,7 +413,7 @@ class BedrockModel(Model):
         """
         return {
             "modelId": self.config["model_id"],
-            "messages": messages,
+            "messages": self._format_bedrock_messages(messages),
             "system": [
                 *([{"text": system_prompt}] if system_prompt else []),
                 *([{"cachePoint": {"type": self.config["cache_prompt"]}}] if self.config.get("cache_prompt") else []),
@@ -473,6 +477,53 @@ class BedrockModel(Model):
                 else {}
             ),
         }
+
+    def _format_bedrock_messages(self, messages: Messages) -> Messages:
+        """Format messages for Bedrock API compatibility.
+
+        This function ensures messages conform to Bedrock's expected format by:
+        - Cleaning tool result content blocks by removing additional fields that may be
+          useful for retaining information in hooks but would cause Bedrock validation
+          exceptions when presented with unexpected fields
+        - Ensuring all message content blocks are properly formatted for the Bedrock API
+
+        Args:
+            messages: List of messages to format
+
+        Returns:
+            Messages formatted for Bedrock API compatibility
+
+        Note:
+            Bedrock will throw validation exceptions when presented with additional
+            unexpected fields in tool result blocks.
+            https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ToolResultBlock.html
+        """
+        cleaned_messages = []
+
+        for message in messages:
+            cleaned_content: list[ContentBlock] = []
+
+            for content_block in message["content"]:
+                if "toolResult" in content_block:
+                    # Create a new content block with only the cleaned toolResult
+                    tool_result: ToolResult = content_block["toolResult"]
+
+                    # Keep only the required fields for Bedrock
+                    cleaned_tool_result = ToolResult(
+                        content=tool_result["content"], toolUseId=tool_result["toolUseId"], status=tool_result["status"]
+                    )
+
+                    cleaned_block: ContentBlock = {"toolResult": cleaned_tool_result}
+                    cleaned_content.append(cleaned_block)
+                else:
+                    # Keep other content blocks as-is
+                    cleaned_content.append(content_block)
+
+            # Create new message with cleaned content
+            cleaned_message: Message = Message(content=cleaned_content, role=message["role"])
+            cleaned_messages.append(cleaned_message)
+
+        return cleaned_messages
 
     def _has_blocked_guardrail(self, guardrail_data: dict[str, Any]) -> bool:
         """Check if guardrail data contains any blocked policies.
@@ -562,12 +613,8 @@ class BedrockModel(Model):
             if event is None:
                 return
 
-            signal.wait()
-            signal.clear()
-
         loop = asyncio.get_event_loop()
         queue: asyncio.Queue[Optional[StreamEvent]] = asyncio.Queue()
-        signal = threading.Event()
 
         thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt)
         task = asyncio.create_task(thread)
@@ -578,7 +625,6 @@ class BedrockModel(Model):
                 break
 
             yield event
-            signal.set()
 
         await task
 
@@ -665,7 +711,7 @@ class BedrockModel(Model):
                 ):
                     e.add_note(
                         "└ For more information see "
-                        "https://strandsagents.com/user-guide/concepts/model-providers/amazon-bedrock/#model-access-issue"
+                        "https://strandsagents.com/latest/user-guide/concepts/model-providers/amazon-bedrock/#model-access-issue"
                     )
 
                 if (
@@ -795,13 +841,14 @@ class BedrockModel(Model):
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -809,14 +856,14 @@ class BedrockModel(Model):
         """
         tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-        response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
-        async for event in streaming.process_stream(response, prompt):
+        response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+        async for event in streaming.process_stream(response):
             yield event
 
         stop_reason, messages, _, _ = event["stop"]
 
         if stop_reason != "tool_use":
-            raise ValueError("No valid tool use or tool use input was found in the Bedrock response.")
+            raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
 
         content = messages["content"]
         output_response: dict[str, Any] | None = None
@@ -843,7 +890,7 @@ Configuration options for Bedrock models.
 
 Attributes:
 
-| Name | Type | Description | | --- | --- | --- | | `additional_args` | `Optional[dict[str, Any]]` | Any additional arguments to include in the request | | `additional_request_fields` | `Optional[dict[str, Any]]` | Additional fields to include in the Bedrock request | | `additional_response_field_paths` | `Optional[list[str]]` | Additional response field paths to extract | | `cache_prompt` | `Optional[str]` | Cache point type for the system prompt | | `cache_tools` | `Optional[str]` | Cache point type for tools | | `guardrail_id` | `Optional[str]` | ID of the guardrail to apply | | `guardrail_trace` | `Optional[Literal['enabled', 'disabled', 'enabled_full']]` | Guardrail trace mode. Defaults to enabled. | | `guardrail_version` | `Optional[str]` | Version of the guardrail to apply | | `guardrail_stream_processing_mode` | `Optional[Literal['sync', 'async']]` | The guardrail processing mode | | `guardrail_redact_input` | `Optional[bool]` | Flag to redact input if a guardrail is triggered. Defaults to True. | | `guardrail_redact_input_message` | `Optional[str]` | If a Bedrock Input guardrail triggers, replace the input with this message. | | `guardrail_redact_output` | `Optional[bool]` | Flag to redact output if guardrail is triggered. Defaults to False. | | `guardrail_redact_output_message` | `Optional[str]` | If a Bedrock Output guardrail triggers, replace output with this message. | | `max_tokens` | `Optional[int]` | Maximum number of tokens to generate in the response | | `model_id` | `str` | The Bedrock model ID (e.g., "us.anthropic.claude-3-7-sonnet-20250219-v1:0") | | `stop_sequences` | `Optional[list[str]]` | List of sequences that will stop generation when encountered | | `streaming` | `Optional[bool]` | Flag to enable/disable streaming. Defaults to True. | | `temperature` | `Optional[float]` | Controls randomness in generation (higher = more random) | | `top_p` | `Optional[float]` | Controls diversity via nucleus sampling (alternative to temperature) |
+| Name | Type | Description | | --- | --- | --- | | `additional_args` | `Optional[dict[str, Any]]` | Any additional arguments to include in the request | | `additional_request_fields` | `Optional[dict[str, Any]]` | Additional fields to include in the Bedrock request | | `additional_response_field_paths` | `Optional[list[str]]` | Additional response field paths to extract | | `cache_prompt` | `Optional[str]` | Cache point type for the system prompt | | `cache_tools` | `Optional[str]` | Cache point type for tools | | `guardrail_id` | `Optional[str]` | ID of the guardrail to apply | | `guardrail_trace` | `Optional[Literal['enabled', 'disabled', 'enabled_full']]` | Guardrail trace mode. Defaults to enabled. | | `guardrail_version` | `Optional[str]` | Version of the guardrail to apply | | `guardrail_stream_processing_mode` | `Optional[Literal['sync', 'async']]` | The guardrail processing mode | | `guardrail_redact_input` | `Optional[bool]` | Flag to redact input if a guardrail is triggered. Defaults to True. | | `guardrail_redact_input_message` | `Optional[str]` | If a Bedrock Input guardrail triggers, replace the input with this message. | | `guardrail_redact_output` | `Optional[bool]` | Flag to redact output if guardrail is triggered. Defaults to False. | | `guardrail_redact_output_message` | `Optional[str]` | If a Bedrock Output guardrail triggers, replace output with this message. | | `max_tokens` | `Optional[int]` | Maximum number of tokens to generate in the response | | `model_id` | `str` | The Bedrock model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0") | | `stop_sequences` | `Optional[list[str]]` | List of sequences that will stop generation when encountered | | `streaming` | `Optional[bool]` | Flag to enable/disable streaming. Defaults to True. | | `temperature` | `Optional[float]` | Controls randomness in generation (higher = more random) | | `top_p` | `Optional[float]` | Controls diversity via nucleus sampling (alternative to temperature) |
 
 Source code in `strands/models/bedrock.py`
 
@@ -866,7 +913,7 @@ class BedrockConfig(TypedDict, total=False):
         guardrail_redact_output: Flag to redact output if guardrail is triggered. Defaults to False.
         guardrail_redact_output_message: If a Bedrock Output guardrail triggers, replace output with this message.
         max_tokens: Maximum number of tokens to generate in the response
-        model_id: The Bedrock model ID (e.g., "us.anthropic.claude-3-7-sonnet-20250219-v1:0")
+        model_id: The Bedrock model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0")
         stop_sequences: List of sequences that will stop generation when encountered
         streaming: Flag to enable/disable streaming. Defaults to True.
         temperature: Controls randomness in generation (higher = more random)
@@ -992,7 +1039,7 @@ def format_request(
     """
     return {
         "modelId": self.config["model_id"],
-        "messages": messages,
+        "messages": self._format_bedrock_messages(messages),
         "system": [
             *([{"text": system_prompt}] if system_prompt else []),
             *([{"cachePoint": {"type": self.config["cache_prompt"]}}] if self.config.get("cache_prompt") else []),
@@ -1134,12 +1181,8 @@ async def stream(
         if event is None:
             return
 
-        signal.wait()
-        signal.clear()
-
     loop = asyncio.get_event_loop()
     queue: asyncio.Queue[Optional[StreamEvent]] = asyncio.Queue()
-    signal = threading.Event()
 
     thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt)
     task = asyncio.create_task(thread)
@@ -1150,19 +1193,18 @@ async def stream(
             break
 
         yield event
-        signal.set()
 
     await task
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -1173,13 +1215,14 @@ Source code in `strands/models/bedrock.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -1187,14 +1230,14 @@ async def structured_output(
     """
     tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-    response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
-    async for event in streaming.process_stream(response, prompt):
+    response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+    async for event in streaming.process_stream(response):
         yield event
 
     stop_reason, messages, _, _ = event["stop"]
 
     if stop_reason != "tool_use":
-        raise ValueError("No valid tool use or tool use input was found in the Bedrock response.")
+        raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
 
     content = messages["content"]
     output_response: dict[str, Any] | None = None
@@ -1616,13 +1659,14 @@ class AnthropicModel(Model):
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -1630,14 +1674,14 @@ class AnthropicModel(Model):
         """
         tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-        response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
-        async for event in process_stream(response, prompt):
+        response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+        async for event in process_stream(response):
             yield event
 
         stop_reason, messages, _, _ = event["stop"]
 
         if stop_reason != "tool_use":
-            raise ValueError("No valid tool use or tool use input was found in the Anthropic response.")
+            raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
 
         content = messages["content"]
         output_response: dict[str, Any] | None = None
@@ -1999,13 +2043,13 @@ async def stream(
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -2016,13 +2060,14 @@ Source code in `strands/models/anthropic.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -2030,14 +2075,14 @@ async def structured_output(
     """
     tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-    response = self.stream(messages=prompt, tool_specs=[tool_spec], **kwargs)
-    async for event in process_stream(response, prompt):
+    response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+    async for event in process_stream(response):
         yield event
 
     stop_reason, messages, _, _ = event["stop"]
 
     if stop_reason != "tool_use":
-        raise ValueError("No valid tool use or tool use input was found in the Anthropic response.")
+        raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
 
     content = messages["content"]
     output_response: dict[str, Any] | None = None
@@ -2248,19 +2293,21 @@ class LiteLLMModel(OpenAIModel):
         async for event in response:
             _ = event
 
-        yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+        if event.usage:
+            yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
 
         logger.debug("finished streaming response from model")
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -2269,7 +2316,7 @@ class LiteLLMModel(OpenAIModel):
         response = await litellm.acompletion(
             **self.client_args,
             model=self.get_config()["model_id"],
-            messages=self.format_request(prompt)["messages"],
+            messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
             response_format=output_model,
         )
 
@@ -2515,19 +2562,20 @@ async def stream(
     async for event in response:
         _ = event
 
-    yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+    if event.usage:
+        yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
 
     logger.debug("finished streaming response from model")
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -2538,13 +2586,14 @@ Source code in `strands/models/litellm.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -2553,7 +2602,7 @@ async def structured_output(
     response = await litellm.acompletion(
         **self.client_args,
         model=self.get_config()["model_id"],
-        messages=self.format_request(prompt)["messages"],
+        messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
         response_format=output_model,
     )
 
@@ -2997,13 +3046,14 @@ class LlamaAPIModel(Model):
 
     @override
     def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -3379,13 +3429,13 @@ async def stream(
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -3400,13 +3450,14 @@ Source code in `strands/models/llamaapi.py`
 ```
 @override
 def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -3542,11 +3593,9 @@ class MistralModel(Model):
 
         logger.debug("config=<%s> | initializing", self.config)
 
-        client_args = client_args or {}
+        self.client_args = client_args or {}
         if api_key:
-            client_args["api_key"] = api_key
-
-        self.client = mistralai.Mistral(**client_args)
+            self.client_args["api_key"] = api_key
 
     @override
     def update_config(self, **model_config: Unpack[MistralConfig]) -> None:  # type: ignore
@@ -3873,67 +3922,70 @@ class MistralModel(Model):
             logger.debug("got response from model")
             if not self.config.get("stream", True):
                 # Use non-streaming API
-                response = await self.client.chat.complete_async(**request)
-                for event in self._handle_non_streaming_response(response):
-                    yield self.format_chunk(event)
+                async with mistralai.Mistral(**self.client_args) as client:
+                    response = await client.chat.complete_async(**request)
+                    for event in self._handle_non_streaming_response(response):
+                        yield self.format_chunk(event)
+
                 return
 
             # Use the streaming API
-            stream_response = await self.client.chat.stream_async(**request)
+            async with mistralai.Mistral(**self.client_args) as client:
+                stream_response = await client.chat.stream_async(**request)
 
-            yield self.format_chunk({"chunk_type": "message_start"})
+                yield self.format_chunk({"chunk_type": "message_start"})
 
-            content_started = False
-            tool_calls: dict[str, list[Any]] = {}
-            accumulated_text = ""
+                content_started = False
+                tool_calls: dict[str, list[Any]] = {}
+                accumulated_text = ""
 
-            async for chunk in stream_response:
-                if hasattr(chunk, "data") and hasattr(chunk.data, "choices") and chunk.data.choices:
-                    choice = chunk.data.choices[0]
+                async for chunk in stream_response:
+                    if hasattr(chunk, "data") and hasattr(chunk.data, "choices") and chunk.data.choices:
+                        choice = chunk.data.choices[0]
 
-                    if hasattr(choice, "delta"):
-                        delta = choice.delta
+                        if hasattr(choice, "delta"):
+                            delta = choice.delta
 
-                        if hasattr(delta, "content") and delta.content:
-                            if not content_started:
-                                yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
-                                content_started = True
+                            if hasattr(delta, "content") and delta.content:
+                                if not content_started:
+                                    yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+                                    content_started = True
 
-                            yield self.format_chunk(
-                                {"chunk_type": "content_delta", "data_type": "text", "data": delta.content}
-                            )
-                            accumulated_text += delta.content
+                                yield self.format_chunk(
+                                    {"chunk_type": "content_delta", "data_type": "text", "data": delta.content}
+                                )
+                                accumulated_text += delta.content
 
-                        if hasattr(delta, "tool_calls") and delta.tool_calls:
-                            for tool_call in delta.tool_calls:
-                                tool_id = tool_call.id
-                                tool_calls.setdefault(tool_id, []).append(tool_call)
+                            if hasattr(delta, "tool_calls") and delta.tool_calls:
+                                for tool_call in delta.tool_calls:
+                                    tool_id = tool_call.id
+                                    tool_calls.setdefault(tool_id, []).append(tool_call)
 
-                    if hasattr(choice, "finish_reason") and choice.finish_reason:
-                        if content_started:
-                            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+                        if hasattr(choice, "finish_reason") and choice.finish_reason:
+                            if content_started:
+                                yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
-                        for tool_deltas in tool_calls.values():
-                            yield self.format_chunk(
-                                {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
-                            )
+                            for tool_deltas in tool_calls.values():
+                                yield self.format_chunk(
+                                    {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
+                                )
 
-                            for tool_delta in tool_deltas:
-                                if hasattr(tool_delta.function, "arguments"):
-                                    yield self.format_chunk(
-                                        {
-                                            "chunk_type": "content_delta",
-                                            "data_type": "tool",
-                                            "data": tool_delta.function.arguments,
-                                        }
-                                    )
+                                for tool_delta in tool_deltas:
+                                    if hasattr(tool_delta.function, "arguments"):
+                                        yield self.format_chunk(
+                                            {
+                                                "chunk_type": "content_delta",
+                                                "data_type": "tool",
+                                                "data": tool_delta.function.arguments,
+                                            }
+                                        )
 
-                            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+                                yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-                        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+                            yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
 
-                        if hasattr(chunk, "usage"):
-                            yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
+                            if hasattr(chunk, "usage"):
+                                yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
 
         except Exception as e:
             if "rate" in str(e).lower() or "429" in str(e):
@@ -3944,13 +3996,14 @@ class MistralModel(Model):
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Returns:
@@ -3965,12 +4018,13 @@ class MistralModel(Model):
             "inputSchema": {"json": output_model.model_json_schema()},
         }
 
-        formatted_request = self.format_request(messages=prompt, tool_specs=[tool_spec])
+        formatted_request = self.format_request(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt)
 
         formatted_request["tool_choice"] = "any"
         formatted_request["parallel_tool_calls"] = False
 
-        response = await self.client.chat.complete_async(**formatted_request)
+        async with mistralai.Mistral(**self.client_args) as client:
+            response = await client.chat.complete_async(**formatted_request)
 
         if response.choices and response.choices[0].message.tool_calls:
             tool_call = response.choices[0].message.tool_calls[0]
@@ -4071,11 +4125,9 @@ def __init__(
 
     logger.debug("config=<%s> | initializing", self.config)
 
-    client_args = client_args or {}
+    self.client_args = client_args or {}
     if api_key:
-        client_args["api_key"] = api_key
-
-    self.client = mistralai.Mistral(**client_args)
+        self.client_args["api_key"] = api_key
 
 ```
 
@@ -4309,67 +4361,70 @@ async def stream(
         logger.debug("got response from model")
         if not self.config.get("stream", True):
             # Use non-streaming API
-            response = await self.client.chat.complete_async(**request)
-            for event in self._handle_non_streaming_response(response):
-                yield self.format_chunk(event)
+            async with mistralai.Mistral(**self.client_args) as client:
+                response = await client.chat.complete_async(**request)
+                for event in self._handle_non_streaming_response(response):
+                    yield self.format_chunk(event)
+
             return
 
         # Use the streaming API
-        stream_response = await self.client.chat.stream_async(**request)
+        async with mistralai.Mistral(**self.client_args) as client:
+            stream_response = await client.chat.stream_async(**request)
 
-        yield self.format_chunk({"chunk_type": "message_start"})
+            yield self.format_chunk({"chunk_type": "message_start"})
 
-        content_started = False
-        tool_calls: dict[str, list[Any]] = {}
-        accumulated_text = ""
+            content_started = False
+            tool_calls: dict[str, list[Any]] = {}
+            accumulated_text = ""
 
-        async for chunk in stream_response:
-            if hasattr(chunk, "data") and hasattr(chunk.data, "choices") and chunk.data.choices:
-                choice = chunk.data.choices[0]
+            async for chunk in stream_response:
+                if hasattr(chunk, "data") and hasattr(chunk.data, "choices") and chunk.data.choices:
+                    choice = chunk.data.choices[0]
 
-                if hasattr(choice, "delta"):
-                    delta = choice.delta
+                    if hasattr(choice, "delta"):
+                        delta = choice.delta
 
-                    if hasattr(delta, "content") and delta.content:
-                        if not content_started:
-                            yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
-                            content_started = True
+                        if hasattr(delta, "content") and delta.content:
+                            if not content_started:
+                                yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+                                content_started = True
 
-                        yield self.format_chunk(
-                            {"chunk_type": "content_delta", "data_type": "text", "data": delta.content}
-                        )
-                        accumulated_text += delta.content
+                            yield self.format_chunk(
+                                {"chunk_type": "content_delta", "data_type": "text", "data": delta.content}
+                            )
+                            accumulated_text += delta.content
 
-                    if hasattr(delta, "tool_calls") and delta.tool_calls:
-                        for tool_call in delta.tool_calls:
-                            tool_id = tool_call.id
-                            tool_calls.setdefault(tool_id, []).append(tool_call)
+                        if hasattr(delta, "tool_calls") and delta.tool_calls:
+                            for tool_call in delta.tool_calls:
+                                tool_id = tool_call.id
+                                tool_calls.setdefault(tool_id, []).append(tool_call)
 
-                if hasattr(choice, "finish_reason") and choice.finish_reason:
-                    if content_started:
-                        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+                    if hasattr(choice, "finish_reason") and choice.finish_reason:
+                        if content_started:
+                            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
-                    for tool_deltas in tool_calls.values():
-                        yield self.format_chunk(
-                            {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
-                        )
+                        for tool_deltas in tool_calls.values():
+                            yield self.format_chunk(
+                                {"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]}
+                            )
 
-                        for tool_delta in tool_deltas:
-                            if hasattr(tool_delta.function, "arguments"):
-                                yield self.format_chunk(
-                                    {
-                                        "chunk_type": "content_delta",
-                                        "data_type": "tool",
-                                        "data": tool_delta.function.arguments,
-                                    }
-                                )
+                            for tool_delta in tool_deltas:
+                                if hasattr(tool_delta.function, "arguments"):
+                                    yield self.format_chunk(
+                                        {
+                                            "chunk_type": "content_delta",
+                                            "data_type": "tool",
+                                            "data": tool_delta.function.arguments,
+                                        }
+                                    )
 
-                        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+                            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-                    yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+                        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
 
-                    if hasattr(chunk, "usage"):
-                        yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
+                        if hasattr(chunk, "usage"):
+                            yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
 
     except Exception as e:
         if "rate" in str(e).lower() or "429" in str(e):
@@ -4380,13 +4435,13 @@ async def stream(
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Returns:
 
@@ -4401,13 +4456,14 @@ Source code in `strands/models/mistral.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Returns:
@@ -4422,12 +4478,13 @@ async def structured_output(
         "inputSchema": {"json": output_model.model_json_schema()},
     }
 
-    formatted_request = self.format_request(messages=prompt, tool_specs=[tool_spec])
+    formatted_request = self.format_request(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt)
 
     formatted_request["tool_choice"] = "any"
     formatted_request["parallel_tool_calls"] = False
 
-    response = await self.client.chat.complete_async(**formatted_request)
+    async with mistralai.Mistral(**self.client_args) as client:
+        response = await client.chat.complete_async(**formatted_request)
 
     if response.choices and response.choices[0].message.tool_calls:
         tool_call = response.choices[0].message.tool_calls[0]
@@ -4536,13 +4593,11 @@ class OllamaModel(Model):
             ollama_client_args: Additional arguments for the Ollama client.
             **model_config: Configuration options for the Ollama model.
         """
+        self.host = host
+        self.client_args = ollama_client_args or {}
         self.config = OllamaModel.OllamaConfig(**model_config)
 
         logger.debug("config=<%s> | initializing", self.config)
-
-        ollama_client_args = ollama_client_args if ollama_client_args is not None else {}
-
-        self.client = ollama.AsyncClient(host, **ollama_client_args)
 
     @override
     def update_config(self, **model_config: Unpack[OllamaConfig]) -> None:  # type: ignore
@@ -4774,7 +4829,8 @@ class OllamaModel(Model):
         logger.debug("invoking model")
         tool_requested = False
 
-        response = await self.client.chat(**request)
+        client = ollama.AsyncClient(self.host, **self.client_args)
+        response = await client.chat(**request)
 
         logger.debug("got response from model")
         yield self.format_chunk({"chunk_type": "message_start"})
@@ -4799,22 +4855,25 @@ class OllamaModel(Model):
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Model events with the last being the structured output.
         """
-        formatted_request = self.format_request(messages=prompt)
+        formatted_request = self.format_request(messages=prompt, system_prompt=system_prompt)
         formatted_request["format"] = output_model.model_json_schema()
         formatted_request["stream"] = False
-        response = await self.client.chat(**formatted_request)
+
+        client = ollama.AsyncClient(self.host, **self.client_args)
+        response = await client.chat(**formatted_request)
 
         try:
             content = response.message.content.strip()
@@ -4887,13 +4946,11 @@ def __init__(
         ollama_client_args: Additional arguments for the Ollama client.
         **model_config: Configuration options for the Ollama model.
     """
+    self.host = host
+    self.client_args = ollama_client_args or {}
     self.config = OllamaModel.OllamaConfig(**model_config)
 
     logger.debug("config=<%s> | initializing", self.config)
-
-    ollama_client_args = ollama_client_args if ollama_client_args is not None else {}
-
-    self.client = ollama.AsyncClient(host, **ollama_client_args)
 
 ```
 
@@ -5117,7 +5174,8 @@ async def stream(
     logger.debug("invoking model")
     tool_requested = False
 
-    response = await self.client.chat(**request)
+    client = ollama.AsyncClient(self.host, **self.client_args)
+    response = await client.chat(**request)
 
     logger.debug("got response from model")
     yield self.format_chunk({"chunk_type": "message_start"})
@@ -5142,13 +5200,13 @@ async def stream(
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -5159,22 +5217,25 @@ Source code in `strands/models/ollama.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Model events with the last being the structured output.
     """
-    formatted_request = self.format_request(messages=prompt)
+    formatted_request = self.format_request(messages=prompt, system_prompt=system_prompt)
     formatted_request["format"] = output_model.model_json_schema()
     formatted_request["stream"] = False
-    response = await self.client.chat(**formatted_request)
+
+    client = ollama.AsyncClient(self.host, **self.client_args)
+    response = await client.chat(**formatted_request)
 
     try:
         content = response.message.content.strip()
@@ -5605,19 +5666,21 @@ class OpenAIModel(Model):
         async for event in response:
             _ = event
 
-        yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+        if event.usage:
+            yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
 
         logger.debug("finished streaming response from model")
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
             output_model: The output model to use for the agent.
             prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -5625,7 +5688,7 @@ class OpenAIModel(Model):
         """
         response: ParsedChatCompletion = await self.client.beta.chat.completions.parse(  # type: ignore
             model=self.get_config()["model_id"],
-            messages=self.format_request(prompt)["messages"],
+            messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
             response_format=output_model,
         )
 
@@ -6162,19 +6225,20 @@ async def stream(
     async for event in response:
         _ = event
 
-    yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+    if event.usage:
+        yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
 
     logger.debug("finished streaming response from model")
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -6185,13 +6249,14 @@ Source code in `strands/models/openai.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
         output_model: The output model to use for the agent.
         prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -6199,7 +6264,7 @@ async def structured_output(
     """
     response: ParsedChatCompletion = await self.client.beta.chat.completions.parse(  # type: ignore
         model=self.get_config()["model_id"],
-        messages=self.format_request(prompt)["messages"],
+        messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
         response_format=output_model,
     )
 
@@ -6655,16 +6720,17 @@ class WriterModel(Model):
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, **kwargs: Any
+        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
         Args:
-            output_model(Type[BaseModel]): The output model to use for the agent.
-            prompt(Messages): The prompt messages to use for the agent.
+            output_model: The output model to use for the agent.
+            prompt: The prompt messages to use for the agent.
+            system_prompt: System prompt to provide context to the model.
             **kwargs: Additional keyword arguments for future extensibility.
         """
-        formatted_request = self.format_request(messages=prompt, tool_specs=None, system_prompt=None)
+        formatted_request = self.format_request(messages=prompt, tool_specs=None, system_prompt=system_prompt)
         formatted_request["response_format"] = {
             "type": "json_schema",
             "json_schema": {"schema": output_model.model_json_schema()},
@@ -6999,29 +7065,30 @@ async def stream(
 
 ```
 
-#### `structured_output(output_model, prompt, **kwargs)`
+#### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
 
 Get structured output from the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model(Type[BaseModel])` | | The output model to use for the agent. | *required* | | `prompt(Messages)` | | The prompt messages to use for the agent. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `output_model` | `Type[T]` | The output model to use for the agent. | *required* | | `prompt` | `Messages` | The prompt messages to use for the agent. | *required* | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/models/writer.py`
 
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, **kwargs: Any
+    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
     Args:
-        output_model(Type[BaseModel]): The output model to use for the agent.
-        prompt(Messages): The prompt messages to use for the agent.
+        output_model: The output model to use for the agent.
+        prompt: The prompt messages to use for the agent.
+        system_prompt: System prompt to provide context to the model.
         **kwargs: Additional keyword arguments for future extensibility.
     """
-    formatted_request = self.format_request(messages=prompt, tool_specs=None, system_prompt=None)
+    formatted_request = self.format_request(messages=prompt, tool_specs=None, system_prompt=system_prompt)
     formatted_request["response_format"] = {
         "type": "json_schema",
         "json_schema": {"schema": output_model.model_json_schema()},

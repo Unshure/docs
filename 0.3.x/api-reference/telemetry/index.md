@@ -148,22 +148,46 @@ class StrandsTelemetry:
             )
         )
 
-    def setup_console_exporter(self) -> "StrandsTelemetry":
-        """Set up console exporter for the tracer provider."""
+    def setup_console_exporter(self, **kwargs: Any) -> "StrandsTelemetry":
+        """Set up console exporter for the tracer provider.
+
+        Args:
+            **kwargs: Optional keyword arguments passed directly to
+                OpenTelemetry's ConsoleSpanExporter initializer.
+
+        Returns:
+            self: Enables method chaining.
+
+        This method configures a SimpleSpanProcessor with a ConsoleSpanExporter,
+        allowing trace data to be output to the console. Any additional keyword
+        arguments provided will be forwarded to the ConsoleSpanExporter.
+        """
         try:
             logger.info("Enabling console export")
-            console_processor = SimpleSpanProcessor(ConsoleSpanExporter())
+            console_processor = SimpleSpanProcessor(ConsoleSpanExporter(**kwargs))
             self.tracer_provider.add_span_processor(console_processor)
         except Exception as e:
             logger.exception("error=<%s> | Failed to configure console exporter", e)
         return self
 
-    def setup_otlp_exporter(self) -> "StrandsTelemetry":
-        """Set up OTLP exporter for the tracer provider."""
+    def setup_otlp_exporter(self, **kwargs: Any) -> "StrandsTelemetry":
+        """Set up OTLP exporter for the tracer provider.
+
+        Args:
+            **kwargs: Optional keyword arguments passed directly to
+                OpenTelemetry's OTLPSpanExporter initializer.
+
+        Returns:
+            self: Enables method chaining.
+
+        This method configures a BatchSpanProcessor with an OTLPSpanExporter,
+        allowing trace data to be exported to an OTLP endpoint. Any additional
+        keyword arguments provided will be forwarded to the OTLPSpanExporter.
+        """
         from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
         try:
-            otlp_exporter = OTLPSpanExporter()
+            otlp_exporter = OTLPSpanExporter(**kwargs)
             batch_processor = BatchSpanProcessor(otlp_exporter)
             self.tracer_provider.add_span_processor(batch_processor)
             logger.info("OTLP exporter configured")
@@ -234,18 +258,40 @@ def __init__(
 
 ```
 
-#### `setup_console_exporter()`
+#### `setup_console_exporter(**kwargs)`
 
 Set up console exporter for the tracer provider.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `**kwargs` | `Any` | Optional keyword arguments passed directly to OpenTelemetry's ConsoleSpanExporter initializer. | `{}` |
+
+Returns:
+
+| Name | Type | Description | | --- | --- | --- | | `self` | `StrandsTelemetry` | Enables method chaining. |
+
+This method configures a SimpleSpanProcessor with a ConsoleSpanExporter, allowing trace data to be output to the console. Any additional keyword arguments provided will be forwarded to the ConsoleSpanExporter.
 
 Source code in `strands/telemetry/config.py`
 
 ```
-def setup_console_exporter(self) -> "StrandsTelemetry":
-    """Set up console exporter for the tracer provider."""
+def setup_console_exporter(self, **kwargs: Any) -> "StrandsTelemetry":
+    """Set up console exporter for the tracer provider.
+
+    Args:
+        **kwargs: Optional keyword arguments passed directly to
+            OpenTelemetry's ConsoleSpanExporter initializer.
+
+    Returns:
+        self: Enables method chaining.
+
+    This method configures a SimpleSpanProcessor with a ConsoleSpanExporter,
+    allowing trace data to be output to the console. Any additional keyword
+    arguments provided will be forwarded to the ConsoleSpanExporter.
+    """
     try:
         logger.info("Enabling console export")
-        console_processor = SimpleSpanProcessor(ConsoleSpanExporter())
+        console_processor = SimpleSpanProcessor(ConsoleSpanExporter(**kwargs))
         self.tracer_provider.add_span_processor(console_processor)
     except Exception as e:
         logger.exception("error=<%s> | Failed to configure console exporter", e)
@@ -289,19 +335,41 @@ def setup_meter(
 
 ```
 
-#### `setup_otlp_exporter()`
+#### `setup_otlp_exporter(**kwargs)`
 
 Set up OTLP exporter for the tracer provider.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `**kwargs` | `Any` | Optional keyword arguments passed directly to OpenTelemetry's OTLPSpanExporter initializer. | `{}` |
+
+Returns:
+
+| Name | Type | Description | | --- | --- | --- | | `self` | `StrandsTelemetry` | Enables method chaining. |
+
+This method configures a BatchSpanProcessor with an OTLPSpanExporter, allowing trace data to be exported to an OTLP endpoint. Any additional keyword arguments provided will be forwarded to the OTLPSpanExporter.
 
 Source code in `strands/telemetry/config.py`
 
 ```
-def setup_otlp_exporter(self) -> "StrandsTelemetry":
-    """Set up OTLP exporter for the tracer provider."""
+def setup_otlp_exporter(self, **kwargs: Any) -> "StrandsTelemetry":
+    """Set up OTLP exporter for the tracer provider.
+
+    Args:
+        **kwargs: Optional keyword arguments passed directly to
+            OpenTelemetry's OTLPSpanExporter initializer.
+
+    Returns:
+        self: Enables method chaining.
+
+    This method configures a BatchSpanProcessor with an OTLPSpanExporter,
+    allowing trace data to be exported to an OTLP endpoint. Any additional
+    keyword arguments provided will be forwarded to the OTLPSpanExporter.
+    """
     from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
     try:
-        otlp_exporter = OTLPSpanExporter()
+        otlp_exporter = OTLPSpanExporter(**kwargs)
         batch_processor = BatchSpanProcessor(otlp_exporter)
         self.tracer_provider.add_span_processor(batch_processor)
         logger.info("OTLP exporter configured")
@@ -1402,8 +1470,6 @@ class Tracer:
         """Initialize the tracer."""
         self.service_name = __name__
         self.tracer_provider: Optional[trace_api.TracerProvider] = None
-        self.tracer: Optional[trace_api.Tracer] = None
-
         self.tracer_provider = trace_api.get_tracer_provider()
         self.tracer = self.tracer_provider.get_tracer(self.service_name)
         ThreadingInstrumentor().instrument()
@@ -1414,7 +1480,7 @@ class Tracer:
         parent_span: Optional[Span] = None,
         attributes: Optional[Dict[str, AttributeValue]] = None,
         span_kind: trace_api.SpanKind = trace_api.SpanKind.INTERNAL,
-    ) -> Optional[Span]:
+    ) -> Span:
         """Generic helper method to start a span with common attributes.
 
         Args:
@@ -1426,10 +1492,13 @@ class Tracer:
         Returns:
             The created span, or None if tracing is not enabled
         """
-        if self.tracer is None:
-            return None
+        if not parent_span:
+            parent_span = trace_api.get_current_span()
 
-        context = trace_api.set_span_in_context(parent_span) if parent_span else None
+        context = None
+        if parent_span and parent_span.is_recording() and parent_span != trace_api.INVALID_SPAN:
+            context = trace_api.set_span_in_context(parent_span)
+
         span = self.tracer.start_span(name=span_name, context=context, kind=span_kind)
 
         # Set start time as a common attribute
@@ -1528,7 +1597,7 @@ class Tracer:
         parent_span: Optional[Span] = None,
         model_id: Optional[str] = None,
         **kwargs: Any,
-    ) -> Optional[Span]:
+    ) -> Span:
         """Start a new span for a model invocation.
 
         Args:
@@ -1551,7 +1620,7 @@ class Tracer:
         # Add additional kwargs as attributes
         attributes.update({k: v for k, v in kwargs.items() if isinstance(v, (str, int, float, bool))})
 
-        span = self._start_span("Model invoke", parent_span, attributes, span_kind=trace_api.SpanKind.CLIENT)
+        span = self._start_span("chat", parent_span, attributes=attributes, span_kind=trace_api.SpanKind.CLIENT)
         for message in messages:
             self._add_event(
                 span,
@@ -1588,7 +1657,7 @@ class Tracer:
 
         self._end_span(span, attributes, error)
 
-    def start_tool_call_span(self, tool: ToolUse, parent_span: Optional[Span] = None, **kwargs: Any) -> Optional[Span]:
+    def start_tool_call_span(self, tool: ToolUse, parent_span: Optional[Span] = None, **kwargs: Any) -> Span:
         """Start a new span for a tool call.
 
         Args:
@@ -1609,8 +1678,8 @@ class Tracer:
         # Add additional kwargs as attributes
         attributes.update(kwargs)
 
-        span_name = f"Tool: {tool['name']}"
-        span = self._start_span(span_name, parent_span, attributes, span_kind=trace_api.SpanKind.INTERNAL)
+        span_name = f"execute_tool {tool['name']}"
+        span = self._start_span(span_name, parent_span, attributes=attributes, span_kind=trace_api.SpanKind.INTERNAL)
 
         self._add_event(
             span,
@@ -1687,7 +1756,7 @@ class Tracer:
         # Add additional kwargs as attributes
         attributes.update({k: v for k, v in kwargs.items() if isinstance(v, (str, int, float, bool))})
 
-        span_name = f"Cycle {event_loop_cycle_id}"
+        span_name = "execute_event_loop_cycle"
         span = self._start_span(span_name, parent_span, attributes)
         for message in messages or []:
             self._add_event(
@@ -1729,7 +1798,7 @@ class Tracer:
         tools: Optional[list] = None,
         custom_trace_attributes: Optional[Mapping[str, AttributeValue]] = None,
         **kwargs: Any,
-    ) -> Optional[Span]:
+    ) -> Span:
         """Start a new span for an agent invocation.
 
         Args:
@@ -1788,7 +1857,6 @@ class Tracer:
             span: The span to end.
             response: The response from the agent.
             error: Any error that occurred.
-            metrics: Metrics data to add to the span.
         """
         attributes: Dict[str, AttributeValue] = {}
 
@@ -1813,6 +1881,41 @@ class Tracer:
 
         self._end_span(span, attributes, error)
 
+    def start_multiagent_span(
+        self,
+        task: str | list[ContentBlock],
+        instance: str,
+    ) -> Span:
+        """Start a new span for swarm invocation."""
+        attributes: Dict[str, AttributeValue] = {
+            "gen_ai.system": "strands-agents",
+            "gen_ai.agent.name": instance,
+            "gen_ai.operation.name": f"invoke_{instance}",
+        }
+
+        span = self._start_span(f"invoke_{instance}", attributes=attributes, span_kind=trace_api.SpanKind.CLIENT)
+        content = serialize(task) if isinstance(task, list) else task
+        self._add_event(
+            span,
+            "gen_ai.user.message",
+            event_attributes={"content": content},
+        )
+
+        return span
+
+    def end_swarm_span(
+        self,
+        span: Span,
+        result: Optional[str] = None,
+    ) -> None:
+        """End a swarm span with results."""
+        if result:
+            self._add_event(
+                span,
+                "gen_ai.choice",
+                event_attributes={"message": result},
+            )
+
 ```
 
 #### `__init__()`
@@ -1828,8 +1931,6 @@ def __init__(
     """Initialize the tracer."""
     self.service_name = __name__
     self.tracer_provider: Optional[trace_api.TracerProvider] = None
-    self.tracer: Optional[trace_api.Tracer] = None
-
     self.tracer_provider = trace_api.get_tracer_provider()
     self.tracer = self.tracer_provider.get_tracer(self.service_name)
     ThreadingInstrumentor().instrument()
@@ -1842,7 +1943,7 @@ End an agent span with results and metrics.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `span` | `Span` | The span to end. | *required* | | `response` | `Optional[AgentResult]` | The response from the agent. | `None` | | `error` | `Optional[Exception]` | Any error that occurred. | `None` | | `metrics` | | Metrics data to add to the span. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `span` | `Span` | The span to end. | *required* | | `response` | `Optional[AgentResult]` | The response from the agent. | `None` | | `error` | `Optional[Exception]` | Any error that occurred. | `None` |
 
 Source code in `strands/telemetry/tracer.py`
 
@@ -1859,7 +1960,6 @@ def end_agent_span(
         span: The span to end.
         response: The response from the agent.
         error: Any error that occurred.
-        metrics: Metrics data to add to the span.
     """
     attributes: Dict[str, AttributeValue] = {}
 
@@ -1990,6 +2090,28 @@ def end_span_with_error(self, span: Span, error_message: str, exception: Optiona
 
 ```
 
+#### `end_swarm_span(span, result=None)`
+
+End a swarm span with results.
+
+Source code in `strands/telemetry/tracer.py`
+
+```
+def end_swarm_span(
+    self,
+    span: Span,
+    result: Optional[str] = None,
+) -> None:
+    """End a swarm span with results."""
+    if result:
+        self._add_event(
+            span,
+            "gen_ai.choice",
+            event_attributes={"message": result},
+        )
+
+```
+
 #### `end_tool_call_span(span, tool_result, error=None)`
 
 End a tool call span with results.
@@ -2045,7 +2167,7 @@ Parameters:
 
 Returns:
 
-| Type | Description | | --- | --- | | `Optional[Span]` | The created span, or None if tracing is not enabled. |
+| Type | Description | | --- | --- | | `Span` | The created span, or None if tracing is not enabled. |
 
 Source code in `strands/telemetry/tracer.py`
 
@@ -2058,7 +2180,7 @@ def start_agent_span(
     tools: Optional[list] = None,
     custom_trace_attributes: Optional[Mapping[str, AttributeValue]] = None,
     **kwargs: Any,
-) -> Optional[Span]:
+) -> Span:
     """Start a new span for an agent invocation.
 
     Args:
@@ -2153,7 +2275,7 @@ def start_event_loop_cycle_span(
     # Add additional kwargs as attributes
     attributes.update({k: v for k, v in kwargs.items() if isinstance(v, (str, int, float, bool))})
 
-    span_name = f"Cycle {event_loop_cycle_id}"
+    span_name = "execute_event_loop_cycle"
     span = self._start_span(span_name, parent_span, attributes)
     for message in messages or []:
         self._add_event(
@@ -2176,7 +2298,7 @@ Parameters:
 
 Returns:
 
-| Type | Description | | --- | --- | | `Optional[Span]` | The created span, or None if tracing is not enabled. |
+| Type | Description | | --- | --- | | `Span` | The created span, or None if tracing is not enabled. |
 
 Source code in `strands/telemetry/tracer.py`
 
@@ -2187,7 +2309,7 @@ def start_model_invoke_span(
     parent_span: Optional[Span] = None,
     model_id: Optional[str] = None,
     **kwargs: Any,
-) -> Optional[Span]:
+) -> Span:
     """Start a new span for a model invocation.
 
     Args:
@@ -2210,13 +2332,44 @@ def start_model_invoke_span(
     # Add additional kwargs as attributes
     attributes.update({k: v for k, v in kwargs.items() if isinstance(v, (str, int, float, bool))})
 
-    span = self._start_span("Model invoke", parent_span, attributes, span_kind=trace_api.SpanKind.CLIENT)
+    span = self._start_span("chat", parent_span, attributes=attributes, span_kind=trace_api.SpanKind.CLIENT)
     for message in messages:
         self._add_event(
             span,
             f"gen_ai.{message['role']}.message",
             {"content": serialize(message["content"])},
         )
+    return span
+
+```
+
+#### `start_multiagent_span(task, instance)`
+
+Start a new span for swarm invocation.
+
+Source code in `strands/telemetry/tracer.py`
+
+```
+def start_multiagent_span(
+    self,
+    task: str | list[ContentBlock],
+    instance: str,
+) -> Span:
+    """Start a new span for swarm invocation."""
+    attributes: Dict[str, AttributeValue] = {
+        "gen_ai.system": "strands-agents",
+        "gen_ai.agent.name": instance,
+        "gen_ai.operation.name": f"invoke_{instance}",
+    }
+
+    span = self._start_span(f"invoke_{instance}", attributes=attributes, span_kind=trace_api.SpanKind.CLIENT)
+    content = serialize(task) if isinstance(task, list) else task
+    self._add_event(
+        span,
+        "gen_ai.user.message",
+        event_attributes={"content": content},
+    )
+
     return span
 
 ```
@@ -2231,12 +2384,12 @@ Parameters:
 
 Returns:
 
-| Type | Description | | --- | --- | | `Optional[Span]` | The created span, or None if tracing is not enabled. |
+| Type | Description | | --- | --- | | `Span` | The created span, or None if tracing is not enabled. |
 
 Source code in `strands/telemetry/tracer.py`
 
 ```
-def start_tool_call_span(self, tool: ToolUse, parent_span: Optional[Span] = None, **kwargs: Any) -> Optional[Span]:
+def start_tool_call_span(self, tool: ToolUse, parent_span: Optional[Span] = None, **kwargs: Any) -> Span:
     """Start a new span for a tool call.
 
     Args:
@@ -2257,8 +2410,8 @@ def start_tool_call_span(self, tool: ToolUse, parent_span: Optional[Span] = None
     # Add additional kwargs as attributes
     attributes.update(kwargs)
 
-    span_name = f"Tool: {tool['name']}"
-    span = self._start_span(span_name, parent_span, attributes, span_kind=trace_api.SpanKind.INTERNAL)
+    span_name = f"execute_tool {tool['name']}"
+    span = self._start_span(span_name, parent_span, attributes=attributes, span_kind=trace_api.SpanKind.INTERNAL)
 
     self._add_event(
         span,
@@ -2278,10 +2431,6 @@ def start_tool_call_span(self, tool: ToolUse, parent_span: Optional[Span] = None
 
 Get or create the global tracer.
 
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `service_name` | | Name of the service for OpenTelemetry. | *required* |
-
 Returns:
 
 | Type | Description | | --- | --- | | `Tracer` | The global tracer instance. |
@@ -2291,9 +2440,6 @@ Source code in `strands/telemetry/tracer.py`
 ```
 def get_tracer() -> Tracer:
     """Get or create the global tracer.
-
-    Args:
-        service_name: Name of the service for OpenTelemetry.
 
     Returns:
         The global tracer instance.

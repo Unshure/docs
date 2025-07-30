@@ -101,7 +101,7 @@ The sliding window conversation manager:
 - Handles context window overflow exceptions by reducing context
 - Ensures conversations don't exceed model context limits
 
-See [`Context Management`](../conversation-management/) for more information about conversation managers.
+See [`Conversation Management`](../conversation-management/) for more information about conversation managers.
 
 ## Agent State
 
@@ -163,8 +163,7 @@ except ValueError as e:
 Agent state is particularly useful for maintaining information across tool executions:
 
 ```
-from strands import Agent
-from strands.tools.decorator import tool
+from strands import Agent, tool
 
 @tool
 def track_user_action(action: str, agent: Agent):

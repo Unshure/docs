@@ -382,8 +382,8 @@ Example
 ```
 class MyHookProvider(HookProvider):
     def register_hooks(self, registry: HookRegistry) -> None:
-        hooks.add_callback(StartRequestEvent, self.on_request_start)
-        hooks.add_callback(EndRequestEvent, self.on_request_end)
+        registry.add_callback(StartRequestEvent, self.on_request_start)
+        registry.add_callback(EndRequestEvent, self.on_request_end)
 
 agent = Agent(hooks=[MyHookProvider()])
 
@@ -403,8 +403,8 @@ class HookProvider(Protocol):
         ```python
         class MyHookProvider(HookProvider):
             def register_hooks(self, registry: HookRegistry) -> None:
-                hooks.add_callback(StartRequestEvent, self.on_request_start)
-                hooks.add_callback(EndRequestEvent, self.on_request_end)
+                registry.add_callback(StartRequestEvent, self.on_request_start)
+                registry.add_callback(EndRequestEvent, self.on_request_end)
 
         agent = Agent(hooks=[MyHookProvider()])
         ```
@@ -513,14 +513,12 @@ class HookRegistry:
         """Invoke all registered callbacks for the given event.
 
         This method finds all callbacks registered for the event's type and
-        invokes them in the appropriate order. For events with is_after_callback=True,
-        callbacks are invoked in reverse registration order.
+        invokes them in the appropriate order. For events with should_reverse_callbacks=True,
+        callbacks are invoked in reverse registration order. Any exceptions raised by callback
+        functions will propagate to the caller.
 
         Args:
             event: The event to dispatch to registered callbacks.
-
-        Raises:
-            Any exceptions raised by callback functions will propagate to the caller.
 
         Returns:
             The event dispatched to registered callbacks.
@@ -536,11 +534,25 @@ class HookRegistry:
 
         return event
 
+    def has_callbacks(self) -> bool:
+        """Check if the registry has any registered callbacks.
+
+        Returns:
+            True if there are any registered callbacks, False otherwise.
+
+        Example:
+            ```python
+            if registry.has_callbacks():
+                print("Registry has callbacks registered")
+            ```
+        """
+        return bool(self._registered_callbacks)
+
     def get_callbacks_for(self, event: TEvent) -> Generator[HookCallback[TEvent], None, None]:
         """Get callbacks registered for the given event in the appropriate order.
 
         This method returns callbacks in registration order for normal events,
-        or reverse registration order for events that have is_after_callback=True.
+        or reverse registration order for events that have should_reverse_callbacks=True.
         This enables proper cleanup ordering for teardown events.
 
         Args:
@@ -673,7 +685,7 @@ def add_hook(self, hook: HookProvider) -> None:
 
 Get callbacks registered for the given event in the appropriate order.
 
-This method returns callbacks in registration order for normal events, or reverse registration order for events that have is_after_callback=True. This enables proper cleanup ordering for teardown events.
+This method returns callbacks in registration order for normal events, or reverse registration order for events that have should_reverse_callbacks=True. This enables proper cleanup ordering for teardown events.
 
 Parameters:
 
@@ -699,7 +711,7 @@ def get_callbacks_for(self, event: TEvent) -> Generator[HookCallback[TEvent], No
     """Get callbacks registered for the given event in the appropriate order.
 
     This method returns callbacks in registration order for normal events,
-    or reverse registration order for events that have is_after_callback=True.
+    or reverse registration order for events that have should_reverse_callbacks=True.
     This enables proper cleanup ordering for teardown events.
 
     Args:
@@ -725,11 +737,46 @@ def get_callbacks_for(self, event: TEvent) -> Generator[HookCallback[TEvent], No
 
 ````
 
+#### `has_callbacks()`
+
+Check if the registry has any registered callbacks.
+
+Returns:
+
+| Type | Description | | --- | --- | | `bool` | True if there are any registered callbacks, False otherwise. |
+
+Example
+
+```
+if registry.has_callbacks():
+    print("Registry has callbacks registered")
+
+```
+
+Source code in `strands/hooks/registry.py`
+
+````
+def has_callbacks(self) -> bool:
+    """Check if the registry has any registered callbacks.
+
+    Returns:
+        True if there are any registered callbacks, False otherwise.
+
+    Example:
+        ```python
+        if registry.has_callbacks():
+            print("Registry has callbacks registered")
+        ```
+    """
+    return bool(self._registered_callbacks)
+
+````
+
 #### `invoke_callbacks(event)`
 
 Invoke all registered callbacks for the given event.
 
-This method finds all callbacks registered for the event's type and invokes them in the appropriate order. For events with is_after_callback=True, callbacks are invoked in reverse registration order.
+This method finds all callbacks registered for the event's type and invokes them in the appropriate order. For events with should_reverse_callbacks=True, callbacks are invoked in reverse registration order. Any exceptions raised by callback functions will propagate to the caller.
 
 Parameters:
 
@@ -754,14 +801,12 @@ def invoke_callbacks(self, event: TInvokeEvent) -> TInvokeEvent:
     """Invoke all registered callbacks for the given event.
 
     This method finds all callbacks registered for the event's type and
-    invokes them in the appropriate order. For events with is_after_callback=True,
-    callbacks are invoked in reverse registration order.
+    invokes them in the appropriate order. For events with should_reverse_callbacks=True,
+    callbacks are invoked in reverse registration order. Any exceptions raised by callback
+    functions will propagate to the caller.
 
     Args:
         event: The event to dispatch to registered callbacks.
-
-    Raises:
-        Any exceptions raised by callback functions will propagate to the caller.
 
     Returns:
         The event dispatched to registered callbacks.
