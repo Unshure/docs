@@ -8,7 +8,6 @@ This [example](https://github.com/strands-agents/docs/blob/main/docs/examples/py
 >
 > ```
 > export STRANDS_KNOWLEDGE_BASE_ID=your_kb_id
->
 > ```
 >
 > This example was tested using a Bedrock knowledge base. If you experience odd behavior or missing data, verify that you've properly initialized this environment variable.
@@ -70,7 +69,6 @@ def determine_action(agent, query):
         return "store"
     else:
         return "retrieve"
-
 ```
 
 This classification is performed with a specialized system prompt that focuses solely on distinguishing between storage and retrieval intents, making the classification more deterministic.
@@ -90,7 +88,6 @@ else:
     # Generate response from retrieved information
     answer = agent.tool.use_llm(prompt=f"User question: \"{query}\"\n\nInformation from knowledge base:\n{result_str}...",
                           system_prompt=ANSWER_SYSTEM_PROMPT)
-
 ```
 
 1. **Tool Chaining for Retrieval**
@@ -127,7 +124,6 @@ result = agent.tool.memory(
     min_score=0.4,  # Set minimum relevance threshold
     max_results=9   # Limit number of results
 )
-
 ```
 
 These parameters can be fine-tuned based on application needs without relying on the agent to discover optimal values.
@@ -151,7 +147,6 @@ This specialization improves performance compared to using a single general-purp
 Processing...
 
 I've stored this information.
-
 ```
 
 **Interaction 2**: Retrieving Information
@@ -162,7 +157,6 @@ I've stored this information.
 Processing...
 
 Your birthday is on July 25.
-
 ```
 
 ## Extending the Example

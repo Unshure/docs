@@ -30,6 +30,8 @@ Each trace consists of multiple spans that represent different operations in you
 | - gen_ai.usage.completion_tokens: <number>                                          |
 | - gen_ai.usage.output_tokens: <number>                                              |
 | - gen_ai.usage.total_tokens: <number>                                               |
+| - gen_ai.usage.cache_read_input_tokens: <number>                                    |
+| - gen_ai.usage.cache_write_input_tokens: <number>                                   |
 |                                                                                     |
 |  +-------------------------------------------------------------------------------+  |
 |  | Cycle <cycle-id>                                                              |  |
@@ -56,6 +58,8 @@ Each trace consists of multiple spans that represent different operations in you
 |  |  | - gen_ai.usage.completion_tokens: <number>                            |    |  |
 |  |  | - gen_ai.usage.output_tokens: <number>                                |    |  |
 |  |  | - gen_ai.usage.total_tokens: <number>                                 |    |  |
+|  |  | - gen_ai.usage.cache_read_input_tokens: <number>                      |    |  |
+|  |  | - gen_ai.usage.cache_write_input_tokens: <number>                     |    |  |
 |  |  +-----------------------------------------------------------------------+    |  |
 |  |                                                                               |  |
 |  |  +-----------------------------------------------------------------------+    |  |
@@ -70,7 +74,6 @@ Each trace consists of multiple spans that represent different operations in you
 |  |  +-----------------------------------------------------------------------+    |  |
 |  +-------------------------------------------------------------------------------+  |
 +-------------------------------------------------------------------------------------+
-
 ```
 
 ## OpenTelemetry Integration
@@ -84,7 +87,7 @@ Strands natively integrates with OpenTelemetry, an industry standard for distrib
 
 ## Enabling Tracing
 
-To enable OTEL exporting, install Strands Agents with `otel` extra dependencies: `pip install strands-agents[otel]`
+To enable OTEL exporting, install Strands Agents with `otel` extra dependencies: `pip install 'strands-agents[otel]'`
 
 ### Environment Variables
 
@@ -94,7 +97,6 @@ export OTEL_EXPORTER_OTLP_ENDPOINT="http://collector.example.com:4318"
 
 # Set Default OTLP Headers
 export OTEL_EXPORTER_OTLP_HEADERS="key1=value1,key2=value2"
-
 ```
 
 ### Code Configuration
@@ -136,7 +138,6 @@ agent = Agent(
 
 # Use agent normally
 response = agent("What can you help me with?")
-
 ```
 
 ## Trace Structure
@@ -170,7 +171,7 @@ Strands traces include rich attributes that provide context for each operation:
 
 ### Agent-Level Attributes
 
-| Attribute | Description | | --- | --- | | `gen_ai.system` | The agent system identifier ("strands-agents") | | `gen_ai.agent.name` | Name of the agent | | `gen_ai.user.message` | The user's initial prompt | | `gen_ai.choice` | The agent's final response | | `system_prompt` | System instructions for the agent | | `gen_ai.request.model` | Model ID used by the agent | | `gen_ai.event.start_time` | When agent processing began | | `gen_ai.event.end_time` | When agent processing completed | | `gen_ai.usage.prompt_tokens` | Total tokens used for prompts | | `gen_ai.usage.input_tokens` | Total tokens used for prompts (duplicate) | | `gen_ai.usage.completion_tokens` | Total tokens used for completions | | `gen_ai.usage.output_tokens` | Total tokens used for completions (duplicate) | | `gen_ai.usage.total_tokens` | Total token usage |
+| Attribute | Description | | --- | --- | | `gen_ai.system` | The agent system identifier ("strands-agents") | | `gen_ai.agent.name` | Name of the agent | | `gen_ai.user.message` | The user's initial prompt | | `gen_ai.choice` | The agent's final response | | `system_prompt` | System instructions for the agent | | `gen_ai.request.model` | Model ID used by the agent | | `gen_ai.event.start_time` | When agent processing began | | `gen_ai.event.end_time` | When agent processing completed | | `gen_ai.usage.prompt_tokens` | Total tokens used for prompts | | `gen_ai.usage.input_tokens` | Total tokens used for prompts (duplicate) | | `gen_ai.usage.completion_tokens` | Total tokens used for completions | | `gen_ai.usage.output_tokens` | Total tokens used for completions (duplicate) | | `gen_ai.usage.total_tokens` | Total token usage | | `gen_ai.usage.cache_read_input_tokens` | Number of input tokens read from cache (Note: Not all model providers support cache tokens. This defaults to 0 in that case) | | `gen_ai.usage.cache_write_input_tokens` | Number of input tokens written to cache (Note: Not all model providers support cache tokens. This defaults to 0 in that case) |
 
 ### Cycle-Level Attributes
 
@@ -178,7 +179,7 @@ Strands traces include rich attributes that provide context for each operation:
 
 ### Model Invoke Attributes
 
-| Attribute | Description | | --- | --- | | `gen_ai.system` | The agent system identifier | | `gen_ai.operation.name` | Gen-AI operation name | | `gen_ai.agent.name` | Name of the agent | | `gen_ai.user.message` | Formatted prompt sent to the model | | `gen_ai.assistant.message` | Formatted assistant prompt sent to the model | | `gen_ai.request.model` | Model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0") | | `gen_ai.event.start_time` | When model invocation began | | `gen_ai.event.end_time` | When model invocation completed | | `gen_ai.choice` | Response from the model (may include tool calls) | | `gen_ai.usage.prompt_tokens` | Total tokens used for prompts | | `gen_ai.usage.input_tokens` | Total tokens used for prompts (duplicate) | | `gen_ai.usage.completion_tokens` | Total tokens used for completions | | `gen_ai.usage.output_tokens` | Total tokens used for completions (duplicate) | | `gen_ai.usage.total_tokens` | Total token usage |
+| Attribute | Description | | --- | --- | | `gen_ai.system` | The agent system identifier | | `gen_ai.operation.name` | Gen-AI operation name | | `gen_ai.agent.name` | Name of the agent | | `gen_ai.user.message` | Formatted prompt sent to the model | | `gen_ai.assistant.message` | Formatted assistant prompt sent to the model | | `gen_ai.request.model` | Model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0") | | `gen_ai.event.start_time` | When model invocation began | | `gen_ai.event.end_time` | When model invocation completed | | `gen_ai.choice` | Response from the model (may include tool calls) | | `gen_ai.usage.prompt_tokens` | Total tokens used for prompts | | `gen_ai.usage.input_tokens` | Total tokens used for prompts (duplicate) | | `gen_ai.usage.completion_tokens` | Total tokens used for completions | | `gen_ai.usage.output_tokens` | Total tokens used for completions (duplicate) | | `gen_ai.usage.total_tokens` | Total token usage | | `gen_ai.usage.cache_read_input_tokens` | Number of input tokens read from cache (Note: Not all model providers support cache tokens. This defaults to 0 in that case) | | `gen_ai.usage.cache_write_input_tokens` | Number of input tokens written to cache (Note: Not all model providers support cache tokens. This defaults to 0 in that case) |
 
 ### Tool-Level Attributes
 
@@ -215,7 +216,6 @@ docker run -d --name jaeger \
   -p 14269:14269 \
   -p 9411:9411 \
   jaegertracing/all-in-one:latest
-
 ```
 
 Then access the Jaeger UI at http://localhost:16686 to view your traces.
@@ -226,7 +226,6 @@ You can also setup console export to inspect the spans:
 from strands.telemetry import StrandsTelemetry
 
 StrandsTelemetry().setup_console_exporter()
-
 ```
 
 ## Advanced Configuration
@@ -239,7 +238,6 @@ For high-volume applications, you may want to implement sampling to reduce the v
 # Example: Sample 10% of traces
 os.environ["OTEL_TRACES_SAMPLER"] = "traceidratio"
 os.environ["OTEL_TRACES_SAMPLER_ARG"] = "0.5"
-
 ```
 
 ### Custom Attribute Tracking
@@ -260,7 +258,6 @@ agent = Agent(
         ]
     },
 )
-
 ```
 
 ## Best Practices
@@ -305,5 +302,13 @@ response = agent("Calculate how long it would take to travel from Earth to Mars 
 print(response)
 
 # Each interaction creates a complete trace that can be visualized in your tracing tool
-
 ```
+
+## Sending traces to CloudWatch X-ray
+
+There are several ways to send traces, metrics, and logs to CloudWatch. Please visit the following pages for more details and configurations:
+
+1. [AWS Distro for OpenTelemetry Collector](https://aws-otel.github.io/docs/getting-started/x-ray#configuring-the-aws-x-ray-exporter)
+1. [AWS CloudWatch OpenTelemetry User Guide](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-OpenTelemetry-Sections.html)
+
+- Please ensure Transaction Search is enabled in CloudWatch.

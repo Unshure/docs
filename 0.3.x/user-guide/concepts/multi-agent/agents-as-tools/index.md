@@ -81,7 +81,6 @@ def research_assistant(query: str) -> str:
         return str(response)
     except Exception as e:
         return f"Error in research assistant: {str(e)}"
-
 ```
 
 You can create multiple specialized agents following the same pattern:
@@ -132,7 +131,6 @@ def trip_planning_assistant(query: str) -> str:
         return processed_response
     except Exception as e:
         return f"Error in trip planning: {str(e)}"
-
 ```
 
 ### Creating the Orchestrator Agent
@@ -160,7 +158,6 @@ orchestrator = Agent(
     callback_handler=None,
     tools=[research_assistant, product_recommendation_assistant, trip_planning_assistant]
 )
-
 ```
 
 ### Real-World Example Scenario
@@ -184,7 +181,6 @@ response = orchestrator(customer_query)
 #    - Brands known for durability in harsh conditions
 # 3. Combine these specialized responses into a cohesive answer that addresses both the
 #    travel planning and product recommendation aspects of the query
-
 ```
 
 This example demonstrates how Strands Agents SDK enables specialized experts to collaborate on complex queries requiring multiple domains of knowledge. The orchestrator intelligently routes different aspects of the query to the appropriate specialized agents, then synthesizes their responses into a comprehensive answer. By following the best practices outlined earlier and leveraging Strands Agents SDK's capabilities, you can build sophisticated multi-agent systems that handle complex tasks through specialized expertise and coordinated collaboration.

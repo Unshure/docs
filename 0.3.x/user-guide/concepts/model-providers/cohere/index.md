@@ -1,14 +1,13 @@
 # Cohere
 
-[Cohere](https://cohere.com) provides cutting-edge language models. These are accessible accessible through OpenAI's SDK via the Compatibility API. This allows easy and portable integration with the Strands Agents SDK using the familiar OpenAI interface.
+[Cohere](https://cohere.com) provides cutting-edge language models. These are accessible through OpenAI's SDK via the Compatibility API. This allows easy and portable integration with the Strands Agents SDK using the familiar OpenAI interface.
 
 ## Installation
 
 The Strands Agents SDK provides access to Cohere models through the OpenAI compatibility layer, configured as an optional dependency. To install, run:
 
 ```
-pip install 'strands-agents[openai]'
-
+pip install 'strands-agents[openai]' strands-agents-tools
 ```
 
 ## Usage
@@ -33,7 +32,6 @@ model = OpenAIModel(
 
 agent = Agent(model=model, tools=[calculator])
 agent("What is 2+2?")
-
 ```
 
 ## Configuration
@@ -62,7 +60,6 @@ You must install the `openai` dependency to use this provider:
 
 ```
 pip install 'strands-agents[openai]'
-
 ```
 
 ### Unexpected model behavior?

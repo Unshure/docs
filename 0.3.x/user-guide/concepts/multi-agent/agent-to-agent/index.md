@@ -21,13 +21,16 @@ Learn more about the A2A protocol:
 - [A2A Python SDK](https://github.com/a2aproject/a2a-python)
 - [A2A Documentation](https://a2aproject.github.io/A2A/latest/)
 
+Complete Examples Available
+
+Check out the [Native A2A Support samples](https://github.com/strands-agents/samples/tree/main/03-integrations/Native-A2A-Support) for complete, ready-to-run client, server and tool implementations.
+
 ## Installation
 
 To use A2A functionality with Strands, install the package with the A2A extra:
 
 ```
 pip install 'strands-agents[a2a]'
-
 ```
 
 This installs the core Strands SDK along with the necessary A2A protocol dependencies.
@@ -59,7 +62,6 @@ a2a_server = A2AServer(agent=strands_agent)
 
 # Start the server
 a2a_server.serve()
-
 ```
 
 > NOTE: the server supports both `SendMessageRequest` and `SendStreamingMessageRequest` client requests!
@@ -69,12 +71,16 @@ a2a_server.serve()
 The `A2AServer` constructor accepts several configuration options:
 
 - `agent`: The Strands Agent to wrap with A2A compatibility
-- `host`: Hostname or IP address to bind to (default: "0.0.0.0")
+- `host`: Hostname or IP address to bind to (default: "127.0.0.1")
 - `port`: Port to bind to (default: 9000)
 - `version`: Version of the agent (default: "0.0.1")
 - `skills`: Custom list of agent skills (default: auto-generated from tools)
 - `http_url`: Public HTTP URL where this agent will be accessible (optional, enables path-based mounting)
 - `serve_at_root`: Forces server to serve at root path regardless of http_url path (default: False)
+- `task_store`: Custom task storage implementation (defaults to InMemoryTaskStore)
+- `queue_manager`: Custom message queue management (optional)
+- `push_config_store`: Custom push notification configuration storage (optional)
+- `push_sender`: Custom push notification sender implementation (optional)
 
 ### Advanced Server Customization
 
@@ -99,9 +105,49 @@ starlette_app = a2a_server.to_starlette_app()
 # Customize as needed
 
 # You can then serve the customized app directly
-uvicorn.run(fastapi_app, host="0.0.0.0", port=9000)
+uvicorn.run(fastapi_app, host="127.0.0.1", port=9000)
+```
+
+#### Configurable Request Handler Components
+
+The `A2AServer` supports configurable request handler components for advanced customization:
 
 ```
+from strands import Agent
+from strands.multiagent.a2a import A2AServer
+from a2a.server.tasks import TaskStore, PushNotificationConfigStore, PushNotificationSender
+from a2a.server.events import QueueManager
+
+# Custom task storage implementation
+class CustomTaskStore(TaskStore):
+    # Implementation details...
+    pass
+
+# Custom queue manager
+class CustomQueueManager(QueueManager):
+    # Implementation details...
+    pass
+
+# Create agent with custom components
+agent = Agent(name="My Agent", description="A customizable agent", callback_handler=None)
+
+a2a_server = A2AServer(
+    agent=agent,
+    task_store=CustomTaskStore(),
+    queue_manager=CustomQueueManager(),
+    push_config_store=MyPushConfigStore(),
+    push_sender=MyPushSender()
+)
+```
+
+**Interface Requirements:**
+
+Custom implementations must follow these interfaces:
+
+- `task_store`: Must implement `TaskStore` interface from `a2a.server.tasks`
+- `queue_manager`: Must implement `QueueManager` interface from `a2a.server.events`
+- `push_config_store`: Must implement `PushNotificationConfigStore` interface from `a2a.server.tasks`
+- `push_sender`: Must implement `PushNotificationSender` interface from `a2a.server.tasks`
 
 #### Path-Based Mounting for Containerized Deployments
 
@@ -131,7 +177,6 @@ a2a_server_with_root = A2AServer(
     http_url="http://my-alb.amazonaws.com/calculator",
     serve_at_root=True  # Serves at root even though URL has /calculator path
 )
-
 ```
 
 This flexibility allows you to:
@@ -139,6 +184,7 @@ This flexibility allows you to:
 - Add custom middleware
 - Implement additional API endpoints
 - Deploy agents behind load balancers with different path prefixes
+- Configure custom task storage and event handling components
 
 ## A2A Client Examples
 
@@ -149,46 +195,61 @@ Here's how to create a client that communicates with an A2A server synchronously
 ```
 import asyncio
 import logging
-from typing import Any
 from uuid import uuid4
+
 import httpx
-from a2a.client import A2ACardResolver, A2AClient
-from a2a.types import MessageSendParams, SendMessageRequest
+from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+from a2a.types import Message, Part, Role, TextPart
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT = 300 # set request timeout to 5 minutes
 
-def create_message_payload(*, role: str = "user", text: str) -> dict[str, Any]:
-    return {
-        "message": {
-            "role": role,
-            "parts": [{"kind": "text", "text": text}],
-            "messageId": uuid4().hex,
-        },
-    }
+def create_message(*, role: Role = Role.user, text: str) -> Message:
+    return Message(
+        kind="message",
+        role=role,
+        parts=[Part(TextPart(kind="text", text=text))],
+        message_id=uuid4().hex,
+    )
 
-async def send_sync_message(message: str, base_url: str = "http://localhost:9000"):
+async def send_sync_message(message: str, base_url: str = "http://127.0.0.1:9000"):
     async with httpx.AsyncClient(timeout=DEFAULT_TIMEOUT) as httpx_client:
         # Get agent card
         resolver = A2ACardResolver(httpx_client=httpx_client, base_url=base_url)
         agent_card = await resolver.get_agent_card()
 
-        # Create client
-        client = A2AClient(httpx_client=httpx_client, agent_card=agent_card)
+        # Create client using factory
+        config = ClientConfig(
+            httpx_client=httpx_client,
+            streaming=False,  # Use non-streaming mode for sync response
+        )
+        factory = ClientFactory(config)
+        client = factory.create(agent_card)
 
-        # Send message
-        payload = create_message_payload(text=message)
-        request = SendMessageRequest(id=str(uuid4()), params=MessageSendParams(**payload))
+        # Create and send message
+        msg = create_message(text=message)
 
-        response = await client.send_message(request)
-        logger.info(response.model_dump_json(exclude_none=True, indent=2))
-        return response
+        # With streaming=False, this will yield exactly one result
+        async for event in client.send_message(msg):
+            if isinstance(event, Message):
+                logger.info(event.model_dump_json(exclude_none=True, indent=2))
+                return event
+            elif isinstance(event, tuple) and len(event) == 2:
+                # (Task, UpdateEvent) tuple
+                task, update_event = event
+                logger.info(f"Task: {task.model_dump_json(exclude_none=True, indent=2)}")
+                if update_event:
+                    logger.info(f"Update: {update_event.model_dump_json(exclude_none=True, indent=2)}")
+                return task
+            else:
+                # Fallback for other response types
+                logger.info(f"Response: {str(event)}")
+                return event
 
 # Usage
 asyncio.run(send_sync_message("what is 101 * 11"))
-
 ```
 
 ### Streaming Client
@@ -198,45 +259,57 @@ For streaming responses, use the streaming client:
 ```
 import asyncio
 import logging
-from typing import Any
 from uuid import uuid4
+
 import httpx
-from a2a.client import A2ACardResolver, A2AClient
-from a2a.types import MessageSendParams, SendStreamingMessageRequest
+from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+from a2a.types import Message, Part, Role, TextPart
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT = 300 # set request timeout to 5 minutes
 
-def create_message_payload(*, role: str = "user", text: str) -> dict[str, Any]:
-    return {
-        "message": {
-            "role": role,
-            "parts": [{"kind": "text", "text": text}],
-            "messageId": uuid4().hex,
-        },
-    }
+def create_message(*, role: Role = Role.user, text: str) -> Message:
+    return Message(
+        kind="message",
+        role=role,
+        parts=[Part(TextPart(kind="text", text=text))],
+        message_id=uuid4().hex,
+    )
 
-async def send_streaming_message(message: str, base_url: str = "http://localhost:9000"):
+async def send_streaming_message(message: str, base_url: str = "http://127.0.0.1:9000"):
     async with httpx.AsyncClient(timeout=DEFAULT_TIMEOUT) as httpx_client:
         # Get agent card
         resolver = A2ACardResolver(httpx_client=httpx_client, base_url=base_url)
         agent_card = await resolver.get_agent_card()
 
-        # Create client
-        client = A2AClient(httpx_client=httpx_client, agent_card=agent_card)
+        # Create client using factory
+        config = ClientConfig(
+            httpx_client=httpx_client,
+            streaming=True,  # Use streaming mode
+        )
+        factory = ClientFactory(config)
+        client = factory.create(agent_card)
 
-        # Send streaming message
-        payload = create_message_payload(text=message)
-        request = SendStreamingMessageRequest(id=str(uuid4()), params=MessageSendParams(**payload))
+        # Create and send message
+        msg = create_message(text=message)
 
-        async for event in client.send_message_streaming(request):
-            logger.info(event.model_dump_json(exclude_none=True, indent=2))
+        async for event in client.send_message(msg):
+            if isinstance(event, Message):
+                logger.info(event.model_dump_json(exclude_none=True, indent=2))
+            elif isinstance(event, tuple) and len(event) == 2:
+                # (Task, UpdateEvent) tuple
+                task, update_event = event
+                logger.info(f"Task: {task.model_dump_json(exclude_none=True, indent=2)}")
+                if update_event:
+                    logger.info(f"Update: {update_event.model_dump_json(exclude_none=True, indent=2)}")
+            else:
+                # Fallback for other response types
+                logger.info(f"Response: {str(event)}")
 
 # Usage
 asyncio.run(send_streaming_message("what is 101 * 11"))
-
 ```
 
 ## Strands A2A Tool
@@ -247,7 +320,6 @@ To use the A2A client tool, install strands-agents-tools with the A2A extra:
 
 ```
 pip install 'strands-agents-tools[a2a_client]'
-
 ```
 
 Strands provides this tool for discovering and interacting with A2A agents without manually writing client code:
@@ -262,9 +334,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Create A2A client tool provider with known agent URLs
-# Assuming you have an A2A server running on localhost:9000
+# Assuming you have an A2A server running on 127.0.0.1:9000
 # known_agent_urls is optional
-provider = A2AClientToolProvider(known_agent_urls=["http://localhost:9000"])
+provider = A2AClientToolProvider(known_agent_urls=["http://127.0.0.1:9000"])
 
 # Create agent with A2A client tools
 agent = Agent(tools=provider.tools)
@@ -279,7 +351,6 @@ logger.info(response)
 #     response = await agent.invoke_async("pick an agent and make a sample call")
 #     logger.info(response)
 # asyncio.run(main())
-
 ```
 
 This approach allows your Strands agent to:

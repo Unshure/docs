@@ -50,7 +50,6 @@ def profanity_scanner(query: str) -> str:
     except Exception as e:
         logging.error(f"Error scanning file: {str(e)}")  # Audit Logging
         return f"Error scanning file: {str(e)}"
-
 ```
 
 ______________________________________________________________________

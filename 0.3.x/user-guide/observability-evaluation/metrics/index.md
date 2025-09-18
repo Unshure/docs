@@ -27,7 +27,6 @@ result = agent("What is the square root of 144?")
 print(f"Total tokens: {result.metrics.accumulated_usage['totalTokens']}")
 print(f"Execution time: {sum(result.metrics.cycle_durations):.2f} seconds")
 print(f"Tools used: {list(result.metrics.tool_metrics.keys())}")
-
 ```
 
 The `metrics` attribute of `AgentResult` (an instance of [`EventLoopMetrics`](../../../api-reference/telemetry/#strands.telemetry.metrics) provides comprehensive performance metric data about the agent's execution, while other attributes like `stop_reason`, `message`, and `state` provide context about the agent's response. This document explains the metrics available in the agent's response and how to interpret them.
@@ -67,7 +66,6 @@ Let's look at the output from calling `get_summary()` on the metrics from our ca
 ```
 result = agent("What is the square root of 144?")
 print(result.metrics.get_summary())
-
 ```
 
 ```
@@ -222,7 +220,6 @@ print(result.metrics.get_summary())
     }
   ]
 }
-
 ```
 
 This summary provides a complete picture of the agent's execution, including cycle information, token usage, tool performance, and detailed execution traces.

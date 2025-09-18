@@ -23,7 +23,6 @@ class InvalidToolUseNameException(Exception):
     """Exception raised when a tool use has an invalid name."""
 
     pass
-
 ```
 
 ### `PythonAgentTool`
@@ -103,11 +102,10 @@ class PythonAgentTool(AgentTool):
         """
         if inspect.iscoroutinefunction(self._tool_func):
             result = await self._tool_func(tool_use, **invocation_state)
+            yield ToolResultEvent(result)
         else:
             result = await asyncio.to_thread(self._tool_func, tool_use, **invocation_state)
-
-        yield result
-
+            yield ToolResultEvent(result)
 ```
 
 #### `tool_name`
@@ -158,7 +156,6 @@ def __init__(self, tool_name: str, tool_spec: ToolSpec, tool_func: ToolFunc) -> 
     self._tool_name = tool_name
     self._tool_spec = tool_spec
     self._tool_func = tool_func
-
 ```
 
 #### `stream(tool_use, invocation_state, **kwargs)`
@@ -190,11 +187,10 @@ async def stream(self, tool_use: ToolUse, invocation_state: dict[str, Any], **kw
     """
     if inspect.iscoroutinefunction(self._tool_func):
         result = await self._tool_func(tool_use, **invocation_state)
+        yield ToolResultEvent(result)
     else:
         result = await asyncio.to_thread(self._tool_func, tool_use, **invocation_state)
-
-    yield result
-
+        yield ToolResultEvent(result)
 ```
 
 ### `normalize_schema(schema)`
@@ -241,7 +237,6 @@ def normalize_schema(schema: dict[str, Any]) -> dict[str, Any]:
             normalized["properties"][prop_name] = _normalize_property(prop_name, prop_def)
 
     return normalized
-
 ```
 
 ### `normalize_tool_spec(tool_spec)`
@@ -281,7 +276,6 @@ def normalize_tool_spec(tool_spec: ToolSpec) -> ToolSpec:
                 normalized["inputSchema"] = {"json": normalize_schema(normalized["inputSchema"])}
 
     return normalized
-
 ```
 
 ### `validate_tool_use(tool)`
@@ -302,7 +296,6 @@ def validate_tool_use(tool: ToolUse) -> None:
         tool: The tool use to validate.
     """
     validate_tool_use_name(tool)
-
 ```
 
 ### `validate_tool_use_name(tool)`
@@ -350,7 +343,6 @@ def validate_tool_use_name(tool: ToolUse) -> None:
         message = f"tool_name=<{tool_name}>, tool_name_max_length=<{tool_name_max_length}> | invalid tool name length"
         logger.warning(message)
         raise InvalidToolUseNameException(message)
-
 ```
 
 ## `strands.tools.decorator`
@@ -393,8 +385,7 @@ def my_tool(param1: str, param2: int = 42) -> dict:
     }
 
 agent = Agent(tools=[my_tool])
-agent.my_tool(param1="hello", param2=123)
-
+agent.tool.my_tool(param1="hello", param2=123)
 ```
 
 ### `DecoratedFunctionTool`
@@ -541,7 +532,8 @@ class DecoratedFunctionTool(AgentTool, Generic[P, R]):
 
         Args:
             tool_use: The tool use specification from the Agent.
-            invocation_state: Context for the tool invocation, including agent state.
+            invocation_state: Caller-provided kwargs that were passed to the agent when it was invoked (agent(),
+                              agent.invoke_async(), etc.).
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -549,53 +541,76 @@ class DecoratedFunctionTool(AgentTool, Generic[P, R]):
         """
         # This is a tool use call - process accordingly
         tool_use_id = tool_use.get("toolUseId", "unknown")
-        tool_input = tool_use.get("input", {})
+        tool_input: dict[str, Any] = tool_use.get("input", {})
 
         try:
             # Validate input against the Pydantic model
             validated_input = self._metadata.validate_input(tool_input)
 
-            # Pass along the agent if provided and expected by the function
-            if "agent" in invocation_state and "agent" in self._metadata.signature.parameters:
-                validated_input["agent"] = invocation_state.get("agent")
+            # Inject special framework-provided parameters
+            self._metadata.inject_special_parameters(validated_input, tool_use, invocation_state)
 
-            # "Too few arguments" expected, hence the type ignore
-            if inspect.iscoroutinefunction(self._tool_func):
+            # Note: "Too few arguments" expected for the _tool_func calls, hence the type ignore
+
+            # Async-generators, yield streaming events and final tool result
+            if inspect.isasyncgenfunction(self._tool_func):
+                sub_events = self._tool_func(**validated_input)  # type: ignore
+                async for sub_event in sub_events:
+                    yield ToolStreamEvent(tool_use, sub_event)
+
+                # The last event is the result
+                yield self._wrap_tool_result(tool_use_id, sub_event)
+
+            # Async functions, yield only the result
+            elif inspect.iscoroutinefunction(self._tool_func):
                 result = await self._tool_func(**validated_input)  # type: ignore
+                yield self._wrap_tool_result(tool_use_id, result)
+
+            # Other functions, yield only the result
             else:
                 result = await asyncio.to_thread(self._tool_func, **validated_input)  # type: ignore
-
-            # FORMAT THE RESULT for Strands Agent
-            if isinstance(result, dict) and "status" in result and "content" in result:
-                # Result is already in the expected format, just add toolUseId
-                result["toolUseId"] = tool_use_id
-                yield result
-            else:
-                # Wrap any other return value in the standard format
-                # Always include at least one content item for consistency
-                yield {
-                    "toolUseId": tool_use_id,
-                    "status": "success",
-                    "content": [{"text": str(result)}],
-                }
+                yield self._wrap_tool_result(tool_use_id, result)
 
         except ValueError as e:
             # Special handling for validation errors
             error_msg = str(e)
-            yield {
-                "toolUseId": tool_use_id,
-                "status": "error",
-                "content": [{"text": f"Error: {error_msg}"}],
-            }
+            yield self._wrap_tool_result(
+                tool_use_id,
+                {
+                    "toolUseId": tool_use_id,
+                    "status": "error",
+                    "content": [{"text": f"Error: {error_msg}"}],
+                },
+            )
         except Exception as e:
             # Return error result with exception details for any other error
             error_type = type(e).__name__
             error_msg = str(e)
-            yield {
-                "toolUseId": tool_use_id,
-                "status": "error",
-                "content": [{"text": f"Error: {error_type} - {error_msg}"}],
-            }
+            yield self._wrap_tool_result(
+                tool_use_id,
+                {
+                    "toolUseId": tool_use_id,
+                    "status": "error",
+                    "content": [{"text": f"Error: {error_type} - {error_msg}"}],
+                },
+            )
+
+    def _wrap_tool_result(self, tool_use_d: str, result: Any) -> ToolResultEvent:
+        # FORMAT THE RESULT for Strands Agent
+        if isinstance(result, dict) and "status" in result and "content" in result:
+            # Result is already in the expected format, just add toolUseId
+            result["toolUseId"] = tool_use_d
+            return ToolResultEvent(cast(ToolResult, result))
+        else:
+            # Wrap any other return value in the standard format
+            # Always include at least one content item for consistency
+            return ToolResultEvent(
+                {
+                    "toolUseId": tool_use_d,
+                    "status": "success",
+                    "content": [{"text": str(result)}],
+                }
+            )
 
     @property
     def supports_hot_reload(self) -> bool:
@@ -616,7 +631,6 @@ class DecoratedFunctionTool(AgentTool, Generic[P, R]):
         properties = super().get_display_properties()
         properties["Function"] = self._tool_func.__name__
         return properties
-
 ````
 
 #### `supports_hot_reload`
@@ -682,7 +696,6 @@ def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
         The result of the original function call.
     """
     return self._tool_func(*args, **kwargs)
-
 ```
 
 #### `__get__(instance, obj_type=None)`
@@ -710,7 +723,6 @@ class MyClass:
 instance = MyClass()
 # instance of DecoratedFunctionTool that works as you'd expect
 tool = instance.my_tool
-
 ```
 
 Source code in `strands/tools/decorator.py`
@@ -748,7 +760,6 @@ def __get__(self, instance: Any, obj_type: Optional[Type] = None) -> "DecoratedF
         return DecoratedFunctionTool(self._tool_name, self._tool_spec, tool_func, self._metadata)
 
     return self
-
 ````
 
 #### `__init__(tool_name, tool_spec, tool_func, metadata)`
@@ -785,7 +796,6 @@ def __init__(
     self._metadata = metadata
 
     functools.update_wrapper(wrapper=self, wrapped=self._tool_func)
-
 ```
 
 #### `get_display_properties()`
@@ -809,7 +819,6 @@ def get_display_properties(self) -> dict[str, str]:
     properties = super().get_display_properties()
     properties["Function"] = self._tool_func.__name__
     return properties
-
 ```
 
 #### `stream(tool_use, invocation_state, **kwargs)`
@@ -828,7 +837,7 @@ Key operations:
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_use` | `ToolUse` | The tool use specification from the Agent. | *required* | | `invocation_state` | `dict[str, Any]` | Context for the tool invocation, including agent state. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_use` | `ToolUse` | The tool use specification from the Agent. | *required* | | `invocation_state` | `dict[str, Any]` | Caller-provided kwargs that were passed to the agent when it was invoked (agent(), agent.invoke_async(), etc.). | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -854,7 +863,8 @@ async def stream(self, tool_use: ToolUse, invocation_state: dict[str, Any], **kw
 
     Args:
         tool_use: The tool use specification from the Agent.
-        invocation_state: Context for the tool invocation, including agent state.
+        invocation_state: Caller-provided kwargs that were passed to the agent when it was invoked (agent(),
+                          agent.invoke_async(), etc.).
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -862,54 +872,59 @@ async def stream(self, tool_use: ToolUse, invocation_state: dict[str, Any], **kw
     """
     # This is a tool use call - process accordingly
     tool_use_id = tool_use.get("toolUseId", "unknown")
-    tool_input = tool_use.get("input", {})
+    tool_input: dict[str, Any] = tool_use.get("input", {})
 
     try:
         # Validate input against the Pydantic model
         validated_input = self._metadata.validate_input(tool_input)
 
-        # Pass along the agent if provided and expected by the function
-        if "agent" in invocation_state and "agent" in self._metadata.signature.parameters:
-            validated_input["agent"] = invocation_state.get("agent")
+        # Inject special framework-provided parameters
+        self._metadata.inject_special_parameters(validated_input, tool_use, invocation_state)
 
-        # "Too few arguments" expected, hence the type ignore
-        if inspect.iscoroutinefunction(self._tool_func):
+        # Note: "Too few arguments" expected for the _tool_func calls, hence the type ignore
+
+        # Async-generators, yield streaming events and final tool result
+        if inspect.isasyncgenfunction(self._tool_func):
+            sub_events = self._tool_func(**validated_input)  # type: ignore
+            async for sub_event in sub_events:
+                yield ToolStreamEvent(tool_use, sub_event)
+
+            # The last event is the result
+            yield self._wrap_tool_result(tool_use_id, sub_event)
+
+        # Async functions, yield only the result
+        elif inspect.iscoroutinefunction(self._tool_func):
             result = await self._tool_func(**validated_input)  # type: ignore
+            yield self._wrap_tool_result(tool_use_id, result)
+
+        # Other functions, yield only the result
         else:
             result = await asyncio.to_thread(self._tool_func, **validated_input)  # type: ignore
-
-        # FORMAT THE RESULT for Strands Agent
-        if isinstance(result, dict) and "status" in result and "content" in result:
-            # Result is already in the expected format, just add toolUseId
-            result["toolUseId"] = tool_use_id
-            yield result
-        else:
-            # Wrap any other return value in the standard format
-            # Always include at least one content item for consistency
-            yield {
-                "toolUseId": tool_use_id,
-                "status": "success",
-                "content": [{"text": str(result)}],
-            }
+            yield self._wrap_tool_result(tool_use_id, result)
 
     except ValueError as e:
         # Special handling for validation errors
         error_msg = str(e)
-        yield {
-            "toolUseId": tool_use_id,
-            "status": "error",
-            "content": [{"text": f"Error: {error_msg}"}],
-        }
+        yield self._wrap_tool_result(
+            tool_use_id,
+            {
+                "toolUseId": tool_use_id,
+                "status": "error",
+                "content": [{"text": f"Error: {error_msg}"}],
+            },
+        )
     except Exception as e:
         # Return error result with exception details for any other error
         error_type = type(e).__name__
         error_msg = str(e)
-        yield {
-            "toolUseId": tool_use_id,
-            "status": "error",
-            "content": [{"text": f"Error: {error_type} - {error_msg}"}],
-        }
-
+        yield self._wrap_tool_result(
+            tool_use_id,
+            {
+                "toolUseId": tool_use_id,
+                "status": "error",
+                "content": [{"text": f"Error: {error_type} - {error_msg}"}],
+            },
+        )
 ```
 
 ### `FunctionToolMetadata`
@@ -942,16 +957,18 @@ class FunctionToolMetadata:
     validate tool usage.
     """
 
-    def __init__(self, func: Callable[..., Any]) -> None:
+    def __init__(self, func: Callable[..., Any], context_param: str | None = None) -> None:
         """Initialize with the function to process.
 
         Args:
             func: The function to extract metadata from.
                  Can be a standalone function or a class method.
+            context_param: Name of the context parameter to inject, if any.
         """
         self.func = func
         self.signature = inspect.signature(func)
         self.type_hints = get_type_hints(func)
+        self._context_param = context_param
 
         # Parse the docstring with docstring_parser
         doc_str = inspect.getdoc(func) or ""
@@ -971,7 +988,7 @@ class FunctionToolMetadata:
         This method analyzes the function's signature, type hints, and docstring to create a Pydantic model that can
         validate input data before passing it to the function.
 
-        Special parameters like 'self', 'cls', and 'agent' are excluded from the model.
+        Special parameters that can be automatically injected are excluded from the model.
 
         Returns:
             A Pydantic BaseModel class customized for the function's parameters.
@@ -979,8 +996,8 @@ class FunctionToolMetadata:
         field_definitions: dict[str, Any] = {}
 
         for name, param in self.signature.parameters.items():
-            # Skip special parameters
-            if name in ("self", "cls", "agent"):
+            # Skip parameters that will be automatically injected
+            if self._is_special_parameter(name):
                 continue
 
             # Get parameter type and default
@@ -1110,29 +1127,76 @@ class FunctionToolMetadata:
             error_msg = str(e)
             raise ValueError(f"Validation failed for input parameters: {error_msg}") from e
 
+    def inject_special_parameters(
+        self, validated_input: dict[str, Any], tool_use: ToolUse, invocation_state: dict[str, Any]
+    ) -> None:
+        """Inject special framework-provided parameters into the validated input.
+
+        This method automatically provides framework-level context to tools that request it
+        through their function signature.
+
+        Args:
+            validated_input: The validated input parameters (modified in place).
+            tool_use: The tool use request containing tool invocation details.
+            invocation_state: Caller-provided kwargs that were passed to the agent when it was invoked (agent(),
+                              agent.invoke_async(), etc.).
+        """
+        if self._context_param and self._context_param in self.signature.parameters:
+            tool_context = ToolContext(
+                tool_use=tool_use, agent=invocation_state["agent"], invocation_state=invocation_state
+            )
+            validated_input[self._context_param] = tool_context
+
+        # Inject agent if requested (backward compatibility)
+        if "agent" in self.signature.parameters and "agent" in invocation_state:
+            validated_input["agent"] = invocation_state["agent"]
+
+    def _is_special_parameter(self, param_name: str) -> bool:
+        """Check if a parameter should be automatically injected by the framework or is a standard Python method param.
+
+        Special parameters include:
+        - Standard Python method parameters: self, cls
+        - Framework-provided context parameters: agent, and configurable context parameter (defaults to tool_context)
+
+        Args:
+            param_name: The name of the parameter to check.
+
+        Returns:
+            True if the parameter should be excluded from input validation and
+            handled specially during tool execution.
+        """
+        special_params = {"self", "cls", "agent"}
+
+        # Add context parameter if configured
+        if self._context_param:
+            special_params.add(self._context_param)
+
+        return param_name in special_params
 ```
 
-#### `__init__(func)`
+#### `__init__(func, context_param=None)`
 
 Initialize with the function to process.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `func` | `Callable[..., Any]` | The function to extract metadata from. Can be a standalone function or a class method. | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `func` | `Callable[..., Any]` | The function to extract metadata from. Can be a standalone function or a class method. | *required* | | `context_param` | `str | None` | Name of the context parameter to inject, if any. | `None` |
 
 Source code in `strands/tools/decorator.py`
 
 ```
-def __init__(self, func: Callable[..., Any]) -> None:
+def __init__(self, func: Callable[..., Any], context_param: str | None = None) -> None:
     """Initialize with the function to process.
 
     Args:
         func: The function to extract metadata from.
              Can be a standalone function or a class method.
+        context_param: Name of the context parameter to inject, if any.
     """
     self.func = func
     self.signature = inspect.signature(func)
     self.type_hints = get_type_hints(func)
+    self._context_param = context_param
 
     # Parse the docstring with docstring_parser
     doc_str = inspect.getdoc(func) or ""
@@ -1145,7 +1209,6 @@ def __init__(self, func: Callable[..., Any]) -> None:
 
     # Create a Pydantic model for validation
     self.input_model = self._create_input_model()
-
 ```
 
 #### `extract_metadata()`
@@ -1201,7 +1264,44 @@ def extract_metadata(self) -> ToolSpec:
     tool_spec: ToolSpec = {"name": func_name, "description": description, "inputSchema": {"json": input_schema}}
 
     return tool_spec
+```
 
+#### `inject_special_parameters(validated_input, tool_use, invocation_state)`
+
+Inject special framework-provided parameters into the validated input.
+
+This method automatically provides framework-level context to tools that request it through their function signature.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `validated_input` | `dict[str, Any]` | The validated input parameters (modified in place). | *required* | | `tool_use` | `ToolUse` | The tool use request containing tool invocation details. | *required* | | `invocation_state` | `dict[str, Any]` | Caller-provided kwargs that were passed to the agent when it was invoked (agent(), agent.invoke_async(), etc.). | *required* |
+
+Source code in `strands/tools/decorator.py`
+
+```
+def inject_special_parameters(
+    self, validated_input: dict[str, Any], tool_use: ToolUse, invocation_state: dict[str, Any]
+) -> None:
+    """Inject special framework-provided parameters into the validated input.
+
+    This method automatically provides framework-level context to tools that request it
+    through their function signature.
+
+    Args:
+        validated_input: The validated input parameters (modified in place).
+        tool_use: The tool use request containing tool invocation details.
+        invocation_state: Caller-provided kwargs that were passed to the agent when it was invoked (agent(),
+                          agent.invoke_async(), etc.).
+    """
+    if self._context_param and self._context_param in self.signature.parameters:
+        tool_context = ToolContext(
+            tool_use=tool_use, agent=invocation_state["agent"], invocation_state=invocation_state
+        )
+        validated_input[self._context_param] = tool_context
+
+    # Inject agent if requested (backward compatibility)
+    if "agent" in self.signature.parameters and "agent" in invocation_state:
+        validated_input["agent"] = invocation_state["agent"]
 ```
 
 #### `validate_input(input_data)`
@@ -1250,19 +1350,16 @@ def validate_input(self, input_data: dict[str, Any]) -> dict[str, Any]:
         # Re-raise with more detailed error message
         error_msg = str(e)
         raise ValueError(f"Validation failed for input parameters: {error_msg}") from e
-
 ```
 
-### `tool(func=None, description=None, inputSchema=None, name=None)`
+### `tool(func=None, description=None, inputSchema=None, name=None, context=False)`
 
 ```
 tool(__func: Callable[P, R]) -> DecoratedFunctionTool[P, R]
-
 ```
 
 ```
-tool(description: Optional[str] = None, inputSchema: Optional[JSONSchema] = None, name: Optional[str] = None) -> Callable[[Callable[P, R]], DecoratedFunctionTool[P, R]]
-
+tool(description: Optional[str] = None, inputSchema: Optional[JSONSchema] = None, name: Optional[str] = None, context: bool | str = False) -> Callable[[Callable[P, R]], DecoratedFunctionTool[P, R]]
 ```
 
 Decorator that transforms a Python function into a Strands tool.
@@ -1284,7 +1381,7 @@ The decorator can be used in two ways:
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `func` | `Optional[Callable[P, R]]` | The function to decorate. When used as a simple decorator, this is the function being decorated. When used with parameters, this will be None. | `None` | | `description` | `Optional[str]` | Optional custom description to override the function's docstring. | `None` | | `inputSchema` | `Optional[JSONSchema]` | Optional custom JSON schema to override the automatically generated schema. | `None` | | `name` | `Optional[str]` | Optional custom name to override the function's name. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `func` | `Optional[Callable[P, R]]` | The function to decorate. When used as a simple decorator, this is the function being decorated. When used with parameters, this will be None. | `None` | | `description` | `Optional[str]` | Optional custom description to override the function's docstring. | `None` | | `inputSchema` | `Optional[JSONSchema]` | Optional custom JSON schema to override the automatically generated schema. | `None` | | `name` | `Optional[str]` | Optional custom name to override the function's name. | `None` | | `context` | `bool | str` | When provided, places an object in the designated parameter. If True, the param name defaults to 'tool_context', or if an override is needed, set context equal to a string to designate the param name. | `False` |
 
 Returns:
 
@@ -1312,16 +1409,15 @@ agent.my_tool(name="example", count=3)
 #   "status": "success",
 #   "content": [{"text": "Processed example 3 times"}]
 # }
-
 ```
 
 Example with parameters
 
 ```
-@tool(name="custom_tool", description="A tool with a custom name and description")
-def my_tool(name: str, count: int = 1) -> str:
-    return f"Processed {name} {count} times"
-
+@tool(name="custom_tool", description="A tool with a custom name and description", context=True)
+def my_tool(name: str, count: int = 1, tool_context: ToolContext) -> str:
+    tool_id = tool_context["tool_use"]["toolUseId"]
+    return f"Processed {name} {count} times with tool ID {tool_id}"
 ```
 
 Source code in `strands/tools/decorator.py`
@@ -1332,6 +1428,7 @@ def tool(  # type: ignore
     description: Optional[str] = None,
     inputSchema: Optional[JSONSchema] = None,
     name: Optional[str] = None,
+    context: bool | str = False,
 ) -> Union[DecoratedFunctionTool[P, R], Callable[[Callable[P, R]], DecoratedFunctionTool[P, R]]]:
     """Decorator that transforms a Python function into a Strands tool.
 
@@ -1357,6 +1454,9 @@ def tool(  # type: ignore
         description: Optional custom description to override the function's docstring.
         inputSchema: Optional custom JSON schema to override the automatically generated schema.
         name: Optional custom name to override the function's name.
+        context: When provided, places an object in the designated parameter. If True, the param name
+            defaults to 'tool_context', or if an override is needed, set context equal to a string to designate
+            the param name.
 
     Returns:
         An AgentTool that also mimics the original function when invoked
@@ -1386,15 +1486,24 @@ def tool(  # type: ignore
 
     Example with parameters:
         ```python
-        @tool(name="custom_tool", description="A tool with a custom name and description")
-        def my_tool(name: str, count: int = 1) -> str:
-            return f"Processed {name} {count} times"
+        @tool(name="custom_tool", description="A tool with a custom name and description", context=True)
+        def my_tool(name: str, count: int = 1, tool_context: ToolContext) -> str:
+            tool_id = tool_context["tool_use"]["toolUseId"]
+            return f"Processed {name} {count} times with tool ID {tool_id}"
         ```
     """
 
     def decorator(f: T) -> "DecoratedFunctionTool[P, R]":
+        # Resolve context parameter name
+        if isinstance(context, bool):
+            context_param = "tool_context" if context else None
+        else:
+            context_param = context.strip()
+            if not context_param:
+                raise ValueError("Context parameter name cannot be empty")
+
         # Create function tool metadata
-        tool_meta = FunctionToolMetadata(f)
+        tool_meta = FunctionToolMetadata(f, context_param)
         tool_spec = tool_meta.extract_metadata()
         if name is not None:
             tool_spec["name"] = name
@@ -1417,161 +1526,7 @@ def tool(  # type: ignore
         return decorator
 
     return decorator(func)
-
 ````
-
-## `strands.tools.executor`
-
-Tool execution functionality for the event loop.
-
-### `run_tools(handler, tool_uses, event_loop_metrics, invalid_tool_use_ids, tool_results, cycle_trace, parent_span=None)`
-
-Execute tools concurrently.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `handler` | `RunToolHandler` | Tool handler processing function. | *required* | | `tool_uses` | `list[ToolUse]` | List of tool uses to execute. | *required* | | `event_loop_metrics` | `EventLoopMetrics` | Metrics collection object. | *required* | | `invalid_tool_use_ids` | `list[str]` | List of invalid tool use IDs. | *required* | | `tool_results` | `list[ToolResult]` | List to populate with tool results. | *required* | | `cycle_trace` | `Trace` | Parent trace for the current cycle. | *required* | | `parent_span` | `Optional[Span]` | Parent span for the current cycle. | `None` |
-
-Yields:
-
-| Type | Description | | --- | --- | | `ToolGenerator` | Events of the tool stream. Tool results are appended to tool_results. |
-
-Source code in `strands/tools/executor.py`
-
-```
-async def run_tools(
-    handler: RunToolHandler,
-    tool_uses: list[ToolUse],
-    event_loop_metrics: EventLoopMetrics,
-    invalid_tool_use_ids: list[str],
-    tool_results: list[ToolResult],
-    cycle_trace: Trace,
-    parent_span: Optional[trace_api.Span] = None,
-) -> ToolGenerator:
-    """Execute tools concurrently.
-
-    Args:
-        handler: Tool handler processing function.
-        tool_uses: List of tool uses to execute.
-        event_loop_metrics: Metrics collection object.
-        invalid_tool_use_ids: List of invalid tool use IDs.
-        tool_results: List to populate with tool results.
-        cycle_trace: Parent trace for the current cycle.
-        parent_span: Parent span for the current cycle.
-
-    Yields:
-        Events of the tool stream. Tool results are appended to `tool_results`.
-    """
-
-    async def work(
-        tool_use: ToolUse,
-        worker_id: int,
-        worker_queue: asyncio.Queue,
-        worker_event: asyncio.Event,
-        stop_event: object,
-    ) -> ToolResult:
-        tracer = get_tracer()
-        tool_call_span = tracer.start_tool_call_span(tool_use, parent_span)
-
-        tool_name = tool_use["name"]
-        tool_trace = Trace(f"Tool: {tool_name}", parent_id=cycle_trace.id, raw_name=tool_name)
-        tool_start_time = time.time()
-        with trace_api.use_span(tool_call_span):
-            try:
-                async for event in handler(tool_use):
-                    worker_queue.put_nowait((worker_id, event))
-                    await worker_event.wait()
-                    worker_event.clear()
-
-                result = cast(ToolResult, event)
-            finally:
-                worker_queue.put_nowait((worker_id, stop_event))
-
-            tool_success = result.get("status") == "success"
-            tool_duration = time.time() - tool_start_time
-            message = Message(role="user", content=[{"toolResult": result}])
-            event_loop_metrics.add_tool_usage(tool_use, tool_duration, tool_trace, tool_success, message)
-            cycle_trace.add_child(tool_trace)
-
-            tracer.end_tool_call_span(tool_call_span, result)
-
-        return result
-
-    tool_uses = [tool_use for tool_use in tool_uses if tool_use.get("toolUseId") not in invalid_tool_use_ids]
-    worker_queue: asyncio.Queue[tuple[int, Any]] = asyncio.Queue()
-    worker_events = [asyncio.Event() for _ in tool_uses]
-    stop_event = object()
-
-    workers = [
-        asyncio.create_task(work(tool_use, worker_id, worker_queue, worker_events[worker_id], stop_event))
-        for worker_id, tool_use in enumerate(tool_uses)
-    ]
-
-    worker_count = len(workers)
-    while worker_count:
-        worker_id, event = await worker_queue.get()
-        if event is stop_event:
-            worker_count -= 1
-            continue
-
-        yield event
-        worker_events[worker_id].set()
-
-    tool_results.extend([worker.result() for worker in workers])
-
-```
-
-### `validate_and_prepare_tools(message, tool_uses, tool_results, invalid_tool_use_ids)`
-
-Validate tool uses and prepare them for execution.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `message` | `Message` | Current message. | *required* | | `tool_uses` | `list[ToolUse]` | List to populate with tool uses. | *required* | | `tool_results` | `list[ToolResult]` | List to populate with tool results for invalid tools. | *required* | | `invalid_tool_use_ids` | `list[str]` | List to populate with invalid tool use IDs. | *required* |
-
-Source code in `strands/tools/executor.py`
-
-```
-def validate_and_prepare_tools(
-    message: Message,
-    tool_uses: list[ToolUse],
-    tool_results: list[ToolResult],
-    invalid_tool_use_ids: list[str],
-) -> None:
-    """Validate tool uses and prepare them for execution.
-
-    Args:
-        message: Current message.
-        tool_uses: List to populate with tool uses.
-        tool_results: List to populate with tool results for invalid tools.
-        invalid_tool_use_ids: List to populate with invalid tool use IDs.
-    """
-    # Extract tool uses from message
-    for content in message["content"]:
-        if isinstance(content, dict) and "toolUse" in content:
-            tool_uses.append(content["toolUse"])
-
-    # Validate tool uses
-    # Avoid modifying original `tool_uses` variable during iteration
-    tool_uses_copy = tool_uses.copy()
-    for tool in tool_uses_copy:
-        try:
-            validate_tool_use(tool)
-        except InvalidToolUseNameException as e:
-            # Replace the invalid toolUse name and return invalid name error as ToolResult to the LLM as context
-            tool_uses.remove(tool)
-            tool["name"] = "INVALID_TOOL_NAME"
-            invalid_tool_use_ids.append(tool["toolUseId"])
-            tool_uses.append(tool)
-            tool_results.append(
-                {
-                    "toolUseId": tool["toolUseId"],
-                    "status": "error",
-                    "content": [{"text": f"Error: {str(e)}"}],
-                }
-            )
-
-```
 
 ## `strands.tools.loader`
 
@@ -1588,60 +1543,42 @@ class ToolLoader:
     """Handles loading of tools from different sources."""
 
     @staticmethod
-    def load_python_tool(tool_path: str, tool_name: str) -> AgentTool:
-        """Load a Python tool module.
+    def load_python_tools(tool_path: str, tool_name: str) -> List[AgentTool]:
+        """Load a Python tool module and return all discovered function-based tools as a list.
 
-        Args:
-            tool_path: Path to the Python tool file.
-            tool_name: Name of the tool.
-
-        Returns:
-            Tool instance.
-
-        Raises:
-            AttributeError: If required attributes are missing from the tool module.
-            ImportError: If there are issues importing the tool module.
-            TypeError: If the tool function is not callable.
-            ValueError: If function in module is not a valid tool.
-            Exception: For other errors during tool loading.
+        This method always returns a list of AgentTool (possibly length 1). It is the
+        canonical API for retrieving multiple tools from a single Python file.
         """
         try:
-            # Check if tool_path is in the format "package.module:function"; but keep in mind windows whose file path
-            # could have a colon so also ensure that it's not a file
+            # Support module:function style (e.g. package.module:function)
             if not os.path.exists(tool_path) and ":" in tool_path:
                 module_path, function_name = tool_path.rsplit(":", 1)
                 logger.debug("tool_name=<%s>, module_path=<%s> | importing tool from path", function_name, module_path)
 
                 try:
-                    # Import the module
                     module = __import__(module_path, fromlist=["*"])
-
-                    # Get the function
-                    if not hasattr(module, function_name):
-                        raise AttributeError(f"Module {module_path} has no function named {function_name}")
-
-                    func = getattr(module, function_name)
-
-                    if isinstance(func, DecoratedFunctionTool):
-                        logger.debug(
-                            "tool_name=<%s>, module_path=<%s> | found function-based tool", function_name, module_path
-                        )
-                        # mypy has problems converting between DecoratedFunctionTool <-> AgentTool
-                        return cast(AgentTool, func)
-                    else:
-                        raise ValueError(
-                            f"Function {function_name} in {module_path} is not a valid tool (missing @tool decorator)"
-                        )
-
                 except ImportError as e:
                     raise ImportError(f"Failed to import module {module_path}: {str(e)}") from e
 
+                if not hasattr(module, function_name):
+                    raise AttributeError(f"Module {module_path} has no function named {function_name}")
+
+                func = getattr(module, function_name)
+                if isinstance(func, DecoratedFunctionTool):
+                    logger.debug(
+                        "tool_name=<%s>, module_path=<%s> | found function-based tool", function_name, module_path
+                    )
+                    return [cast(AgentTool, func)]
+                else:
+                    raise ValueError(
+                        f"Function {function_name} in {module_path} is not a valid tool (missing @tool decorator)"
+                    )
+
             # Normal file-based tool loading
             abs_path = str(Path(tool_path).resolve())
-
             logger.debug("tool_path=<%s> | loading python tool from path", abs_path)
 
-            # First load the module to get TOOL_SPEC and check for Lambda deployment
+            # Load the module by spec
             spec = importlib.util.spec_from_file_location(tool_name, abs_path)
             if not spec:
                 raise ImportError(f"Could not create spec for {tool_name}")
@@ -1652,24 +1589,26 @@ class ToolLoader:
             sys.modules[tool_name] = module
             spec.loader.exec_module(module)
 
-            # First, check for function-based tools with @tool decorator
+            # Collect function-based tools decorated with @tool
+            function_tools: List[AgentTool] = []
             for attr_name in dir(module):
                 attr = getattr(module, attr_name)
                 if isinstance(attr, DecoratedFunctionTool):
                     logger.debug(
                         "tool_name=<%s>, tool_path=<%s> | found function-based tool in path", attr_name, tool_path
                     )
-                    # mypy has problems converting between DecoratedFunctionTool <-> AgentTool
-                    return cast(AgentTool, attr)
+                    function_tools.append(cast(AgentTool, attr))
 
-            # If no function-based tools found, fall back to traditional module-level tool
+            if function_tools:
+                return function_tools
+
+            # Fall back to module-level TOOL_SPEC + function
             tool_spec = getattr(module, "TOOL_SPEC", None)
             if not tool_spec:
                 raise AttributeError(
                     f"Tool {tool_name} missing TOOL_SPEC (neither at module level nor as a decorated function)"
                 )
 
-            # Standard local tool loading
             tool_func_name = tool_name
             if not hasattr(module, tool_func_name):
                 raise AttributeError(f"Tool {tool_name} missing function {tool_func_name}")
@@ -1678,22 +1617,61 @@ class ToolLoader:
             if not callable(tool_func):
                 raise TypeError(f"Tool {tool_name} function is not callable")
 
-            return PythonAgentTool(tool_name, tool_spec, tool_func)
+            return [PythonAgentTool(tool_name, tool_spec, tool_func)]
 
         except Exception:
-            logger.exception("tool_name=<%s>, sys_path=<%s> | failed to load python tool", tool_name, sys.path)
+            logger.exception("tool_name=<%s>, sys_path=<%s> | failed to load python tool(s)", tool_name, sys.path)
             raise
+
+    @staticmethod
+    def load_python_tool(tool_path: str, tool_name: str) -> AgentTool:
+        """DEPRECATED: Load a Python tool module and return a single AgentTool for backwards compatibility.
+
+        Use `load_python_tools` to retrieve all tools defined in a .py file (returns a list).
+        This function will emit a `DeprecationWarning` and return the first discovered tool.
+        """
+        warnings.warn(
+            "ToolLoader.load_python_tool is deprecated and will be removed in Strands SDK 2.0. "
+            "Use ToolLoader.load_python_tools(...) which always returns a list of AgentTool.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        tools = ToolLoader.load_python_tools(tool_path, tool_name)
+        if not tools:
+            raise RuntimeError(f"No tools found in {tool_path} for {tool_name}")
+        return tools[0]
 
     @classmethod
     def load_tool(cls, tool_path: str, tool_name: str) -> AgentTool:
-        """Load a tool based on its file extension.
+        """DEPRECATED: Load a single tool based on its file extension for backwards compatibility.
+
+        Use `load_tools` to retrieve all tools defined in a file (returns a list).
+        This function will emit a `DeprecationWarning` and return the first discovered tool.
+        """
+        warnings.warn(
+            "ToolLoader.load_tool is deprecated and will be removed in Strands SDK 2.0. "
+            "Use ToolLoader.load_tools(...) which always returns a list of AgentTool.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        tools = ToolLoader.load_tools(tool_path, tool_name)
+        if not tools:
+            raise RuntimeError(f"No tools found in {tool_path} for {tool_name}")
+
+        return tools[0]
+
+    @classmethod
+    def load_tools(cls, tool_path: str, tool_name: str) -> list[AgentTool]:
+        """Load tools from a file based on its file extension.
 
         Args:
             tool_path: Path to the tool file.
             tool_name: Name of the tool.
 
         Returns:
-            Tool instance.
+            A single Tool instance.
 
         Raises:
             FileNotFoundError: If the tool file does not exist.
@@ -1708,7 +1686,7 @@ class ToolLoader:
 
         try:
             if ext == ".py":
-                return cls.load_python_tool(abs_path, tool_name)
+                return cls.load_python_tools(abs_path, tool_name)
             else:
                 raise ValueError(f"Unsupported tool file type: {ext}")
         except Exception:
@@ -1720,83 +1698,83 @@ class ToolLoader:
                 os.getcwd(),
             )
             raise
-
 ```
 
 #### `load_python_tool(tool_path, tool_name)`
 
-Load a Python tool module.
+DEPRECATED: Load a Python tool module and return a single AgentTool for backwards compatibility.
 
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_path` | `str` | Path to the Python tool file. | *required* | | `tool_name` | `str` | Name of the tool. | *required* |
-
-Returns:
-
-| Type | Description | | --- | --- | | `AgentTool` | Tool instance. |
-
-Raises:
-
-| Type | Description | | --- | --- | | `AttributeError` | If required attributes are missing from the tool module. | | `ImportError` | If there are issues importing the tool module. | | `TypeError` | If the tool function is not callable. | | `ValueError` | If function in module is not a valid tool. | | `Exception` | For other errors during tool loading. |
+Use `load_python_tools` to retrieve all tools defined in a .py file (returns a list). This function will emit a `DeprecationWarning` and return the first discovered tool.
 
 Source code in `strands/tools/loader.py`
 
 ```
 @staticmethod
 def load_python_tool(tool_path: str, tool_name: str) -> AgentTool:
-    """Load a Python tool module.
+    """DEPRECATED: Load a Python tool module and return a single AgentTool for backwards compatibility.
 
-    Args:
-        tool_path: Path to the Python tool file.
-        tool_name: Name of the tool.
+    Use `load_python_tools` to retrieve all tools defined in a .py file (returns a list).
+    This function will emit a `DeprecationWarning` and return the first discovered tool.
+    """
+    warnings.warn(
+        "ToolLoader.load_python_tool is deprecated and will be removed in Strands SDK 2.0. "
+        "Use ToolLoader.load_python_tools(...) which always returns a list of AgentTool.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
-    Returns:
-        Tool instance.
+    tools = ToolLoader.load_python_tools(tool_path, tool_name)
+    if not tools:
+        raise RuntimeError(f"No tools found in {tool_path} for {tool_name}")
+    return tools[0]
+```
 
-    Raises:
-        AttributeError: If required attributes are missing from the tool module.
-        ImportError: If there are issues importing the tool module.
-        TypeError: If the tool function is not callable.
-        ValueError: If function in module is not a valid tool.
-        Exception: For other errors during tool loading.
+#### `load_python_tools(tool_path, tool_name)`
+
+Load a Python tool module and return all discovered function-based tools as a list.
+
+This method always returns a list of AgentTool (possibly length 1). It is the canonical API for retrieving multiple tools from a single Python file.
+
+Source code in `strands/tools/loader.py`
+
+```
+@staticmethod
+def load_python_tools(tool_path: str, tool_name: str) -> List[AgentTool]:
+    """Load a Python tool module and return all discovered function-based tools as a list.
+
+    This method always returns a list of AgentTool (possibly length 1). It is the
+    canonical API for retrieving multiple tools from a single Python file.
     """
     try:
-        # Check if tool_path is in the format "package.module:function"; but keep in mind windows whose file path
-        # could have a colon so also ensure that it's not a file
+        # Support module:function style (e.g. package.module:function)
         if not os.path.exists(tool_path) and ":" in tool_path:
             module_path, function_name = tool_path.rsplit(":", 1)
             logger.debug("tool_name=<%s>, module_path=<%s> | importing tool from path", function_name, module_path)
 
             try:
-                # Import the module
                 module = __import__(module_path, fromlist=["*"])
-
-                # Get the function
-                if not hasattr(module, function_name):
-                    raise AttributeError(f"Module {module_path} has no function named {function_name}")
-
-                func = getattr(module, function_name)
-
-                if isinstance(func, DecoratedFunctionTool):
-                    logger.debug(
-                        "tool_name=<%s>, module_path=<%s> | found function-based tool", function_name, module_path
-                    )
-                    # mypy has problems converting between DecoratedFunctionTool <-> AgentTool
-                    return cast(AgentTool, func)
-                else:
-                    raise ValueError(
-                        f"Function {function_name} in {module_path} is not a valid tool (missing @tool decorator)"
-                    )
-
             except ImportError as e:
                 raise ImportError(f"Failed to import module {module_path}: {str(e)}") from e
 
+            if not hasattr(module, function_name):
+                raise AttributeError(f"Module {module_path} has no function named {function_name}")
+
+            func = getattr(module, function_name)
+            if isinstance(func, DecoratedFunctionTool):
+                logger.debug(
+                    "tool_name=<%s>, module_path=<%s> | found function-based tool", function_name, module_path
+                )
+                return [cast(AgentTool, func)]
+            else:
+                raise ValueError(
+                    f"Function {function_name} in {module_path} is not a valid tool (missing @tool decorator)"
+                )
+
         # Normal file-based tool loading
         abs_path = str(Path(tool_path).resolve())
-
         logger.debug("tool_path=<%s> | loading python tool from path", abs_path)
 
-        # First load the module to get TOOL_SPEC and check for Lambda deployment
+        # Load the module by spec
         spec = importlib.util.spec_from_file_location(tool_name, abs_path)
         if not spec:
             raise ImportError(f"Could not create spec for {tool_name}")
@@ -1807,24 +1785,26 @@ def load_python_tool(tool_path: str, tool_name: str) -> AgentTool:
         sys.modules[tool_name] = module
         spec.loader.exec_module(module)
 
-        # First, check for function-based tools with @tool decorator
+        # Collect function-based tools decorated with @tool
+        function_tools: List[AgentTool] = []
         for attr_name in dir(module):
             attr = getattr(module, attr_name)
             if isinstance(attr, DecoratedFunctionTool):
                 logger.debug(
                     "tool_name=<%s>, tool_path=<%s> | found function-based tool in path", attr_name, tool_path
                 )
-                # mypy has problems converting between DecoratedFunctionTool <-> AgentTool
-                return cast(AgentTool, attr)
+                function_tools.append(cast(AgentTool, attr))
 
-        # If no function-based tools found, fall back to traditional module-level tool
+        if function_tools:
+            return function_tools
+
+        # Fall back to module-level TOOL_SPEC + function
         tool_spec = getattr(module, "TOOL_SPEC", None)
         if not tool_spec:
             raise AttributeError(
                 f"Tool {tool_name} missing TOOL_SPEC (neither at module level nor as a decorated function)"
             )
 
-        # Standard local tool loading
         tool_func_name = tool_name
         if not hasattr(module, tool_func_name):
             raise AttributeError(f"Tool {tool_name} missing function {tool_func_name}")
@@ -1833,17 +1813,46 @@ def load_python_tool(tool_path: str, tool_name: str) -> AgentTool:
         if not callable(tool_func):
             raise TypeError(f"Tool {tool_name} function is not callable")
 
-        return PythonAgentTool(tool_name, tool_spec, tool_func)
+        return [PythonAgentTool(tool_name, tool_spec, tool_func)]
 
     except Exception:
-        logger.exception("tool_name=<%s>, sys_path=<%s> | failed to load python tool", tool_name, sys.path)
+        logger.exception("tool_name=<%s>, sys_path=<%s> | failed to load python tool(s)", tool_name, sys.path)
         raise
-
 ```
 
 #### `load_tool(tool_path, tool_name)`
 
-Load a tool based on its file extension.
+DEPRECATED: Load a single tool based on its file extension for backwards compatibility.
+
+Use `load_tools` to retrieve all tools defined in a file (returns a list). This function will emit a `DeprecationWarning` and return the first discovered tool.
+
+Source code in `strands/tools/loader.py`
+
+```
+@classmethod
+def load_tool(cls, tool_path: str, tool_name: str) -> AgentTool:
+    """DEPRECATED: Load a single tool based on its file extension for backwards compatibility.
+
+    Use `load_tools` to retrieve all tools defined in a file (returns a list).
+    This function will emit a `DeprecationWarning` and return the first discovered tool.
+    """
+    warnings.warn(
+        "ToolLoader.load_tool is deprecated and will be removed in Strands SDK 2.0. "
+        "Use ToolLoader.load_tools(...) which always returns a list of AgentTool.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    tools = ToolLoader.load_tools(tool_path, tool_name)
+    if not tools:
+        raise RuntimeError(f"No tools found in {tool_path} for {tool_name}")
+
+    return tools[0]
+```
+
+#### `load_tools(tool_path, tool_name)`
+
+Load tools from a file based on its file extension.
 
 Parameters:
 
@@ -1851,7 +1860,7 @@ Parameters:
 
 Returns:
 
-| Type | Description | | --- | --- | | `AgentTool` | Tool instance. |
+| Type | Description | | --- | --- | | `list[AgentTool]` | A single Tool instance. |
 
 Raises:
 
@@ -1861,15 +1870,15 @@ Source code in `strands/tools/loader.py`
 
 ```
 @classmethod
-def load_tool(cls, tool_path: str, tool_name: str) -> AgentTool:
-    """Load a tool based on its file extension.
+def load_tools(cls, tool_path: str, tool_name: str) -> list[AgentTool]:
+    """Load tools from a file based on its file extension.
 
     Args:
         tool_path: Path to the tool file.
         tool_name: Name of the tool.
 
     Returns:
-        Tool instance.
+        A single Tool instance.
 
     Raises:
         FileNotFoundError: If the tool file does not exist.
@@ -1884,7 +1893,7 @@ def load_tool(cls, tool_path: str, tool_name: str) -> AgentTool:
 
     try:
         if ext == ".py":
-            return cls.load_python_tool(abs_path, tool_name)
+            return cls.load_python_tools(abs_path, tool_name)
         else:
             raise ValueError(f"Unsupported tool file type: {ext}")
     except Exception:
@@ -1896,7 +1905,6 @@ def load_tool(cls, tool_path: str, tool_name: str) -> AgentTool:
             os.getcwd(),
         )
         raise
-
 ```
 
 ## `strands.tools.registry`
@@ -2018,11 +2026,11 @@ class ToolRegistry:
             if not os.path.exists(tool_path):
                 raise FileNotFoundError(f"Tool file not found: {tool_path}")
 
-            loaded_tool = ToolLoader.load_tool(tool_path, tool_name)
-            loaded_tool.mark_dynamic()
-
-            # Because we're explicitly registering the tool we don't need an allowlist
-            self.register_tool(loaded_tool)
+            loaded_tools = ToolLoader.load_tools(tool_path, tool_name)
+            for t in loaded_tools:
+                t.mark_dynamic()
+                # Because we're explicitly registering the tool we don't need an allowlist
+                self.register_tool(t)
         except Exception as e:
             exception_str = str(e)
             logger.exception("tool_name=<%s> | failed to load tool", tool_name)
@@ -2081,6 +2089,13 @@ class ToolRegistry:
             tool.is_dynamic,
         )
 
+        # Check duplicate tool name, throw on duplicate tool names except if hot_reloading is enabled
+        if tool.tool_name in self.registry and not tool.supports_hot_reload:
+            raise ValueError(
+                f"Tool name '{tool.tool_name}' already exists. Cannot register tools with exact same name."
+            )
+
+        # Check for normalized name conflicts (- vs _)
         if self.registry.get(tool.tool_name) is None:
             normalized_name = tool.tool_name.replace("-", "_")
 
@@ -2496,7 +2511,6 @@ class ToolRegistry:
                     logger.warning("tool_name=<%s> | failed to create function tool | %s", name, e)
 
         return tools
-
 ```
 
 #### `NewToolDict`
@@ -2520,7 +2534,6 @@ class NewToolDict(TypedDict):
     """
 
     spec: ToolSpec
-
 ```
 
 #### `__init__()`
@@ -2535,7 +2548,6 @@ def __init__(self) -> None:
     self.registry: Dict[str, AgentTool] = {}
     self.dynamic_tools: Dict[str, AgentTool] = {}
     self.tool_config: Optional[Dict[str, Any]] = None
-
 ```
 
 #### `discover_tool_modules()`
@@ -2573,7 +2585,6 @@ def discover_tool_modules(self) -> Dict[str, Path]:
 
     logger.debug("tool_modules=<%s> | discovered", list(tool_modules.keys()))
     return tool_modules
-
 ```
 
 #### `get_all_tool_specs()`
@@ -2596,7 +2607,6 @@ def get_all_tool_specs(self) -> list[ToolSpec]:
     all_tools = self.get_all_tools_config()
     tools: List[ToolSpec] = [tool_spec for tool_spec in all_tools.values()]
     return tools
-
 ```
 
 #### `get_all_tools_config()`
@@ -2648,7 +2658,6 @@ def get_all_tools_config(self) -> Dict[str, Any]:
 
     logger.debug("tool_count=<%s> | tools configured", len(tool_config))
     return tool_config
-
 ```
 
 #### `get_tools_dirs()`
@@ -2681,7 +2690,6 @@ def get_tools_dirs(self) -> List[Path]:
             logger.debug("tools_dir=<%s> | tools directory not found", directory)
 
     return tool_dirs
-
 ```
 
 #### `initialize_tools(load_tools_from_directory=False)`
@@ -2805,7 +2813,6 @@ def initialize_tools(self, load_tools_from_directory: bool = False) -> None:
     if tool_import_errors:
         for tool_name, error in tool_import_errors.items():
             logger.debug("tool_name=<%s> | import error | %s", tool_name, error)
-
 ```
 
 #### `load_tool_from_filepath(tool_name, tool_path)`
@@ -2841,16 +2848,15 @@ def load_tool_from_filepath(self, tool_name: str, tool_path: str) -> None:
         if not os.path.exists(tool_path):
             raise FileNotFoundError(f"Tool file not found: {tool_path}")
 
-        loaded_tool = ToolLoader.load_tool(tool_path, tool_name)
-        loaded_tool.mark_dynamic()
-
-        # Because we're explicitly registering the tool we don't need an allowlist
-        self.register_tool(loaded_tool)
+        loaded_tools = ToolLoader.load_tools(tool_path, tool_name)
+        for t in loaded_tools:
+            t.mark_dynamic()
+            # Because we're explicitly registering the tool we don't need an allowlist
+            self.register_tool(t)
     except Exception as e:
         exception_str = str(e)
         logger.exception("tool_name=<%s> | failed to load tool", tool_name)
         raise ValueError(f"Failed to load tool {tool_name}: {exception_str}") from e
-
 ```
 
 #### `process_tools(tools)`
@@ -2941,7 +2947,6 @@ def process_tools(self, tools: List[Any]) -> List[str]:
         add_tool(a_tool)
 
     return tool_names
-
 ```
 
 #### `register_tool(tool)`
@@ -2968,6 +2973,13 @@ def register_tool(self, tool: AgentTool) -> None:
         tool.is_dynamic,
     )
 
+    # Check duplicate tool name, throw on duplicate tool names except if hot_reloading is enabled
+    if tool.tool_name in self.registry and not tool.supports_hot_reload:
+        raise ValueError(
+            f"Tool name '{tool.tool_name}' already exists. Cannot register tools with exact same name."
+        )
+
+    # Check for normalized name conflicts (- vs _)
     if self.registry.get(tool.tool_name) is None:
         normalized_name = tool.tool_name.replace("-", "_")
 
@@ -3000,7 +3012,6 @@ def register_tool(self, tool: AgentTool) -> None:
             list(self.registry.keys()),
             list(self.dynamic_tools.keys()),
         )
-
 ```
 
 #### `reload_tool(tool_name)`
@@ -3117,7 +3128,6 @@ def reload_tool(self, tool_name: str) -> None:
     except Exception:
         logger.exception("tool_name=<%s> | failed to reload tool", tool_name)
         raise
-
 ```
 
 #### `validate_tool_spec(tool_spec)`
@@ -3183,7 +3193,6 @@ def validate_tool_spec(self, tool_spec: ToolSpec) -> None:
             prop_def["type"] = "string"
         if "description" not in prop_def:
             prop_def["description"] = f"Property {prop_name}"
-
 ```
 
 ## `strands.tools.structured_output`
@@ -3250,7 +3259,6 @@ def convert_pydantic_to_tool_spec(
         description=model_description or f"{name} structured output tool",
         inputSchema={"json": final_schema},
     )
-
 ```
 
 ## `strands.tools.watcher`
@@ -3384,7 +3392,6 @@ class ToolWatcher:
             ToolWatcher._shared_observer.start()
             ToolWatcher._observer_started = True
             logger.debug("tool directory watching initialized")
-
 ```
 
 #### `MasterChangeHandler`
@@ -3424,7 +3431,6 @@ class MasterChangeHandler(FileSystemEventHandler):
                         handler.on_modified(event)
                     except Exception as e:
                         logger.error("exception=<%s> | handler error", str(e))
-
 ```
 
 ##### `__init__(dir_path)`
@@ -3445,7 +3451,6 @@ def __init__(self, dir_path: str) -> None:
         dir_path: The directory path to watch.
     """
     self.dir_path = dir_path
-
 ```
 
 ##### `on_modified(event)`
@@ -3476,7 +3481,6 @@ def on_modified(self, event: Any) -> None:
                     handler.on_modified(event)
                 except Exception as e:
                     logger.error("exception=<%s> | handler error", str(e))
-
 ```
 
 #### `ToolChangeHandler`
@@ -3515,7 +3519,6 @@ class ToolChangeHandler(FileSystemEventHandler):
                     self.tool_registry.reload_tool(tool_name)
                 except Exception as e:
                     logger.error("tool_name=<%s>, exception=<%s> | failed to reload tool", tool_name, str(e))
-
 ```
 
 ##### `__init__(tool_registry)`
@@ -3536,7 +3539,6 @@ def __init__(self, tool_registry: ToolRegistry) -> None:
         tool_registry: The tool registry to update when tools change.
     """
     self.tool_registry = tool_registry
-
 ```
 
 ##### `on_modified(event)`
@@ -3566,7 +3568,6 @@ def on_modified(self, event: Any) -> None:
                 self.tool_registry.reload_tool(tool_name)
             except Exception as e:
                 logger.error("tool_name=<%s>, exception=<%s> | failed to reload tool", tool_name, str(e))
-
 ```
 
 #### `__init__(tool_registry)`
@@ -3588,7 +3589,6 @@ def __init__(self, tool_registry: ToolRegistry) -> None:
     """
     self.tool_registry = tool_registry
     self.start()
-
 ```
 
 #### `start()`
@@ -3637,7 +3637,172 @@ def start(self) -> None:
         ToolWatcher._shared_observer.start()
         ToolWatcher._observer_started = True
         logger.debug("tool directory watching initialized")
+```
 
+## `strands.tools.executors`
+
+Tool executors for the Strands SDK.
+
+This package provides different execution strategies for tools, allowing users to customize how tools are executed (e.g., concurrent, sequential, with custom thread pools, etc.).
+
+### `strands.tools.executors.concurrent`
+
+Concurrent tool executor implementation.
+
+#### `ConcurrentToolExecutor`
+
+Bases: `ToolExecutor`
+
+Concurrent tool executor.
+
+Source code in `strands/tools/executors/concurrent.py`
+
+```
+class ConcurrentToolExecutor(ToolExecutor):
+    """Concurrent tool executor."""
+
+    @override
+    async def _execute(
+        self,
+        agent: "Agent",
+        tool_uses: list[ToolUse],
+        tool_results: list[ToolResult],
+        cycle_trace: Trace,
+        cycle_span: Any,
+        invocation_state: dict[str, Any],
+    ) -> AsyncGenerator[TypedEvent, None]:
+        """Execute tools concurrently.
+
+        Args:
+            agent: The agent for which tools are being executed.
+            tool_uses: Metadata and inputs for the tools to be executed.
+            tool_results: List of tool results from each tool execution.
+            cycle_trace: Trace object for the current event loop cycle.
+            cycle_span: Span object for tracing the cycle.
+            invocation_state: Context for the tool invocation.
+
+        Yields:
+            Events from the tool execution stream.
+        """
+        task_queue: asyncio.Queue[tuple[int, Any]] = asyncio.Queue()
+        task_events = [asyncio.Event() for _ in tool_uses]
+        stop_event = object()
+
+        tasks = [
+            asyncio.create_task(
+                self._task(
+                    agent,
+                    tool_use,
+                    tool_results,
+                    cycle_trace,
+                    cycle_span,
+                    invocation_state,
+                    task_id,
+                    task_queue,
+                    task_events[task_id],
+                    stop_event,
+                )
+            )
+            for task_id, tool_use in enumerate(tool_uses)
+        ]
+
+        task_count = len(tasks)
+        while task_count:
+            task_id, event = await task_queue.get()
+            if event is stop_event:
+                task_count -= 1
+                continue
+
+            yield event
+            task_events[task_id].set()
+
+        asyncio.gather(*tasks)
+
+    async def _task(
+        self,
+        agent: "Agent",
+        tool_use: ToolUse,
+        tool_results: list[ToolResult],
+        cycle_trace: Trace,
+        cycle_span: Any,
+        invocation_state: dict[str, Any],
+        task_id: int,
+        task_queue: asyncio.Queue,
+        task_event: asyncio.Event,
+        stop_event: object,
+    ) -> None:
+        """Execute a single tool and put results in the task queue.
+
+        Args:
+            agent: The agent executing the tool.
+            tool_use: Tool use metadata and inputs.
+            tool_results: List of tool results from each tool execution.
+            cycle_trace: Trace object for the current event loop cycle.
+            cycle_span: Span object for tracing the cycle.
+            invocation_state: Context for tool execution.
+            task_id: Unique identifier for this task.
+            task_queue: Queue to put tool events into.
+            task_event: Event to signal when task can continue.
+            stop_event: Sentinel object to signal task completion.
+        """
+        try:
+            events = ToolExecutor._stream_with_trace(
+                agent, tool_use, tool_results, cycle_trace, cycle_span, invocation_state
+            )
+            async for event in events:
+                task_queue.put_nowait((task_id, event))
+                await task_event.wait()
+                task_event.clear()
+
+        finally:
+            task_queue.put_nowait((task_id, stop_event))
+```
+
+### `strands.tools.executors.sequential`
+
+Sequential tool executor implementation.
+
+#### `SequentialToolExecutor`
+
+Bases: `ToolExecutor`
+
+Sequential tool executor.
+
+Source code in `strands/tools/executors/sequential.py`
+
+```
+class SequentialToolExecutor(ToolExecutor):
+    """Sequential tool executor."""
+
+    @override
+    async def _execute(
+        self,
+        agent: "Agent",
+        tool_uses: list[ToolUse],
+        tool_results: list[ToolResult],
+        cycle_trace: Trace,
+        cycle_span: Any,
+        invocation_state: dict[str, Any],
+    ) -> AsyncGenerator[TypedEvent, None]:
+        """Execute tools sequentially.
+
+        Args:
+            agent: The agent for which tools are being executed.
+            tool_uses: Metadata and inputs for the tools to be executed.
+            tool_results: List of tool results from each tool execution.
+            cycle_trace: Trace object for the current event loop cycle.
+            cycle_span: Span object for tracing the cycle.
+            invocation_state: Context for the tool invocation.
+
+        Yields:
+            Events from the tool execution stream.
+        """
+        for tool_use in tool_uses:
+            events = ToolExecutor._stream_with_trace(
+                agent, tool_use, tool_results, cycle_trace, cycle_span, invocation_state
+            )
+            async for event in events:
+                yield event
 ```
 
 ## `strands.tools.mcp`
@@ -3742,8 +3907,7 @@ class MCPAgentTool(AgentTool):
             name=self.tool_name,
             arguments=tool_use["input"],
         )
-        yield result
-
+        yield ToolResultEvent(result)
 ```
 
 ##### `tool_name`
@@ -3794,7 +3958,6 @@ def __init__(self, mcp_tool: MCPTool, mcp_client: "MCPClient") -> None:
     logger.debug("tool_name=<%s> | creating mcp agent tool", mcp_tool.name)
     self.mcp_tool = mcp_tool
     self.mcp_client = mcp_client
-
 ```
 
 ##### `stream(tool_use, invocation_state, **kwargs)`
@@ -3836,8 +3999,7 @@ async def stream(self, tool_use: ToolUse, invocation_state: dict[str, Any], **kw
         name=self.tool_name,
         arguments=tool_use["input"],
     )
-    yield result
-
+    yield ToolResultEvent(result)
 ```
 
 ### `strands.tools.mcp.mcp_client`
@@ -3869,24 +4031,35 @@ class MCPClient:
     from MCP tools, it will be returned as the last item in the content array of the ToolResult.
     """
 
-    def __init__(self, transport_callable: Callable[[], MCPTransport]):
+    def __init__(self, transport_callable: Callable[[], MCPTransport], *, startup_timeout: int = 30):
         """Initialize a new MCP Server connection.
 
         Args:
             transport_callable: A callable that returns an MCPTransport (read_stream, write_stream) tuple
+            startup_timeout: Timeout after which MCP server initialization should be cancelled
+                Defaults to 30.
         """
+        self._startup_timeout = startup_timeout
+
+        mcp_instrumentation()
         self._session_id = uuid.uuid4()
         self._log_debug_with_thread("initializing MCPClient connection")
-        self._init_future: futures.Future[None] = futures.Future()  # Main thread blocks until future completes
-        self._close_event = asyncio.Event()  # Do not want to block other threads while close event is false
+        # Main thread blocks until future completesock
+        self._init_future: futures.Future[None] = futures.Future()
+        # Do not want to block other threads while close event is false
+        self._close_event = asyncio.Event()
         self._transport_callable = transport_callable
 
         self._background_thread: threading.Thread | None = None
-        self._background_thread_session: ClientSession
-        self._background_thread_event_loop: AbstractEventLoop
+        self._background_thread_session: ClientSession | None = None
+        self._background_thread_event_loop: AbstractEventLoop | None = None
 
     def __enter__(self) -> "MCPClient":
-        """Context manager entry point which initializes the MCP server connection."""
+        """Context manager entry point which initializes the MCP server connection.
+
+        TODO: Refactor to lazy initialization pattern following idiomatic Python.
+        Heavy work in __enter__ is non-idiomatic - should move connection logic to first method call instead.
+        """
         return self.start()
 
     def __exit__(self, exc_type: BaseException, exc_val: BaseException, exc_tb: TracebackType) -> None:
@@ -3914,12 +4087,19 @@ class MCPClient:
         self._log_debug_with_thread("background thread started, waiting for ready event")
         try:
             # Blocking main thread until session is initialized in other thread or if the thread stops
-            self._init_future.result(timeout=30)
+            self._init_future.result(timeout=self._startup_timeout)
             self._log_debug_with_thread("the client initialization was successful")
         except futures.TimeoutError as e:
-            raise MCPClientInitializationError("background thread did not start in 30 seconds") from e
+            logger.exception("client initialization timed out")
+            # Pass None for exc_type, exc_val, exc_tb since this isn't a context manager exit
+            self.stop(None, None, None)
+            raise MCPClientInitializationError(
+                f"background thread did not start in {self._startup_timeout} seconds"
+            ) from e
         except Exception as e:
             logger.exception("client failed to initialize")
+            # Pass None for exc_type, exc_val, exc_tb since this isn't a context manager exit
+            self.stop(None, None, None)
             raise MCPClientInitializationError("the client initialization failed") from e
         return self
 
@@ -3928,6 +4108,21 @@ class MCPClient:
     ) -> None:
         """Signals the background thread to stop and waits for it to complete, ensuring proper cleanup of all resources.
 
+        This method is defensive and can handle partial initialization states that may occur
+        if start() fails partway through initialization.
+
+        Resources to cleanup:
+        - _background_thread: Thread running the async event loop
+        - _background_thread_session: MCP ClientSession (auto-closed by context manager)
+        - _background_thread_event_loop: AsyncIO event loop in background thread
+        - _close_event: AsyncIO event to signal thread shutdown
+        - _init_future: Future for initialization synchronization
+
+        Cleanup order:
+        1. Signal close event to background thread (if session initialized)
+        2. Wait for background thread to complete
+        3. Reset all state for reuse
+
         Args:
             exc_type: Exception type if an exception was raised in the context
             exc_val: Exception value if an exception was raised in the context
@@ -3935,19 +4130,28 @@ class MCPClient:
         """
         self._log_debug_with_thread("exiting MCPClient context")
 
-        async def _set_close_event() -> None:
-            self._close_event.set()
-
-        self._invoke_on_background_thread(_set_close_event()).result()
-        self._log_debug_with_thread("waiting for background thread to join")
+        # Only try to signal close event if we have a background thread
         if self._background_thread is not None:
+            # Signal close event if event loop exists
+            if self._background_thread_event_loop is not None:
+
+                async def _set_close_event() -> None:
+                    self._close_event.set()
+
+                # Not calling _invoke_on_background_thread since the session does not need to exist
+                # we only need the thread and event loop to exist.
+                asyncio.run_coroutine_threadsafe(coro=_set_close_event(), loop=self._background_thread_event_loop)
+
+            self._log_debug_with_thread("waiting for background thread to join")
             self._background_thread.join()
-        self._log_debug_with_thread("background thread joined, MCPClient context exited")
+        self._log_debug_with_thread("background thread is closed, MCPClient context exited")
 
         # Reset fields to allow instance reuse
         self._init_future = futures.Future()
         self._close_event = asyncio.Event()
         self._background_thread = None
+        self._background_thread_session = None
+        self._background_thread_event_loop = None
         self._session_id = uuid.uuid4()
 
     def list_tools_sync(self, pagination_token: Optional[str] = None) -> PaginatedList[MCPAgentTool]:
@@ -3964,7 +4168,7 @@ class MCPClient:
             raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
         async def _list_tools_async() -> ListToolsResult:
-            return await self._background_thread_session.list_tools(cursor=pagination_token)
+            return await cast(ClientSession, self._background_thread_session).list_tools(cursor=pagination_token)
 
         list_tools_response: ListToolsResult = self._invoke_on_background_thread(_list_tools_async()).result()
         self._log_debug_with_thread("received %d tools from MCP server", len(list_tools_response.tools))
@@ -3990,7 +4194,7 @@ class MCPClient:
             raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
         async def _list_prompts_async() -> ListPromptsResult:
-            return await self._background_thread_session.list_prompts(cursor=pagination_token)
+            return await cast(ClientSession, self._background_thread_session).list_prompts(cursor=pagination_token)
 
         list_prompts_result: ListPromptsResult = self._invoke_on_background_thread(_list_prompts_async()).result()
         self._log_debug_with_thread("received %d prompts from MCP server", len(list_prompts_result.prompts))
@@ -4014,7 +4218,7 @@ class MCPClient:
             raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
         async def _get_prompt_async() -> GetPromptResult:
-            return await self._background_thread_session.get_prompt(prompt_id, arguments=args)
+            return await cast(ClientSession, self._background_thread_session).get_prompt(prompt_id, arguments=args)
 
         get_prompt_result: GetPromptResult = self._invoke_on_background_thread(_get_prompt_async()).result()
         self._log_debug_with_thread("received prompt from MCP server")
@@ -4049,7 +4253,9 @@ class MCPClient:
             raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
         async def _call_tool_async() -> MCPCallToolResult:
-            return await self._background_thread_session.call_tool(name, arguments, read_timeout_seconds)
+            return await cast(ClientSession, self._background_thread_session).call_tool(
+                name, arguments, read_timeout_seconds
+            )
 
         try:
             call_tool_result: MCPCallToolResult = self._invoke_on_background_thread(_call_tool_async()).result()
@@ -4084,7 +4290,9 @@ class MCPClient:
             raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
         async def _call_tool_async() -> MCPCallToolResult:
-            return await self._background_thread_session.call_tool(name, arguments, read_timeout_seconds)
+            return await cast(ClientSession, self._background_thread_session).call_tool(
+                name, arguments, read_timeout_seconds
+            )
 
         try:
             future = self._invoke_on_background_thread(_call_tool_async())
@@ -4117,10 +4325,12 @@ class MCPClient:
         """
         self._log_debug_with_thread("received tool result with %d content items", len(call_tool_result.content))
 
-        mapped_content = [
-            mapped_content
+        # Build a typed list of ToolResultContent. Use a clearer local name to avoid shadowing
+        # and annotate the result for mypy so it knows the intended element type.
+        mapped_contents: list[ToolResultContent] = [
+            mc
             for content in call_tool_result.content
-            if (mapped_content := self._map_mcp_content_to_tool_result_content(content)) is not None
+            if (mc := self._map_mcp_content_to_tool_result_content(content)) is not None
         ]
 
         status: ToolResultStatus = "error" if call_tool_result.isError else "success"
@@ -4128,8 +4338,9 @@ class MCPClient:
         result = MCPToolResult(
             status=status,
             toolUseId=tool_use_id,
-            content=mapped_content,
+            content=mapped_contents,
         )
+
         if call_tool_result.structuredContent:
             result["structuredContent"] = call_tool_result.structuredContent
 
@@ -4152,7 +4363,8 @@ class MCPClient:
                     self._log_debug_with_thread("session initialized successfully")
                     # Store the session for use while we await the close event
                     self._background_thread_session = session
-                    self._init_future.set_result(None)  # Signal that the session has been created and is ready for use
+                    # Signal that the session has been created and is ready for use
+                    self._init_future.set_result(None)
 
                     self._log_debug_with_thread("waiting for close signal")
                     # Keep background thread running until signaled to close.
@@ -4226,20 +4438,24 @@ class MCPClient:
 
     def _is_session_active(self) -> bool:
         return self._background_thread is not None and self._background_thread.is_alive()
-
 ```
 
 ##### `__enter__()`
 
 Context manager entry point which initializes the MCP server connection.
 
+TODO: Refactor to lazy initialization pattern following idiomatic Python. Heavy work in **enter** is non-idiomatic - should move connection logic to first method call instead.
+
 Source code in `strands/tools/mcp/mcp_client.py`
 
 ```
 def __enter__(self) -> "MCPClient":
-    """Context manager entry point which initializes the MCP server connection."""
-    return self.start()
+    """Context manager entry point which initializes the MCP server connection.
 
+    TODO: Refactor to lazy initialization pattern following idiomatic Python.
+    Heavy work in __enter__ is non-idiomatic - should move connection logic to first method call instead.
+    """
+    return self.start()
 ```
 
 ##### `__exit__(exc_type, exc_val, exc_tb)`
@@ -4252,36 +4468,41 @@ Source code in `strands/tools/mcp/mcp_client.py`
 def __exit__(self, exc_type: BaseException, exc_val: BaseException, exc_tb: TracebackType) -> None:
     """Context manager exit point that cleans up resources."""
     self.stop(exc_type, exc_val, exc_tb)
-
 ```
 
-##### `__init__(transport_callable)`
+##### `__init__(transport_callable, *, startup_timeout=30)`
 
 Initialize a new MCP Server connection.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `transport_callable` | `Callable[[], MCPTransport]` | A callable that returns an MCPTransport (read_stream, write_stream) tuple | *required* |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `transport_callable` | `Callable[[], MCPTransport]` | A callable that returns an MCPTransport (read_stream, write_stream) tuple | *required* | | `startup_timeout` | `int` | Timeout after which MCP server initialization should be cancelled Defaults to 30. | `30` |
 
 Source code in `strands/tools/mcp/mcp_client.py`
 
 ```
-def __init__(self, transport_callable: Callable[[], MCPTransport]):
+def __init__(self, transport_callable: Callable[[], MCPTransport], *, startup_timeout: int = 30):
     """Initialize a new MCP Server connection.
 
     Args:
         transport_callable: A callable that returns an MCPTransport (read_stream, write_stream) tuple
+        startup_timeout: Timeout after which MCP server initialization should be cancelled
+            Defaults to 30.
     """
+    self._startup_timeout = startup_timeout
+
+    mcp_instrumentation()
     self._session_id = uuid.uuid4()
     self._log_debug_with_thread("initializing MCPClient connection")
-    self._init_future: futures.Future[None] = futures.Future()  # Main thread blocks until future completes
-    self._close_event = asyncio.Event()  # Do not want to block other threads while close event is false
+    # Main thread blocks until future completesock
+    self._init_future: futures.Future[None] = futures.Future()
+    # Do not want to block other threads while close event is false
+    self._close_event = asyncio.Event()
     self._transport_callable = transport_callable
 
     self._background_thread: threading.Thread | None = None
-    self._background_thread_session: ClientSession
-    self._background_thread_event_loop: AbstractEventLoop
-
+    self._background_thread_session: ClientSession | None = None
+    self._background_thread_event_loop: AbstractEventLoop | None = None
 ```
 
 ##### `call_tool_async(tool_use_id, name, arguments=None, read_timeout_seconds=None)`
@@ -4327,7 +4548,9 @@ async def call_tool_async(
         raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
     async def _call_tool_async() -> MCPCallToolResult:
-        return await self._background_thread_session.call_tool(name, arguments, read_timeout_seconds)
+        return await cast(ClientSession, self._background_thread_session).call_tool(
+            name, arguments, read_timeout_seconds
+        )
 
     try:
         future = self._invoke_on_background_thread(_call_tool_async())
@@ -4336,7 +4559,6 @@ async def call_tool_async(
     except Exception as e:
         logger.exception("tool execution failed")
         return self._handle_tool_execution_error(tool_use_id, e)
-
 ```
 
 ##### `call_tool_sync(tool_use_id, name, arguments=None, read_timeout_seconds=None)`
@@ -4384,7 +4606,9 @@ def call_tool_sync(
         raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
     async def _call_tool_async() -> MCPCallToolResult:
-        return await self._background_thread_session.call_tool(name, arguments, read_timeout_seconds)
+        return await cast(ClientSession, self._background_thread_session).call_tool(
+            name, arguments, read_timeout_seconds
+        )
 
     try:
         call_tool_result: MCPCallToolResult = self._invoke_on_background_thread(_call_tool_async()).result()
@@ -4392,7 +4616,6 @@ def call_tool_sync(
     except Exception as e:
         logger.exception("tool execution failed")
         return self._handle_tool_execution_error(tool_use_id, e)
-
 ```
 
 ##### `get_prompt_sync(prompt_id, args)`
@@ -4425,13 +4648,12 @@ def get_prompt_sync(self, prompt_id: str, args: dict[str, Any]) -> GetPromptResu
         raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
     async def _get_prompt_async() -> GetPromptResult:
-        return await self._background_thread_session.get_prompt(prompt_id, arguments=args)
+        return await cast(ClientSession, self._background_thread_session).get_prompt(prompt_id, arguments=args)
 
     get_prompt_result: GetPromptResult = self._invoke_on_background_thread(_get_prompt_async()).result()
     self._log_debug_with_thread("received prompt from MCP server")
 
     return get_prompt_result
-
 ```
 
 ##### `list_prompts_sync(pagination_token=None)`
@@ -4468,7 +4690,7 @@ def list_prompts_sync(self, pagination_token: Optional[str] = None) -> ListPromp
         raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
     async def _list_prompts_async() -> ListPromptsResult:
-        return await self._background_thread_session.list_prompts(cursor=pagination_token)
+        return await cast(ClientSession, self._background_thread_session).list_prompts(cursor=pagination_token)
 
     list_prompts_result: ListPromptsResult = self._invoke_on_background_thread(_list_prompts_async()).result()
     self._log_debug_with_thread("received %d prompts from MCP server", len(list_prompts_result.prompts))
@@ -4476,7 +4698,6 @@ def list_prompts_sync(self, pagination_token: Optional[str] = None) -> ListPromp
         self._log_debug_with_thread(prompt.name)
 
     return list_prompts_result
-
 ```
 
 ##### `list_tools_sync(pagination_token=None)`
@@ -4506,7 +4727,7 @@ def list_tools_sync(self, pagination_token: Optional[str] = None) -> PaginatedLi
         raise MCPClientInitializationError(CLIENT_SESSION_NOT_RUNNING_ERROR_MESSAGE)
 
     async def _list_tools_async() -> ListToolsResult:
-        return await self._background_thread_session.list_tools(cursor=pagination_token)
+        return await cast(ClientSession, self._background_thread_session).list_tools(cursor=pagination_token)
 
     list_tools_response: ListToolsResult = self._invoke_on_background_thread(_list_tools_async()).result()
     self._log_debug_with_thread("received %d tools from MCP server", len(list_tools_response.tools))
@@ -4514,7 +4735,6 @@ def list_tools_sync(self, pagination_token: Optional[str] = None) -> PaginatedLi
     mcp_tools = [MCPAgentTool(tool, self) for tool in list_tools_response.tools]
     self._log_debug_with_thread("successfully adapted %d MCP tools", len(mcp_tools))
     return PaginatedList[MCPAgentTool](mcp_tools, token=list_tools_response.nextCursor)
-
 ```
 
 ##### `start()`
@@ -4555,20 +4775,42 @@ def start(self) -> "MCPClient":
     self._log_debug_with_thread("background thread started, waiting for ready event")
     try:
         # Blocking main thread until session is initialized in other thread or if the thread stops
-        self._init_future.result(timeout=30)
+        self._init_future.result(timeout=self._startup_timeout)
         self._log_debug_with_thread("the client initialization was successful")
     except futures.TimeoutError as e:
-        raise MCPClientInitializationError("background thread did not start in 30 seconds") from e
+        logger.exception("client initialization timed out")
+        # Pass None for exc_type, exc_val, exc_tb since this isn't a context manager exit
+        self.stop(None, None, None)
+        raise MCPClientInitializationError(
+            f"background thread did not start in {self._startup_timeout} seconds"
+        ) from e
     except Exception as e:
         logger.exception("client failed to initialize")
+        # Pass None for exc_type, exc_val, exc_tb since this isn't a context manager exit
+        self.stop(None, None, None)
         raise MCPClientInitializationError("the client initialization failed") from e
     return self
-
 ```
 
 ##### `stop(exc_type, exc_val, exc_tb)`
 
 Signals the background thread to stop and waits for it to complete, ensuring proper cleanup of all resources.
+
+This method is defensive and can handle partial initialization states that may occur if start() fails partway through initialization.
+
+Resources to cleanup:
+
+- \_background_thread: Thread running the async event loop
+- \_background_thread_session: MCP ClientSession (auto-closed by context manager)
+- \_background_thread_event_loop: AsyncIO event loop in background thread
+- \_close_event: AsyncIO event to signal thread shutdown
+- \_init_future: Future for initialization synchronization
+
+Cleanup order:
+
+1. Signal close event to background thread (if session initialized)
+1. Wait for background thread to complete
+1. Reset all state for reuse
 
 Parameters:
 
@@ -4582,6 +4824,21 @@ def stop(
 ) -> None:
     """Signals the background thread to stop and waits for it to complete, ensuring proper cleanup of all resources.
 
+    This method is defensive and can handle partial initialization states that may occur
+    if start() fails partway through initialization.
+
+    Resources to cleanup:
+    - _background_thread: Thread running the async event loop
+    - _background_thread_session: MCP ClientSession (auto-closed by context manager)
+    - _background_thread_event_loop: AsyncIO event loop in background thread
+    - _close_event: AsyncIO event to signal thread shutdown
+    - _init_future: Future for initialization synchronization
+
+    Cleanup order:
+    1. Signal close event to background thread (if session initialized)
+    2. Wait for background thread to complete
+    3. Reset all state for reuse
+
     Args:
         exc_type: Exception type if an exception was raised in the context
         exc_val: Exception value if an exception was raised in the context
@@ -4589,21 +4846,29 @@ def stop(
     """
     self._log_debug_with_thread("exiting MCPClient context")
 
-    async def _set_close_event() -> None:
-        self._close_event.set()
-
-    self._invoke_on_background_thread(_set_close_event()).result()
-    self._log_debug_with_thread("waiting for background thread to join")
+    # Only try to signal close event if we have a background thread
     if self._background_thread is not None:
+        # Signal close event if event loop exists
+        if self._background_thread_event_loop is not None:
+
+            async def _set_close_event() -> None:
+                self._close_event.set()
+
+            # Not calling _invoke_on_background_thread since the session does not need to exist
+            # we only need the thread and event loop to exist.
+            asyncio.run_coroutine_threadsafe(coro=_set_close_event(), loop=self._background_thread_event_loop)
+
+        self._log_debug_with_thread("waiting for background thread to join")
         self._background_thread.join()
-    self._log_debug_with_thread("background thread joined, MCPClient context exited")
+    self._log_debug_with_thread("background thread is closed, MCPClient context exited")
 
     # Reset fields to allow instance reuse
     self._init_future = futures.Future()
     self._close_event = asyncio.Event()
     self._background_thread = None
+    self._background_thread_session = None
+    self._background_thread_event_loop = None
     self._session_id = uuid.uuid4()
-
 ```
 
 ### `strands.tools.mcp.mcp_types`
@@ -4639,5 +4904,4 @@ class MCPToolResult(ToolResult):
     """
 
     structuredContent: NotRequired[Dict[str, Any]]
-
 ```

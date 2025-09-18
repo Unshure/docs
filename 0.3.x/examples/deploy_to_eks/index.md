@@ -37,21 +37,18 @@ Set environment variables
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
 export AWS_REGION=us-east-1
 export CLUSTER_NAME=eks-strands-agents-demo
-
 ```
 
 Create EKS Auto Mode cluster
 
 ```
 eksctl create cluster --name $CLUSTER_NAME --enable-auto-mode
-
 ```
 
 Configure kubeconfig context
 
 ```
 aws eks update-kubeconfig --name $CLUSTER_NAME
-
 ```
 
 ## Building and Pushing Docker Image to ECR
@@ -62,35 +59,30 @@ Follow these steps to build the Docker image and push it to Amazon ECR:
 
    ```
    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-
    ```
 
 1. Create the ECR repository if it doesn't exist:
 
    ```
    aws ecr create-repository --repository-name strands-agents-weather --region ${AWS_REGION}
-
    ```
 
 1. Build the Docker image:
 
    ```
    docker build --platform linux/amd64 -t strands-agents-weather:latest docker/
-
    ```
 
 1. Tag the image for ECR:
 
    ```
    docker tag strands-agents-weather:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/strands-agents-weather:latest
-
    ```
 
 1. Push the image to ECR:
 
    ```
    docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/strands-agents-weather:latest
-
    ```
 
 ## Configure EKS Pod Identity to access Amazon Bedrock
@@ -118,7 +110,6 @@ aws iam create-policy \
   --policy-name strands-agents-weather-bedrock-policy \
   --policy-document file://bedrock-policy.json
 rm -f bedrock-policy.json
-
 ```
 
 Create an EKS Pod Identity association
@@ -129,7 +120,6 @@ eksctl create podidentityassociation --cluster $CLUSTER_NAME \
   --service-account-name strands-agents-weather \
   --permission-policy-arns arn:aws:iam::$AWS_ACCOUNT_ID:policy/strands-agents-weather-bedrock-policy \
   --role-name eks-strands-agents-weather
-
 ```
 
 ## Deploy strands-agents-weather application
@@ -139,14 +129,12 @@ Deploy the helm chart with the image from ECR
 ```
 helm install strands-agents-weather ./chart \
   --set image.repository=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/strands-agents-weather --set image.tag=latest
-
 ```
 
 Wait for Deployment to be available (Pods Running)
 
 ```
 kubectl wait --for=condition=available deployments strands-agents-weather --all
-
 ```
 
 ## Test the Agent
@@ -155,7 +143,6 @@ Using kubernetes port-forward
 
 ```
 kubectl --namespace default port-forward service/strands-agents-weather 8080:80 &
-
 ```
 
 Call the weather service
@@ -165,7 +152,6 @@ curl -X POST \
   http://localhost:8080/weather \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in Seattle?"}'
-
 ```
 
 Call the weather streaming endpoint
@@ -175,7 +161,6 @@ curl -X POST \
   http://localhost:8080/weather-streaming \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in New York in Celsius?"}'
-
 ```
 
 ## Expose Agent through Application Load Balancer
@@ -191,7 +176,6 @@ metadata:
 spec:
   scheme: internet-facing
 EOF
-
 ```
 
 ```
@@ -209,7 +193,6 @@ spec:
     kind: IngressClassParams
     name: alb
 EOF
-
 ```
 
 Update helm deployment to create Ingress using the IngressClass created
@@ -218,8 +201,7 @@ Update helm deployment to create Ingress using the IngressClass created
 helm upgrade strands-agents-weather ./chart \
   --set image.repository=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/strands-agents-weather --set image.tag=latest \
   --set ingress.enabled=true \
-  --set ingress.className=alb 
-
+  --set ingress.className=alb
 ```
 
 Get the ALB URL
@@ -227,14 +209,12 @@ Get the ALB URL
 ```
 export ALB_URL=$(kubectl get ingress strands-agents-weather -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 echo "The shared ALB is available at: http://$ALB_URL"
-
 ```
 
 Wait for ALB to be active
 
 ```
 aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$ALB_URL"'`].LoadBalancerArn' --output text)
-
 ```
 
 Call the weather service Application Load Balancer endpoint
@@ -244,7 +224,6 @@ curl -X POST \
   http://$ALB_URL/weather \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in Portland?"}'
-
 ```
 
 ## Configure High Availability and Resiliency
@@ -284,7 +263,6 @@ podDisruptionBudget:
   enabled: true
   minAvailable: 1
 EOF
-
 ```
 
 ## Cleanup
@@ -293,19 +271,16 @@ Uninstall helm chart
 
 ```
 helm uninstall strands-agents-weather
-
 ```
 
 Delete EKS Auto Mode cluster
 
 ```
 eksctl delete cluster --name $CLUSTER_NAME --wait
-
 ```
 
 Delete IAM policy
 
 ```
 aws iam delete-policy --policy-arn arn:aws:iam::$AWS_ACCOUNT_ID:policy/strands-agents-weather-bedrock-policy
-
 ```

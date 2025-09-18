@@ -35,7 +35,7 @@ Parameters:
 
 Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | Model and tool stream events. The last event is a tuple containing: StopReason: Reason the model stopped generating (e.g., "tool_use") Message: The generated message from the model EventLoopMetrics: Updated metrics for the event loop Any: Updated request state |
+| Type | Description | | --- | --- | | `AsyncGenerator[TypedEvent, None]` | Model and tool stream events. The last event is a tuple containing: StopReason: Reason the model stopped generating (e.g., "tool_use") Message: The generated message from the model EventLoopMetrics: Updated metrics for the event loop Any: Updated request state |
 
 Raises:
 
@@ -44,7 +44,7 @@ Raises:
 Source code in `strands/event_loop/event_loop.py`
 
 ```
-async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
+async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> AsyncGenerator[TypedEvent, None]:
     """Execute a single cycle of the event loop.
 
     This core function processes a single conversation turn, handling model inference, tool execution, and error
@@ -88,8 +88,8 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
     cycle_start_time, cycle_trace = agent.event_loop_metrics.start_cycle(attributes=attributes)
     invocation_state["event_loop_cycle_trace"] = cycle_trace
 
-    yield {"callback": {"start": True}}
-    yield {"callback": {"start_event_loop": True}}
+    yield StartEvent()
+    yield StartEventLoopEvent()
 
     # Create tracer span for this event loop cycle
     tracer = get_tracer()
@@ -118,26 +118,18 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
             model_id=model_id,
         )
         with trace_api.use_span(model_invoke_span):
-            tool_specs = agent.tool_registry.get_all_tool_specs()
-
             agent.hooks.invoke_callbacks(
                 BeforeModelInvocationEvent(
                     agent=agent,
                 )
             )
 
+            tool_specs = agent.tool_registry.get_all_tool_specs()
+
             try:
-                # TODO: To maintain backwards compatibility, we need to combine the stream event with invocation_state
-                #       before yielding to the callback handler. This will be revisited when migrating to strongly
-                #       typed events.
                 async for event in stream_messages(agent.model, agent.system_prompt, agent.messages, tool_specs):
-                    if "callback" in event:
-                        yield {
-                            "callback": {
-                                **event["callback"],
-                                **(invocation_state if "delta" in event["callback"] else {}),
-                            }
-                        }
+                    if not isinstance(event, ModelStopReason):
+                        yield event
 
                 stop_reason, message, usage, metrics = event["stop"]
                 invocation_state.setdefault("request_state", {})
@@ -151,6 +143,9 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
                         ),
                     )
                 )
+
+                if stop_reason == "max_tokens":
+                    message = recover_message_on_max_tokens_reached(message)
 
                 if model_invoke_span:
                     tracer.end_model_invoke_span(model_invoke_span, message, usage, stop_reason)
@@ -169,7 +164,7 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
 
                 if isinstance(e, ModelThrottledException):
                     if attempt + 1 == MAX_ATTEMPTS:
-                        yield {"callback": {"force_stop": True, "force_stop_reason": str(e)}}
+                        yield ForceStopEvent(reason=e)
                         raise e
 
                     logger.debug(
@@ -180,10 +175,10 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
                         MAX_ATTEMPTS,
                         attempt + 1,
                     )
-                    time.sleep(current_delay)
+                    await asyncio.sleep(current_delay)
                     current_delay = min(current_delay * 2, MAX_DELAY)
 
-                    yield {"callback": {"event_loop_throttled_delay": current_delay, **invocation_state}}
+                    yield EventLoopThrottleEvent(delay=current_delay)
                 else:
                     raise e
 
@@ -195,11 +190,27 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
         # Add the response message to the conversation
         agent.messages.append(message)
         agent.hooks.invoke_callbacks(MessageAddedEvent(agent=agent, message=message))
-        yield {"callback": {"message": message}}
+        yield ModelMessageEvent(message=message)
 
         # Update metrics
         agent.event_loop_metrics.update_usage(usage)
         agent.event_loop_metrics.update_metrics(metrics)
+
+        if stop_reason == "max_tokens":
+            """
+            Handle max_tokens limit reached by the model.
+
+            When the model reaches its maximum token limit, this represents a potentially unrecoverable
+            state where the model's response was truncated. By default, Strands fails hard with an
+            MaxTokensReachedException to maintain consistency with other failure types.
+            """
+            raise MaxTokensReachedException(
+                message=(
+                    "Agent has reached an unrecoverable state due to max_tokens limit. "
+                    "For more information see: "
+                    "https://strandsagents.com/latest/user-guide/concepts/agents/agent-loop/#maxtokensreachedexception"
+                )
+            )
 
         # If the model is requesting to use tools
         if stop_reason == "tool_use":
@@ -213,8 +224,8 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
                 cycle_start_time=cycle_start_time,
                 invocation_state=invocation_state,
             )
-            async for event in events:
-                yield event
+            async for typed_event in events:
+                yield typed_event
 
             return
 
@@ -232,7 +243,8 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
         # Don't yield or log the exception - we already did it when we
         # raised the exception and we don't need that duplication.
         raise
-    except ContextWindowOverflowException as e:
+    except (ContextWindowOverflowException, MaxTokensReachedException) as e:
+        # Special cased exceptions which we want to bubble up rather than get wrapped in an EventLoopException
         if cycle_span:
             tracer.end_span_with_error(cycle_span, str(e), e)
         raise e
@@ -241,12 +253,11 @@ async def event_loop_cycle(agent: "Agent", invocation_state: dict[str, Any]) -> 
             tracer.end_span_with_error(cycle_span, str(e), e)
 
         # Handle any other exceptions
-        yield {"callback": {"force_stop": True, "force_stop_reason": str(e)}}
+        yield ForceStopEvent(reason=e)
         logger.exception("cycle failed")
         raise EventLoopException(e, invocation_state["request_state"]) from e
 
-    yield {"stop": (stop_reason, message, agent.event_loop_metrics, invocation_state["request_state"])}
-
+    yield EventLoopStopEvent(stop_reason, message, agent.event_loop_metrics, invocation_state["request_state"])
 ```
 
 ### `recurse_event_loop(agent, invocation_state)`
@@ -261,12 +272,12 @@ Parameters:
 
 Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | Results from event_loop_cycle where the last result contains: StopReason: Reason the model stopped generating Message: The generated message from the model EventLoopMetrics: Updated metrics for the event loop Any: Updated request state |
+| Type | Description | | --- | --- | | `AsyncGenerator[TypedEvent, None]` | Results from event_loop_cycle where the last result contains: StopReason: Reason the model stopped generating Message: The generated message from the model EventLoopMetrics: Updated metrics for the event loop Any: Updated request state |
 
 Source code in `strands/event_loop/event_loop.py`
 
 ```
-async def recurse_event_loop(agent: "Agent", invocation_state: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
+async def recurse_event_loop(agent: "Agent", invocation_state: dict[str, Any]) -> AsyncGenerator[TypedEvent, None]:
     """Make a recursive call to event_loop_cycle with the current state.
 
     This function is used when the event loop needs to continue processing after tool execution.
@@ -290,148 +301,13 @@ async def recurse_event_loop(agent: "Agent", invocation_state: dict[str, Any]) -
     recursive_trace = Trace("Recursive call", parent_id=cycle_trace.id)
     cycle_trace.add_child(recursive_trace)
 
-    yield {"callback": {"start": True}}
+    yield StartEvent()
 
     events = event_loop_cycle(agent=agent, invocation_state=invocation_state)
     async for event in events:
         yield event
 
     recursive_trace.end()
-
-```
-
-### `run_tool(agent, tool_use, invocation_state)`
-
-Process a tool invocation.
-
-Looks up the tool in the registry and streams it with the provided parameters.
-
-Parameters:
-
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The agent for which the tool is being executed. | *required* | | `tool_use` | `ToolUse` | The tool object to process, containing name and parameters. | *required* | | `invocation_state` | `dict[str, Any]` | Context for the tool invocation, including agent state. | *required* |
-
-Yields:
-
-| Type | Description | | --- | --- | | `ToolGenerator` | Tool events with the last being the tool result. |
-
-Source code in `strands/event_loop/event_loop.py`
-
-```
-async def run_tool(agent: "Agent", tool_use: ToolUse, invocation_state: dict[str, Any]) -> ToolGenerator:
-    """Process a tool invocation.
-
-    Looks up the tool in the registry and streams it with the provided parameters.
-
-    Args:
-        agent: The agent for which the tool is being executed.
-        tool_use: The tool object to process, containing name and parameters.
-        invocation_state: Context for the tool invocation, including agent state.
-
-    Yields:
-        Tool events with the last being the tool result.
-    """
-    logger.debug("tool_use=<%s> | streaming", tool_use)
-    tool_name = tool_use["name"]
-
-    # Get the tool info
-    tool_info = agent.tool_registry.dynamic_tools.get(tool_name)
-    tool_func = tool_info if tool_info is not None else agent.tool_registry.registry.get(tool_name)
-
-    # Add standard arguments to invocation_state for Python tools
-    invocation_state.update(
-        {
-            "model": agent.model,
-            "system_prompt": agent.system_prompt,
-            "messages": agent.messages,
-            "tool_config": ToolConfig(  # for backwards compatability
-                tools=[{"toolSpec": tool_spec} for tool_spec in agent.tool_registry.get_all_tool_specs()],
-                toolChoice=cast(ToolChoice, {"auto": ToolChoiceAuto()}),
-            ),
-        }
-    )
-
-    before_event = agent.hooks.invoke_callbacks(
-        BeforeToolInvocationEvent(
-            agent=agent,
-            selected_tool=tool_func,
-            tool_use=tool_use,
-            invocation_state=invocation_state,
-        )
-    )
-
-    try:
-        selected_tool = before_event.selected_tool
-        tool_use = before_event.tool_use
-        invocation_state = before_event.invocation_state  # Get potentially modified invocation_state from hook
-
-        # Check if tool exists
-        if not selected_tool:
-            if tool_func == selected_tool:
-                logger.error(
-                    "tool_name=<%s>, available_tools=<%s> | tool not found in registry",
-                    tool_name,
-                    list(agent.tool_registry.registry.keys()),
-                )
-            else:
-                logger.debug(
-                    "tool_name=<%s>, tool_use_id=<%s> | a hook resulted in a non-existing tool call",
-                    tool_name,
-                    str(tool_use.get("toolUseId")),
-                )
-
-            result: ToolResult = {
-                "toolUseId": str(tool_use.get("toolUseId")),
-                "status": "error",
-                "content": [{"text": f"Unknown tool: {tool_name}"}],
-            }
-            # for every Before event call, we need to have an AfterEvent call
-            after_event = agent.hooks.invoke_callbacks(
-                AfterToolInvocationEvent(
-                    agent=agent,
-                    selected_tool=selected_tool,
-                    tool_use=tool_use,
-                    invocation_state=invocation_state,  # Keep as invocation_state for backward compatibility with hooks
-                    result=result,
-                )
-            )
-            yield after_event.result
-            return
-
-        async for event in selected_tool.stream(tool_use, invocation_state):
-            yield event
-
-        result = event
-
-        after_event = agent.hooks.invoke_callbacks(
-            AfterToolInvocationEvent(
-                agent=agent,
-                selected_tool=selected_tool,
-                tool_use=tool_use,
-                invocation_state=invocation_state,  # Keep as invocation_state for backward compatibility with hooks
-                result=result,
-            )
-        )
-        yield after_event.result
-
-    except Exception as e:
-        logger.exception("tool_name=<%s> | failed to process tool", tool_name)
-        error_result: ToolResult = {
-            "toolUseId": str(tool_use.get("toolUseId")),
-            "status": "error",
-            "content": [{"text": f"Error: {str(e)}"}],
-        }
-        after_event = agent.hooks.invoke_callbacks(
-            AfterToolInvocationEvent(
-                agent=agent,
-                selected_tool=selected_tool,
-                tool_use=tool_use,
-                invocation_state=invocation_state,  # Keep as invocation_state for backward compatibility with hooks
-                result=error_result,
-                exception=e,
-            )
-        )
-        yield after_event.result
-
 ```
 
 ## `strands.event_loop.streaming`
@@ -466,7 +342,6 @@ def extract_usage_metrics(event: MetadataEvent) -> tuple[Usage, Metrics]:
     metrics = Metrics(**event["metrics"])
 
     return usage, metrics
-
 ```
 
 ### `handle_content_block_delta(event, state)`
@@ -479,14 +354,14 @@ Parameters:
 
 Returns:
 
-| Type | Description | | --- | --- | | `tuple[dict[str, Any], dict[str, Any]]` | Updated state with appended text or tool input. |
+| Type | Description | | --- | --- | | `tuple[dict[str, Any], ModelStreamEvent]` | Updated state with appended text or tool input. |
 
 Source code in `strands/event_loop/streaming.py`
 
 ```
 def handle_content_block_delta(
     event: ContentBlockDeltaEvent, state: dict[str, Any]
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], ModelStreamEvent]:
     """Handles content block delta updates by appending text, tool input, or reasoning content to the state.
 
     Args:
@@ -498,18 +373,25 @@ def handle_content_block_delta(
     """
     delta_content = event["delta"]
 
-    callback_event = {}
+    typed_event: ModelStreamEvent = ModelStreamEvent({})
 
     if "toolUse" in delta_content:
         if "input" not in state["current_tool_use"]:
             state["current_tool_use"]["input"] = ""
 
         state["current_tool_use"]["input"] += delta_content["toolUse"]["input"]
-        callback_event["callback"] = {"delta": delta_content, "current_tool_use": state["current_tool_use"]}
+        typed_event = ToolUseStreamEvent(delta_content, state["current_tool_use"])
 
     elif "text" in delta_content:
         state["text"] += delta_content["text"]
-        callback_event["callback"] = {"data": delta_content["text"], "delta": delta_content}
+        typed_event = TextStreamEvent(text=delta_content["text"], delta=delta_content)
+
+    elif "citation" in delta_content:
+        if "citationsContent" not in state:
+            state["citationsContent"] = []
+
+        state["citationsContent"].append(delta_content["citation"])
+        typed_event = CitationStreamEvent(delta=delta_content, citation=delta_content["citation"])
 
     elif "reasoningContent" in delta_content:
         if "text" in delta_content["reasoningContent"]:
@@ -517,25 +399,26 @@ def handle_content_block_delta(
                 state["reasoningText"] = ""
 
             state["reasoningText"] += delta_content["reasoningContent"]["text"]
-            callback_event["callback"] = {
-                "reasoningText": delta_content["reasoningContent"]["text"],
-                "delta": delta_content,
-                "reasoning": True,
-            }
+            typed_event = ReasoningTextStreamEvent(
+                reasoning_text=delta_content["reasoningContent"]["text"],
+                delta=delta_content,
+            )
 
         elif "signature" in delta_content["reasoningContent"]:
             if "signature" not in state:
                 state["signature"] = ""
 
             state["signature"] += delta_content["reasoningContent"]["signature"]
-            callback_event["callback"] = {
-                "reasoning_signature": delta_content["reasoningContent"]["signature"],
-                "delta": delta_content,
-                "reasoning": True,
-            }
+            typed_event = ReasoningSignatureStreamEvent(
+                reasoning_signature=delta_content["reasoningContent"]["signature"],
+                delta=delta_content,
+            )
 
-    return state, callback_event
+        elif redacted_content := delta_content["reasoningContent"].get("redactedContent"):
+            state["redactedContent"] = state.get("redactedContent", b"") + redacted_content
+            typed_event = ReasoningRedactedContentStreamEvent(redacted_content=redacted_content, delta=delta_content)
 
+    return state, typed_event
 ```
 
 ### `handle_content_block_start(event)`
@@ -572,7 +455,6 @@ def handle_content_block_start(event: ContentBlockStartEvent) -> dict[str, Any]:
         current_tool_use["input"] = ""
 
     return current_tool_use
-
 ```
 
 ### `handle_content_block_stop(state)`
@@ -604,6 +486,8 @@ def handle_content_block_stop(state: dict[str, Any]) -> dict[str, Any]:
     current_tool_use = state["current_tool_use"]
     text = state["text"]
     reasoning_text = state["reasoningText"]
+    citations_content = state["citationsContent"]
+    redacted_content = state.get("redactedContent")
 
     if current_tool_use:
         if "input" not in current_tool_use:
@@ -628,22 +512,30 @@ def handle_content_block_stop(state: dict[str, Any]) -> dict[str, Any]:
     elif text:
         content.append({"text": text})
         state["text"] = ""
+        if citations_content:
+            citations_block: CitationsContentBlock = {"citations": citations_content}
+            content.append({"citationsContent": citations_block})
+            state["citationsContent"] = []
 
     elif reasoning_text:
-        content.append(
-            {
-                "reasoningContent": {
-                    "reasoningText": {
-                        "text": state["reasoningText"],
-                        "signature": state["signature"],
-                    }
+        content_block: ContentBlock = {
+            "reasoningContent": {
+                "reasoningText": {
+                    "text": state["reasoningText"],
                 }
             }
-        )
+        }
+
+        if "signature" in state:
+            content_block["reasoningContent"]["reasoningText"]["signature"] = state["signature"]
+
+        content.append(content_block)
         state["reasoningText"] = ""
+    elif redacted_content:
+        content.append({"reasoningContent": {"redactedContent": redacted_content}})
+        state["redactedContent"] = b""
 
     return state
-
 ```
 
 ### `handle_message_start(event, message)`
@@ -673,7 +565,6 @@ def handle_message_start(event: MessageStartEvent, message: Message) -> Message:
     """
     message["role"] = event["role"]
     return message
-
 ```
 
 ### `handle_message_stop(event)`
@@ -701,7 +592,6 @@ def handle_message_stop(event: MessageStopEvent) -> StopReason:
         The reason for stopping the stream.
     """
     return event["stopReason"]
-
 ```
 
 ### `handle_redact_content(event, state)`
@@ -724,7 +614,6 @@ def handle_redact_content(event: RedactContentEvent, state: dict[str, Any]) -> N
     """
     if event.get("redactAssistantContentMessage") is not None:
         state["message"]["content"] = [{"text": event["redactAssistantContentMessage"]}]
-
 ```
 
 ### `process_stream(chunks)`
@@ -737,12 +626,12 @@ Parameters:
 
 Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | The reason for stopping, the constructed message, and the usage metrics. |
+| Type | Description | | --- | --- | | `AsyncGenerator[TypedEvent, None]` | The reason for stopping, the constructed message, and the usage metrics. |
 
 Source code in `strands/event_loop/streaming.py`
 
 ```
-async def process_stream(chunks: AsyncIterable[StreamEvent]) -> AsyncGenerator[dict[str, Any], None]:
+async def process_stream(chunks: AsyncIterable[StreamEvent]) -> AsyncGenerator[TypedEvent, None]:
     """Processes the response stream from the API, constructing the final message and extracting usage metrics.
 
     Args:
@@ -758,7 +647,7 @@ async def process_stream(chunks: AsyncIterable[StreamEvent]) -> AsyncGenerator[d
         "text": "",
         "current_tool_use": {},
         "reasoningText": "",
-        "signature": "",
+        "citationsContent": [],
     }
     state["content"] = state["message"]["content"]
 
@@ -766,15 +655,14 @@ async def process_stream(chunks: AsyncIterable[StreamEvent]) -> AsyncGenerator[d
     metrics: Metrics = Metrics(latencyMs=0)
 
     async for chunk in chunks:
-        yield {"callback": {"event": chunk}}
-
+        yield ModelStreamChunkEvent(chunk=chunk)
         if "messageStart" in chunk:
             state["message"] = handle_message_start(chunk["messageStart"], state["message"])
         elif "contentBlockStart" in chunk:
             state["current_tool_use"] = handle_content_block_start(chunk["contentBlockStart"])
         elif "contentBlockDelta" in chunk:
-            state, callback_event = handle_content_block_delta(chunk["contentBlockDelta"], state)
-            yield callback_event
+            state, typed_event = handle_content_block_delta(chunk["contentBlockDelta"], state)
+            yield typed_event
         elif "contentBlockStop" in chunk:
             state = handle_content_block_stop(state)
         elif "messageStop" in chunk:
@@ -784,8 +672,7 @@ async def process_stream(chunks: AsyncIterable[StreamEvent]) -> AsyncGenerator[d
         elif "redactContent" in chunk:
             handle_redact_content(chunk["redactContent"], state)
 
-    yield {"stop": (stop_reason, state["message"], usage, metrics)}
-
+    yield ModelStopReason(stop_reason=stop_reason, message=state["message"], usage=usage, metrics=metrics)
 ```
 
 ### `remove_blank_messages_content_text(messages)`
@@ -819,10 +706,12 @@ def remove_blank_messages_content_text(messages: Messages) -> Messages:
         # only modify assistant messages
         if "role" in message and message["role"] != "assistant":
             continue
-
         if "content" in message:
             content = message["content"]
             has_tool_use = any("toolUse" in item for item in content)
+            if len(content) == 0:
+                content.append({"text": "[blank text]"})
+                continue
 
             if has_tool_use:
                 # Remove blank 'text' items for assistant messages
@@ -843,7 +732,6 @@ def remove_blank_messages_content_text(messages: Messages) -> Messages:
         logger.debug("replaced blank message context text")
 
     return messages
-
 ```
 
 ### `stream_messages(model, system_prompt, messages, tool_specs)`
@@ -856,7 +744,7 @@ Parameters:
 
 Yields:
 
-| Type | Description | | --- | --- | | `AsyncGenerator[dict[str, Any], None]` | The reason for stopping, the final message, and the usage metrics |
+| Type | Description | | --- | --- | | `AsyncGenerator[TypedEvent, None]` | The reason for stopping, the final message, and the usage metrics |
 
 Source code in `strands/event_loop/streaming.py`
 
@@ -866,7 +754,7 @@ async def stream_messages(
     system_prompt: Optional[str],
     messages: Messages,
     tool_specs: list[ToolSpec],
-) -> AsyncGenerator[dict[str, Any], None]:
+) -> AsyncGenerator[TypedEvent, None]:
     """Streams messages to the model and processes the response.
 
     Args:
@@ -881,10 +769,8 @@ async def stream_messages(
     logger.debug("model=<%s> | streaming messages", model)
 
     messages = remove_blank_messages_content_text(messages)
-
     chunks = model.stream(messages, tool_specs if tool_specs else None, system_prompt)
 
     async for event in process_stream(chunks):
         yield event
-
 ```

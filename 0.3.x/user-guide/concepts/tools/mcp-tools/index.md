@@ -50,7 +50,6 @@ with stdio_mcp_client:
     # Create an agent with these tools
     agent = Agent(tools=tools)
     agent("What is AWS Lambda?")
-
 ```
 
 ### 2. Streamable HTTP
@@ -71,7 +70,22 @@ with streamable_http_mcp_client:
 
     # Create an agent with these tools
     agent = Agent(tools=tools)
+```
 
+You can configure additional properties - like authentication and headers - when creating the `streamablehttp_client`. All configuration options from the [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) are supported:
+
+```
+import os
+from strands.tools.mcp.mcp_client import MCPClient
+from mcp.client.streamable_http import streamablehttp_client
+
+github_http_mcp_client = MCPClient(
+    lambda: streamablehttp_client(
+        url="https://api.githubcopilot.com/mcp/", 
+        # Get pat token from here: https://github.com/settings/personal-access-tokens
+        headers={"Authorization": f"Bearer {os.getenv('MCP_PAT')}"}
+    )
+)
 ```
 
 ### 3. Server-Sent Events (SSE)
@@ -93,7 +107,6 @@ with sse_mcp_client:
 
     # Create an agent with these tools
     agent = Agent(tools=tools)
-
 ```
 
 ### 4. Custom Transport with MCPClient
@@ -124,7 +137,6 @@ with custom_mcp_client:
 
     # Create an agent with these tools
     agent = Agent(tools=tools)
-
 ```
 
 ## Using Multiple MCP Servers
@@ -148,7 +160,6 @@ with sse_mcp_client, stdio_mcp_client:
 
     # Create an agent with all tools
     agent = Agent(tools=tools)
-
 ```
 
 ## MCP Tool Response Format
@@ -174,7 +185,6 @@ def _map_mcp_content_to_tool_result_content(content):
     else:
         # Unsupported content type
         return None
-
 ```
 
 ### Tool Result Structure
@@ -187,7 +197,6 @@ When an MCP tool is called, the result is converted to a `ToolResult` with the f
     "toolUseId": str,       # The ID of the tool use request
     "content": List[dict]   # A list of content items (text or image)
 }
-
 ```
 
 ## Implementing an MCP Server
@@ -207,7 +216,6 @@ def calculator(x: int, y: int) -> int:
 
 # Run the server with SSE transport
 mcp.run(transport="sse")
-
 ```
 
 ### MCP Server Implementation Details
@@ -238,7 +246,6 @@ result = mcp_client.call_tool_sync(
 
 # Process the result
 print(f"Calculation result: {result['content'][0]['text']}")
-
 ```
 
 ## Best Practices
@@ -262,7 +269,6 @@ Correct usage:
 with mcp_client:
     agent = Agent(tools=mcp_client.list_tools_sync())
     response = agent("Your prompt")  # Works
-
 ```
 
 Incorrect usage:
@@ -271,7 +277,6 @@ Incorrect usage:
 with mcp_client:
     agent = Agent(tools=mcp_client.list_tools_sync())
 response = agent("Your prompt")  # Will fail with MCPClientInitializationError
-
 ```
 
 ### **Connection Failures**

@@ -23,7 +23,6 @@ agent("Hello!")
 
 # Access the conversation history
 print(agent.messages)  # Shows all messages exchanged so far
-
 ```
 
 The `agent.messages` list contains all user and assistant messages, including tool calls and tool results. This is the primary way to inspect what's happening in your agent's conversation.
@@ -41,7 +40,6 @@ agent = Agent(messages=[
 
 # Continue the conversation
 agent("What's my name?")
-
 ```
 
 Conversation history is automatically:
@@ -68,7 +66,6 @@ agent.tool.calculator(expression="123 * 456")
 agent.tool.calculator(expression="765 / 987", record_direct_tool_call=False)
 
 print(agent.messages)
-
 ```
 
 In this example we can see that the first `agent.tool.calculator()` call is recorded in the agent's conversation history.
@@ -91,7 +88,6 @@ conversation_manager = SlidingWindowConversationManager(
 
 # Use the conversation manager with your agent
 agent = Agent(conversation_manager=conversation_manager)
-
 ```
 
 The sliding window conversation manager:
@@ -130,7 +126,6 @@ print(all_state)  # All state data as a dictionary
 
 # Delete state values
 agent.state.delete("last_action")
-
 ```
 
 ### State Validation and Safety
@@ -155,7 +150,6 @@ try:
     agent.state.set("function", lambda x: x)  # Not JSON serializable
 except ValueError as e:
     print(f"Error: {e}")
-
 ```
 
 ### Using State in Tools
@@ -193,7 +187,6 @@ agent("Track that I logged in")
 agent("Track that I viewed my profile")
 print(f"Actions taken: {agent.state.get('action_count')}")
 print(f"Last action: {agent.state.get('last_action')}")
-
 ```
 
 ## Request State
@@ -218,7 +211,6 @@ agent = Agent(callback_handler=custom_callback_handler)
 result = agent("Hi there!")
 
 print(result.state)
-
 ```
 
 The request state:

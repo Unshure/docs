@@ -13,7 +13,6 @@ The standard conversational mode where agents exchange messages with the model. 
 ```
 agent = Agent(model=your_custom_model)
 response = agent("Hello, how can you help me today?")
-
 ```
 
 This invokes the underlying model provided to the agent.
@@ -35,7 +34,6 @@ result = agent.structured_output(
     "Extract info: John Smith is a 30-year-old software engineer"
 )
 # Returns a validated PersonInfo object
-
 ```
 
 Both modes work through the same underlying model provider interface, with structured output using tool calling capabilities to ensure schema compliance.
@@ -128,7 +126,6 @@ class CustomModel(Model):
             The Custom model configuration.
         """
         return self.config
-
 ```
 
 ### 2. Implement the `stream` Method
@@ -209,7 +206,6 @@ The `stream` method accepts three parameters directly:
                 }
 
         logger.debug("stream processing complete")
-
 ```
 
 For more complex implementations, you may want to create helper methods to organize your code:
@@ -246,7 +242,6 @@ For more complex implementations, you may want to create helper methods to organ
                 }
             }
         return None
-
 ```
 
 > Note, `stream` must be implemented async. If your client does not support async invocation, you may consider wrapping the relevant calls in a thread so as not to block the async event loop. For an example on how to achieve this, you can check out the [BedrockModel](https://github.com/strands-agents/sdk-python/blob/main/src/strands/models/bedrock.py) provider implementation.
@@ -263,7 +258,6 @@ Your custom model provider needs to convert model's response events to Strands A
           "role": "assistant"
       }
   }
-
   ```
 
 - [`contentBlockStart`](../../../../api-reference/types/#strands.types.streaming.ContentBlockStartEvent): Event signaling the start of a content block. If this is the first event of a tool use request, then set the `toolUse` key to have the value [ContentBlockStartToolUse](../../../../api-reference/types/#strands.types.content.ContentBlockStartToolUse)
@@ -277,7 +271,6 @@ Your custom model provider needs to convert model's response events to Strands A
           }
       }
   }
-
   ```
 
 - [`contentBlockDelta`](../../../../api-reference/types/#strands.types.streaming.ContentBlockDeltaEvent): Event continuing a content block. This event can be sent several times, and each piece of content will be appended to the previously sent content.
@@ -298,7 +291,6 @@ Your custom model provider needs to convert model's response events to Strands A
           }
       }
   }
-
   ```
 
 - [`contentBlockStop`](../../../../api-reference/types/#strands.types.streaming.ContentBlockStopEvent): Event marking the end of a content block. Once this event is sent, all previous events between the previous [ContentBlockStartEvent](../../../../api-reference/types/#strands.types.streaming.ContentBlockStartEvent) and this one can be combined to create a [ContentBlock](../../../../api-reference/types/#strands.types.content.ContentBlock)
@@ -307,7 +299,6 @@ Your custom model provider needs to convert model's response events to Strands A
   {
       "contentBlockStop": {}
   }
-
   ```
 
 - [`messageStop`](../../../../api-reference/types/#strands.types.streaming.MessageStopEvent): Event marking the end of a streamed response, and the [StopReason](../../../../api-reference/types/#strands.types.event_loop.StopReason). No more content block events are expected after this event is returned.
@@ -318,7 +309,6 @@ Your custom model provider needs to convert model's response events to Strands A
           "stopReason": "end_turn"
       }
   }
-
   ```
 
 - [`metadata`](../../../../api-reference/types/#strands.types.streaming.MetadataEvent): Event representing the metadata of the response. This contains the input, output, and total token count, along with the latency of the request.
@@ -334,7 +324,6 @@ Your custom model provider needs to convert model's response events to Strands A
           "totalTokens": 468 # Total number of tokens (input + output).
       }
   }
-
   ```
 
 - [`redactContent`](../../../../api-reference/types/#strands.types.streaming.RedactContentEvent): Event that is used to redact the users input message, or the generated response of a model. This is useful for redacting content if a guardrail gets triggered.
@@ -346,7 +335,6 @@ Your custom model provider needs to convert model's response events to Strands A
           "redactAssistantContentMessage": "Assistant output Redacted"
       }
   }
-
   ```
 
 ### 4. Structured Output Support
@@ -397,7 +385,6 @@ async def structured_output(
             return
 
     raise ValueError("No valid tool use input found in the response.")
-
 ```
 
 **Implementation Suggestions:**
@@ -433,7 +420,6 @@ agent = Agent(model=custom_model)
 
 # Use the agent as usual
 response = agent("Hello, how are you today?")
-
 ```
 
 Or you can use the `structured_output` feature to generate structured output:
@@ -457,7 +443,6 @@ result = agent.structured_output(PersonInfo, "John Smith is a 30-year-old engine
 print(f"Name: {result.name}")
 print(f"Age: {result.age}")
 print(f"Occupation: {result.occupation}")
-
 ```
 
 ## Key Implementation Considerations

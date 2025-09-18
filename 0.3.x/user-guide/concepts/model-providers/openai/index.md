@@ -7,8 +7,7 @@
 OpenAI is configured as an optional dependency in Strands Agents. To install, run:
 
 ```
-pip install 'strands-agents[openai]'
-
+pip install 'strands-agents[openai]' strands-agents-tools
 ```
 
 ## Usage
@@ -35,7 +34,6 @@ model = OpenAIModel(
 agent = Agent(model=model, tools=[calculator])
 response = agent("What is 2+2")
 print(response)
-
 ```
 
 To connect to a custom OpenAI-compatible server, you will pass in its `base_url` into the `client_args`:
@@ -48,7 +46,6 @@ model = OpenAIModel(
     },
     ...
 )
-
 ```
 
 ## Configuration
@@ -101,7 +98,6 @@ result = agent.structured_output(
 print(f"Name: {result.name}")      # "John Smith"
 print(f"Age: {result.age}")        # 30
 print(f"Job: {result.occupation}") # "software engineer"
-
 ```
 
 ## References

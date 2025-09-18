@@ -28,7 +28,6 @@ The agent is initialized with the necessary tools for creating new tools:
 agent = Agent(
     system_prompt=TOOL_BUILDER_SYSTEM_PROMPT, tools=[load_tool, shell, editor]
 )
-
 ```
 
 - `editor`: Tool used to write code directly to a file named `"custom_tool_X.py"`, where "X" is the index of the tool being created.
@@ -76,7 +75,6 @@ def tool_name(tool_use: ToolUse, **kwargs: Any) -> ToolResult:
         "status": "success",
         "content": [{"text": f"Result: {result}"}]
     }
-
 ```
 
 - **Tool Creation vs. Usage** : Provides instructions for agent to distinguish between creating new tools vs. using existing tools.
@@ -169,7 +167,6 @@ Now I'll load this tool so it's immediately available for use:
 TOOL_CREATED: custom_tool_0.py
 
 The tool custom_tool_0 has been successfully created and loaded. You can now use it to count characters in text.
-
 ```
 
 **Step 2: Using the Custom Tool**
@@ -185,7 +182,6 @@ The text "Hello, Strands! How are you today?" contains:
 - Digits: 0
 - Spaces: 5
 - Punctuation: 4
-
 ```
 
 ## Extending the Example

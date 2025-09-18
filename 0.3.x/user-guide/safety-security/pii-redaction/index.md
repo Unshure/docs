@@ -32,7 +32,6 @@ Example with [LLM Guard](https://protectai.com/llm-guard):
 
 ```
 pip install llm-guard
-
 ```
 
 ##### Step 2: Import necessary modules and initialize the Vault and Anonymize scanner.
@@ -52,7 +51,6 @@ def create_anonymize_scanner():
         language="en"
     )
     return scanner
-
 ```
 
 ##### Step 3: Define a masking function using the anonymize scanner.
@@ -65,7 +63,6 @@ def masking_function(data, **kwargs):
         sanitized_data, is_valid, risk_score = scanner.scan(data)
         return sanitized_data
     return data
-
 ```
 
 ##### Step 4: Configure the masking function in Observability platform, eg., Langfuse.
@@ -74,7 +71,6 @@ def masking_function(data, **kwargs):
 from langfuse import Langfuse
 
 langfuse = Langfuse(mask=masking_function)
-
 ```
 
 ##### Step 5: Create a sample function with PII.
@@ -91,7 +87,6 @@ print(result)
 # Output: [REDACTED_PERSON] met with [REDACTED_PERSON] to discuss the project.
 
 langfuse.flush()
-
 ```
 
 #### Complete example with a Strands Agent
@@ -171,7 +166,6 @@ def process():
 
 if __name__ == "__main__":
     process()
-
 ```
 
 ### Option 2: Using OpenTelemetry Collector Configuration [Collector-level Masking]
@@ -197,7 +191,6 @@ service:
   pipelines:
     traces:
       processors: [attributes/pii]
-
 ```
 
 1. Deploy or restart your OTEL collector with the updated configuration.
@@ -211,7 +204,6 @@ service:
   "user.email": "user@example.com",
   "http.url": "https://example.com?token=abc123"
 }
-
 ```
 
 #### After:
@@ -220,7 +212,6 @@ service:
 {
   "http.url": "https://example.com?token=[REDACTED]"
 }
-
 ```
 
 ## Additional Resources

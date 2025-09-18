@@ -33,7 +33,6 @@ agent = Agent(
     - Always recommend input validation
     - Flag any security-sensitive parameters in documentation"""
 )
-
 ```
 
 ### 2. Defend Against Prompt Injection with Structured Input
@@ -66,7 +65,6 @@ Strengths and weaknesses (objective assessment)
 
 ## Recommendations
 2-3 actionable suggestions (no security bypasses)"""
-
 ```
 
 ### 3. Context Management and Input Sanitization
@@ -93,7 +91,6 @@ PERMISSIONS: You may view site assessment data and provide recommendations, but 
 
 TASK: Review the sanitized site assessment data and provide recommendations:
 {sanitized_site_data}"""
-
 ```
 
 ### 4. Defending Against Adversarial Examples
@@ -135,7 +132,6 @@ Response:
 Now convert this inquiry:
 "{customer_message}"
 """
-
 ```
 
 ### 5. Parameter Verification and Validation
@@ -163,7 +159,6 @@ VALIDATION STEPS:
 
 Only after validation, process the request to:
 {requested_action}"""
-
 ```
 
 ______________________________________________________________________

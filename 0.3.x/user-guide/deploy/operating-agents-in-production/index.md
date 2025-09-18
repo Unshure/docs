@@ -23,7 +23,6 @@ agent_model = BedrockModel(
 )
 
 agent = Agent(model=agent_model)
-
 ```
 
 See:
@@ -47,7 +46,6 @@ agent = Agent(
     # Automatic tool loading is disabled by default (recommended for production)
     # load_tools_from_directory=False,  # This is the default
 )
-
 ```
 
 See [Adding Tools to Agents](../../concepts/tools/tools_overview/#adding-tools-to-agents) and [Auto reloading tools](../../concepts/tools/tools_overview/#auto-loading-and-reloading-tools) for more information.
@@ -79,7 +77,6 @@ agent = Agent(
     ...,
     conversation_manager=conversation_manager
 )
-
 ```
 
 The [`SlidingWindowConversationManager`](../../concepts/agents/conversation-management/#slidingwindowconversationmanager) helps prevent context window overflow exceptions by maintaining a reasonable conversation history size.
@@ -98,7 +95,6 @@ async def stream_agent_response(prompt):
     async for event in agent.stream_async(prompt):
         if "data" in event:
             yield event["data"]
-
 ```
 
 See [Async Iterators](../../concepts/streaming/async-iterators/) for more information.
@@ -115,7 +111,6 @@ except Exception as e:
     logger.error(f"Agent error: {str(e)}")
     # Implement appropriate fallback
     handle_agent_error(e)
-
 ```
 
 ## Deployment Patterns

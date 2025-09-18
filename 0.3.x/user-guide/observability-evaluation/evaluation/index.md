@@ -23,7 +23,6 @@ When building AI agents, evaluating their performance is crucial during this pro
     "category": "calculation"
   }
 ]
-
 ```
 
 ### Test Case Categories
@@ -77,7 +76,6 @@ response = agent("Analyze this data and create a summary: [Item, Cost 2024, Cost
 print(str(response))
 
 # Manually analyze the response for quality, accuracy, and task completion
-
 ```
 
 ### Structured Testing
@@ -122,7 +120,6 @@ results_df.to_csv("evaluation_results.csv", index=False)
 # |-----------|------------------------------|-------------------------------|--------------------------------|--------------------------|
 # |knowledge-1|What is the capital of France?|The capital of France is Paris.|The capital of France is Paris. |2025-05-13 18:37:22.673230|
 #
-
 ```
 
 ### LLM Judge Evaluation
@@ -188,7 +185,6 @@ for case in test_cases:
 # Save evaluation results
 with open("evaluation_results.json", "w") as f:
     json.dump(evaluation_results, f, indent=2)
-
 ```
 
 ### Tool-Specific Evaluation
@@ -236,7 +232,6 @@ correct_usage_count = sum(1 for result in tool_usage_results if result["correct_
 accuracy = correct_usage_count / len(tool_usage_results)
 print('\n Results:\n')
 print(f"Tool selection accuracy: {accuracy:.2%}")
-
 ```
 
 ## Example: Building an Evaluation Workflow
@@ -347,7 +342,6 @@ if __name__ == "__main__":
     print("\nPerformance Comparison:")
     print(f"Sonnet avg response time: {metrics1['avg_response_time']:.2f}s")
     print(f"Haiku avg response time: {metrics2['avg_response_time']:.2f}s")
-
 ```
 
 ## Best Practices

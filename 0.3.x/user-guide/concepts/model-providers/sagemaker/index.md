@@ -9,8 +9,7 @@ For example, you can expose models like [Mistral-Small-24B-Instruct-2501](https:
 SageMaker is configured as an optional dependency in Strands Agents. To install, run:
 
 ```
-pip install 'strands-agents[sagemaker]'
-
+pip install 'strands-agents[sagemaker]' strands-agents-tools
 ```
 
 ## Usage
@@ -36,7 +35,6 @@ model = SageMakerAIModel(
 
 agent = Agent(model=model, tools=[calculator])
 response = agent("What is the square root of 64?")
-
 ```
 
 **Note**: Tool calling support varies by model. Models like [Mistral-Small-24B-Instruct-2501](https://aws.amazon.com/blogs/machine-learning/mistral-small-24b-instruct-2501-is-now-available-on-sagemaker-jumpstart-and-amazon-bedrock-marketplace/) have demonstrated reliable tool calling capabilities, but not all models deployed on SageMaker support this feature. Verify your model's capabilities before implementing tool-based workflows.
@@ -75,7 +73,6 @@ If you encounter `ModuleNotFoundError: No module named 'boto3'` or similar, inst
 
 ```
 pip install 'strands-agents[sagemaker]'
-
 ```
 
 ### Authentication

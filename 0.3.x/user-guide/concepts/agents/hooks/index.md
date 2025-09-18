@@ -29,8 +29,7 @@ agent = Agent()
 def my_callback(event: BeforeInvocationEvent) -> None:
     print("Custom callback triggered")
 
-hooks.add_callback(BeforeInvocationEvent, my_callback)
-
+agent.hooks.add_callback(BeforeInvocationEvent, my_callback)
 ```
 
 ### Creating a Hook Provider
@@ -54,7 +53,6 @@ agent = Agent(hooks=[LoggingHook()])
 
 # Or added after the fact
 agent.hooks.add_hook(LoggingHook())
-
 ```
 
 ## Hook Event Lifecycle
@@ -151,7 +149,6 @@ class ConstantToolArguments(HookProvider):
         if parameters_to_fix := self._tools_to_fix.get(event.tool_use["name"]):
             tool_input: dict[str, Any] = event.tool_use["input"]
             tool_input.update(parameters_to_fix)
-
 ```
 
 For example, to always force the `calculator` tool to use use precision of 1 digit:
@@ -165,7 +162,6 @@ fix_parameters = ConstantToolArguments({
 
 agent = Agent(tools=[calculator], hooks=[fix_parameters])
 result = agent("What is 2 / 3?")
-
 ```
 
 ### Tool Interception
@@ -182,7 +178,6 @@ class ToolInterceptor(HookProvider):
             # Replace with a safer alternative
             event.selected_tool = self.safe_alternative_tool
             event.tool_use["name"] = "safe_tool"
-
 ```
 
 ### Result Modification
@@ -199,7 +194,6 @@ class ResultProcessor(HookProvider):
             # Add formatting to calculator results
             original_content = event.result["content"][0]["text"]
             event.result["content"][0]["text"] = f"Result: {original_content}"
-
 ```
 
 ## Best Practices
@@ -216,7 +210,6 @@ class AsyncProcessor(HookProvider):
     def queue_processing(self, event: AfterInvocationEvent) -> None:
         # Queue heavy processing for background execution
         self.background_queue.put(event.agent.messages[-1])
-
 ```
 
 ### Composability
@@ -231,7 +224,6 @@ class RequestLoggingHook(HookProvider):
         registry.add_callback(BeforeToolInvocationEvent, self.log_tool_use)
 
     ...
-
 ```
 
 ### Event Property Modifications
@@ -248,5 +240,4 @@ class ResultProcessor(HookProvider):
             original_content = event.result["content"][0]["text"]
             logger.info(f"Modifying calculator result: {original_content}")
             event.result["content"][0]["text"] = f"Result: {original_content}"
-
 ```

@@ -45,7 +45,6 @@ weather_agent = Agent(
     system_prompt=WEATHER_SYSTEM_PROMPT,
     tools=[http_request],  # Explicitly enable http_request tool
 )
-
 ```
 
 The system prompt is crucial as it:
@@ -68,7 +67,6 @@ Users can interact with the National Weather Service API through conversational 
 response = weather_agent("What's the weather like in Seattle?")
 response = weather_agent("Will it rain tomorrow in Miami?")
 response = weather_agent("Compare the temperature in New York and Chicago this weekend")
-
 ```
 
 #### Multi-Step API Workflow Behind the Scenes
@@ -127,7 +125,6 @@ forecast_response = weather_agent.tool.http_request(
     method="GET",
     url=forecast_url
 )
-
 ```
 
 ### Sample Queries and Responses
@@ -144,7 +141,6 @@ Wind: NW at 8 mph
 Humidity: 68%
 
 Today's forecast: Partly sunny with a high near 55°F. Northwest wind around 8 mph.
-
 ```
 
 **Query 2**: Will it rain tomorrow in Miami?
@@ -158,7 +154,6 @@ Otherwise, it will be mostly sunny with a high near 84°F.
 Southeast wind 5 to 9 mph.
 
 Rain is possible but not highly likely for tomorrow.
-
 ```
 
 ## Extending the Example

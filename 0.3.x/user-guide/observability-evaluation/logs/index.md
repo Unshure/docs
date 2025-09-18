@@ -23,7 +23,6 @@ logging.basicConfig(
     format="%(levelname)s | %(name)s | %(message)s", 
     handlers=[logging.StreamHandler()]
 )
-
 ```
 
 ### Log Levels
@@ -47,7 +46,6 @@ from strands.tools.calculator import calculator
 # Create an agent with the calculator tool
 agent = Agent(tools=[calculator])
 result = agent("What is 125 * 37?")
-
 ```
 
 When running this code with logging enabled, you'll see logs from different components of the SDK as the agent processes the request, calls the calculator tool, and generates a response. The following sections show examples of these logs:
@@ -79,7 +77,6 @@ DEBUG | strands.event_loop.event_loop | tool_use=<calculator_tool_use_id> | stre
 DEBUG | strands.tools.registry | tool_name=<calculator> | searching directories for tool
 DEBUG | strands.tools.registry | tool_name=<calculator> | reloading tool
 DEBUG | strands.tools.registry | tool_name=<calculator> | successfully reloaded tool
-
 ```
 
 ### Event Loop
@@ -89,7 +86,6 @@ Logs related to the event loop processing:
 ```
 ERROR | strands.event_loop.error_handler | an exception occurred in event_loop_cycle | ContextWindowOverflowException
 DEBUG | strands.event_loop.error_handler | message_index=<5> | found message with tool results at index
-
 ```
 
 ### Model Interactions
@@ -100,7 +96,6 @@ Logs related to interactions with foundation models:
 DEBUG | strands.models.bedrock | config=<{'model_id': 'us.anthropic.claude-4-sonnet-20250219-v1:0'}> | initializing
 WARNING | strands.models.bedrock | bedrock threw context window overflow error
 DEBUG | strands.models.bedrock | Found blocked output guardrail. Redacting output.
-
 ```
 
 ## Advanced Configuration
@@ -117,7 +112,6 @@ logging.getLogger("strands.tools.registry").setLevel(logging.DEBUG)
 
 # Set WARNING level for model interactions
 logging.getLogger("strands.models").setLevel(logging.WARNING)
-
 ```
 
 ### Custom Handlers
@@ -144,7 +138,6 @@ file_handler.setFormatter(JsonFormatter())
 
 # Add the handler to the strands logger
 logging.getLogger("strands").addHandler(file_handler)
-
 ```
 
 ## Callback System vs. Logging
@@ -163,7 +156,6 @@ agent = Agent(
     model="anthropic.claude-3-sonnet-20240229-v1:0",
     callback_handler=PrintingCallbackHandler()
 )
-
 ```
 
 You can create custom callback handlers to process streaming events according to your application's needs.

@@ -1,23 +1,26 @@
 # Graph Multi-Agent Pattern
 
-A Graph is a deterministic Directed Acyclic Graph (DAG) based agent orchestration system where agents or other multi-agent systems (like [Swarm](../swarm/) or nested Graphs) are nodes in a graph. Nodes are executed according to edge dependencies, with output from one node passed as input to connected nodes.
+A Graph is a deterministic directed graph based agent orchestration system where agents, custom nodes, or other multi-agent systems (like [Swarm](../swarm/) or nested Graphs) are nodes in a graph. Nodes are executed according to edge dependencies, with output from one node passed as input to connected nodes. The Graph pattern supports both acyclic (DAG) and cyclic topologies, enabling feedback loops and iterative refinement workflows.
 
-- **Deterministic execution order** based on DAG structure
+- **Deterministic execution order** based on graph structure
 - **Output propagation** along edges between nodes
 - **Clear dependency management** between agents
 - **Supports nested patterns** (Graph as a node in another Graph)
+- **Custom node types** for deterministic business logic and hybrid workflows
 - **Conditional edge traversal** for dynamic workflows
+- **Cyclic graph support** with execution limits and state management
 - **Multi-modal input support** for handling text, images, and other content types
 
 ## How Graphs Work
 
 The Graph pattern operates on the principle of structured, deterministic workflows where:
 
-1. Nodes represent agents or multi-agent systems
+1. Nodes represent agents, custom nodes, or multi-agent systems
 1. Edges define dependencies and information flow between nodes
-1. Execution follows a topological sort of the graph
+1. Execution follows the graph structure, respecting dependencies
 1. Output from one node becomes input for dependent nodes
 1. Entry points receive the original task as input
+1. Nodes can be revisited in cyclic patterns with proper exit conditions
 
 ```
 graph TD
@@ -55,6 +58,10 @@ The [`GraphBuilder`](../../../../api-reference/multiagent/#strands.multiagent.gr
 - **add_node()**: Add an agent or multi-agent system as a node
 - **add_edge()**: Create a dependency between nodes
 - **set_entry_point()**: Define starting nodes for execution
+- **set_max_node_executions()**: Limit total node executions (useful for cyclic graphs)
+- **set_execution_timeout()**: Set maximum execution time
+- **set_node_timeout()**: Set timeout for individual nodes
+- **reset_on_revisit()**: Control whether nodes reset state when revisited
 - **build()**: Validate and create the Graph instance
 
 ## Creating a Graph
@@ -97,6 +104,9 @@ builder.add_edge("fact_check", "report")
 # Set entry points (optional - will be auto-detected if not specified)
 builder.set_entry_point("research")
 
+# Optional: Configure execution limits for safety
+builder.set_execution_timeout(600)   # 10 minute timeout
+
 # Build the graph
 graph = builder.build()
 
@@ -106,7 +116,6 @@ result = graph("Research the impact of AI on healthcare and create a comprehensi
 # Access the results
 print(f"\nStatus: {result.status}")
 print(f"Execution order: {[node.node_id for node in result.execution_order]}")
-
 ```
 
 ## Conditional Edges
@@ -126,7 +135,6 @@ def only_if_research_successful(state):
 
 # Add conditional edge
 builder.add_edge("research", "analysis", condition=only_if_research_successful)
-
 ```
 
 ## Nested Multi-Agent Patterns
@@ -160,8 +168,58 @@ result = graph("Research the impact of AI on healthcare and create a comprehensi
 
 # Access the results
 print(f"\n{result}")
+```
+
+## Custom Node Types
+
+You can create custom node types by extending [`MultiAgentBase`](../../../../api-reference/multiagent/#strands.multiagent.base.MultiAgentBase) to implement deterministic business logic, data processing pipelines, and hybrid workflows.
 
 ```
+from strands.multiagent.base import MultiAgentBase, NodeResult, Status, MultiAgentResult
+from strands.agent.agent_result import AgentResult
+from strands.types.content import ContentBlock, Message
+
+class FunctionNode(MultiAgentBase):
+    """Execute deterministic Python functions as graph nodes."""
+
+    def __init__(self, func, name: str = None):
+        super().__init__()
+        self.func = func
+        self.name = name or func.__name__
+
+    async def invoke_async(self, task, **kwargs):
+        # Execute function and create AgentResult
+        result = self.func(task if isinstance(task, str) else str(task))
+
+        agent_result = AgentResult(
+            stop_reason="end_turn",
+            message=Message(role="assistant", content=[ContentBlock(text=str(result))]),
+            # ... metrics and state
+        )
+
+        # Return wrapped in MultiAgentResult
+        return MultiAgentResult(
+            status=Status.COMPLETED,
+            results={self.name: NodeResult(result=agent_result, ...)},
+            # ... execution details
+        )
+
+# Usage example
+def validate_data(data):
+    if not data.strip():
+        raise ValueError("Empty input")
+    return f"✅ Validated: {data[:50]}..."
+
+validator = FunctionNode(func=validate_data, name="validator")
+builder.add_node(validator, "validator")
+```
+
+Custom nodes enable:
+
+- **Deterministic processing**: Guaranteed execution for business logic
+- **Performance optimization**: Skip LLM calls for deterministic operations
+- **Hybrid workflows**: Combine AI creativity with deterministic control
+- **Business rules**: Implement complex business logic as graph nodes
 
 ## Multi-Modal Input Support
 
@@ -193,7 +251,6 @@ content_blocks = [
 
 # Execute the graph with multi-modal input
 result = graph(content_blocks)
-
 ```
 
 ## Asynchronous Execution
@@ -208,7 +265,6 @@ async def run_graph():
     return result
 
 result = asyncio.run(run_graph())
-
 ```
 
 ## Graph Results
@@ -235,7 +291,6 @@ print(f"Completed nodes: {result.completed_nodes}")
 print(f"Failed nodes: {result.failed_nodes}")
 print(f"Execution time: {result.execution_time}ms")
 print(f"Token usage: {result.accumulated_usage}")
-
 ```
 
 ## Input Propagation
@@ -262,12 +317,11 @@ From [node_id]:
 
 From [another_node_id]:
   - [Agent name]: [Result text]
-
 ```
 
 ## Graphs as a Tool
 
-Agents can dynamically create and orchestrate graphs by using the `graph` tool available in the [Strands tools package](../../tools/example-tools-package/).
+Agents can dynamically create and orchestrate graphs by using the `graph` tool available in the [Strands tools package](../../tools/community-tools-package/).
 
 ```
 from strands import Agent
@@ -276,7 +330,6 @@ from strands_tools import graph
 agent = Agent(tools=[graph], system_prompt="Create a graph of agents to solve the user's query.")
 
 agent("Design a TypeScript REST API and then write the code for it")
-
 ```
 
 In this example:
@@ -304,7 +357,6 @@ builder.add_node(report_writer, "report")
 builder.add_edge("research", "analysis")
 builder.add_edge("analysis", "review")
 builder.add_edge("review", "report")
-
 ```
 
 ### 2. Parallel Processing with Aggregation
@@ -333,7 +385,6 @@ builder.add_edge("coordinator", "worker3")
 builder.add_edge("worker1", "aggregator")
 builder.add_edge("worker2", "aggregator")
 builder.add_edge("worker3", "aggregator")
-
 ```
 
 ### 3. Branching Logic
@@ -372,16 +423,59 @@ builder.add_edge("classifier", "tech_specialist", condition=is_technical)
 builder.add_edge("classifier", "business_specialist", condition=is_business)
 builder.add_edge("tech_specialist", "tech_report")
 builder.add_edge("business_specialist", "business_report")
+```
 
+### 4. Feedback Loop
+
+```
+graph TD
+    A[Draft Writer] --> B[Reviewer]
+    B --> C{Quality Check}
+    C -->|Needs Revision| A
+    C -->|Approved| D[Publisher]
+```
+
+```
+def needs_revision(state):
+    review_result = state.results.get("reviewer")
+    if not review_result:
+        return False
+    result_text = str(review_result.result)
+    return "revision needed" in result_text.lower()
+
+def is_approved(state):
+    review_result = state.results.get("reviewer")
+    if not review_result:
+        return False
+    result_text = str(review_result.result)
+    return "approved" in result_text.lower()
+
+builder = GraphBuilder()
+builder.add_node(draft_writer, "draft_writer")
+builder.add_node(reviewer, "reviewer")
+builder.add_node(publisher, "publisher")
+
+builder.add_edge("draft_writer", "reviewer")
+builder.add_edge("reviewer", "draft_writer", condition=needs_revision)
+builder.add_edge("reviewer", "publisher", condition=is_approved)
+
+# Set execution limits to prevent infinite loops
+builder.set_max_node_executions(10)  # Maximum 10 node executions total
+builder.set_execution_timeout(300)   # 5 minute timeout
+builder.reset_on_revisit(True)       # Reset node state when revisiting
+
+graph = builder.build()
 ```
 
 ## Best Practices
 
-1. **Design for acyclicity**: Ensure your graph has no cycles
 1. **Use meaningful node IDs**: Choose descriptive names for nodes
-1. **Validate graph structure**: The builder will check for cycles and validate entry points
+1. **Validate graph structure**: The builder will validate entry points and warn about potential issues
 1. **Handle node failures**: Consider how failures in one node affect the overall workflow
 1. **Use conditional edges**: For dynamic workflows based on intermediate results
 1. **Consider parallelism**: Independent branches can execute concurrently
 1. **Nest multi-agent patterns**: Use Swarms within Graphs for complex workflows
 1. **Leverage multi-modal inputs**: Use ContentBlocks for rich inputs including images
+1. **Create custom nodes for deterministic logic**: Use `MultiAgentBase` for business rules and data processing
+1. **Use `reset_on_revisit` for iterative workflows**: Enable state reset when nodes are revisited in cycles
+1. **Set execution limits for cyclic graphs**: Use `set_max_node_executions()` and `set_execution_timeout()` to prevent infinite loops

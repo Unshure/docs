@@ -30,7 +30,7 @@ graph TD
 
 ## Creating a Swarm
 
-To create a Swarm, you need to define a collection of agents with different specializations:
+To create a Swarm, you need to define a collection of agents with different specializations. By default, the first agent in the list will receive the initial user request, but you can specify any agent as the entry point using the `entry_point` parameter:
 
 ```
 import logging
@@ -50,9 +50,10 @@ coder = Agent(name="coder", system_prompt="You are a coding specialist...")
 reviewer = Agent(name="reviewer", system_prompt="You are a code review specialist...")
 architect = Agent(name="architect", system_prompt="You are a system architecture specialist...")
 
-# Create a swarm with these agents
+# Create a swarm with these agents, starting with the researcher
 swarm = Swarm(
-    [researcher, coder, reviewer, architect],
+    [coder, researcher, reviewer, architect],
+    entry_point=researcher,  # Start with the researcher
     max_handoffs=20,
     max_iterations=20,
     execution_timeout=900.0,  # 15 minutes
@@ -67,12 +68,11 @@ result = swarm("Design and implement a simple REST API for a todo app")
 # Access the final result
 print(f"Status: {result.status}")
 print(f"Node history: {[node.node_id for node in result.node_history]}")
-
 ```
 
 In this example:
 
-1. The `researcher` might start by handing off to the `architect`
+1. The `researcher` receives the initial request and might start by handing off to the `architect`
 1. The `architect` designs an API and system architecture
 1. Handoff to the `coder` to implement the API and architecture
 1. The `coder` writes the code
@@ -83,7 +83,7 @@ In this example:
 
 The [`Swarm`](../../../../api-reference/multiagent/#strands.multiagent.swarm.Swarm) constructor allows you to control the behavior and safety parameters:
 
-| Parameter | Description | Default | | --- | --- | --- | | `max_handoffs` | Maximum number of agent handoffs allowed | 20 | | `max_iterations` | Maximum total iterations across all agents | 20 | | `execution_timeout` | Total execution timeout in seconds | 900.0 (15 min) | | `node_timeout` | Individual agent timeout in seconds | 300.0 (5 min) | | `repetitive_handoff_detection_window` | Number of recent nodes to check for ping-pong behavior | 0 (disabled) | | `repetitive_handoff_min_unique_agents` | Minimum unique nodes required in recent sequence | 0 (disabled) |
+| Parameter | Description | Default | | --- | --- | --- | | `entry_point` | The agent instance to start with | None (uses first agent) | | `max_handoffs` | Maximum number of agent handoffs allowed | 20 | | `max_iterations` | Maximum total iterations across all agents | 20 | | `execution_timeout` | Total execution timeout in seconds | 900.0 (15 min) | | `node_timeout` | Individual agent timeout in seconds | 300.0 (5 min) | | `repetitive_handoff_detection_window` | Number of recent nodes to check for ping-pong behavior | 0 (disabled) | | `repetitive_handoff_min_unique_agents` | Minimum unique nodes required in recent sequence | 0 (disabled) |
 
 ## Multi-Modal Input Support
 
@@ -109,7 +109,6 @@ content_blocks = [
 
 # Execute the swarm with multi-modal input
 result = swarm(content_blocks)
-
 ```
 
 ## Swarm Coordination Tools
@@ -121,12 +120,12 @@ When you create a Swarm, each agent is automatically equipped with special tools
 Agents can transfer control to another agent when they need specialized help:
 
 ```
+# Handoff Tool Description: Transfer control to another agent in the swarm for specialized help.
 handoff_to_agent(
     agent_name="coder",
     message="I need help implementing this algorithm in Python",
     context={"algorithm_details": "..."}
 )
-
 ```
 
 ## Shared Context
@@ -157,7 +156,6 @@ Agent name: code_reviewer.
 Agent name: security_specialist. Agent description: Focuses on secure coding practices and vulnerability assessment
 
 You have access to swarm coordination tools if you need help from other agents.
-
 ```
 
 ## Asynchronous Execution
@@ -172,7 +170,6 @@ async def run_swarm():
     return result
 
 result = asyncio.run(run_swarm())
-
 ```
 
 ## Swarm Results
@@ -200,12 +197,11 @@ print(f"Analysis: {analyst_result}")
 print(f"Total iterations: {result.execution_count}")
 print(f"Execution time: {result.execution_time}ms")
 print(f"Token usage: {result.accumulated_usage}")
-
 ```
 
 ## Swarm as a Tool
 
-Agents can dynamically create and orchestrate swarms by using the `swarm` tool available in the [Strands tools package](../../tools/example-tools-package/).
+Agents can dynamically create and orchestrate swarms by using the `swarm` tool available in the [Strands tools package](../../tools/community-tools-package/).
 
 ```
 from strands import Agent
@@ -214,7 +210,6 @@ from strands_tools import swarm
 agent = Agent(tools=[swarm], system_prompt="Create a swarm of agents to solve the user's query.")
 
 agent("Research, analyze, and summarize the latest advancements in quantum computing")
-
 ```
 
 In this example:

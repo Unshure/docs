@@ -1,15 +1,10 @@
 # Callback Handlers
 
-Callback handlers are a powerful feature of the Strands Agents SDK that allow you to intercept and process events as they happen during agent execution. This enables real-time monitoring, custom output formatting, and integration with external systems.
+Callback handlers allow you to intercept and process events as they happen during agent execution. This enables real-time monitoring, custom output formatting, and integration with external systems through function-based event handling.
 
-Callback handlers receive events in real-time as they occur during an agent's lifecycle:
+For a complete list of available events including text generation, tool usage, lifecycle, and reasoning events, see the [streaming overview](../overview/#event-types).
 
-- Text generation from the model
-- Tool selection and execution
-- Reasoning process
-- Errors and completions
-
-> **Note:** For asynchronous applications such as web servers, Strands Agents also provides [async iterators](../async-iterators/) as an alternative to callback-based callback handlers.
+> **Note:** For asynchronous applications, consider [async iterators](../async-iterators/) instead.
 
 ## Basic Usage
 
@@ -33,42 +28,7 @@ agent = Agent(
 )
 
 agent("Calculate 2+2")
-
 ```
-
-## Callback Handler Events
-
-Callback handlers receive the same event types as [async iterators](../async-iterators/#event-types), as keyword arguments:
-
-### Text Generation Events
-
-- `data`: Text chunk from the model's output
-- `delta`: Raw delta content from the model
-
-### Tool Events
-
-- `current_tool_use`: Information about the current tool being used, including:
-  - `toolUseId`: Unique ID for this tool use
-  - `name`: Name of the tool
-  - `input`: Tool input parameters (accumulated as streaming occurs)
-
-### Lifecycle Events
-
-- `init_event_loop`: True when the event loop is initializing
-- `start_event_loop`: True when the event loop is starting
-- `start`: True when a new cycle starts
-- `message`: Present when a new message is created
-- `event`: Raw event from the model stream
-- `force_stop`: True if the event loop was forced to stop
-- `force_stop_reason`: Reason for forced stop
-- `result`: The final [`AgentResult`](../../../../api-reference/agent/#strands.agent.agent_result.AgentResult)
-
-### Reasoning Events
-
-- `reasoning`: True for reasoning events
-- `reasoningText`: Text from reasoning process
-- `reasoning_signature`: Signature from reasoning process
-- `redactedContent`: Reasoning content redacted by the model
 
 ## Default Callback Handler
 
@@ -80,7 +40,6 @@ from strands.handlers.callback_handler import PrintingCallbackHandler
 
 # The default callback handler prints text and shows tool usage
 agent = Agent(callback_handler=PrintingCallbackHandler())
-
 ```
 
 If you want to disable all output, specify `None` for the callback handler:
@@ -90,7 +49,6 @@ from strands import Agent
 
 # No output will be displayed
 agent = Agent(callback_handler=None)
-
 ```
 
 ## Custom Callback Handlers
@@ -115,7 +73,6 @@ agent = Agent(
 )
 
 agent("What is 922 + 5321")
-
 ```
 
 This handler prints all calls to the callback handler including full event details.
@@ -141,7 +98,6 @@ agent = Agent(
 )
 
 agent("What is 2+2 and tell me about AWS Lambda")
-
 ```
 
 This handler leverages the `message` event which is triggered when a complete message is created. By using this approach, we can buffer the incrementally streamed text and only display complete, coherent messages rather than partial fragments. This is particularly useful in conversational interfaces or when responses benefit from being processed as complete units.
@@ -160,8 +116,6 @@ def event_loop_tracker(**kwargs):
         print("🔄 Event loop initialized")
     elif kwargs.get("start_event_loop", False):
         print("▶️ Event loop cycle starting")
-    elif kwargs.get("start", False):
-        print("📝 New cycle started")
     elif "message" in kwargs:
         print(f"📬 New message created: {kwargs['message']['role']}")
     elif kwargs.get("complete", False):
@@ -188,7 +142,6 @@ agent = Agent(
 
 # This will show the full event lifecycle in the console
 agent("What is the capital of France and what is 42+7?")
-
 ```
 
 The output will show the sequence of events:

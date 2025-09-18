@@ -66,7 +66,6 @@ async def get_weather(request: PromptRequest):
         return PlainTextResponse(content=content)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 ```
 
 ### Streaming responses
@@ -111,7 +110,6 @@ async def get_weather_streaming(request: PromptRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 ```
 
 The implementation above employs a [custom tool](../../concepts/tools/python-tools/#python-tool-decorators) to mark the boundary between information gathering and summary generation phases. This approach ensures that only the final, user-facing content is streamed to the client, maintaining consistency with the non-streaming endpoint while providing the benefits of incremental response delivery.
@@ -147,7 +145,6 @@ EXPOSE 8000
 # Command to run the application with Uvicorn
 # - port: 8000
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
-
 ```
 
 ## Infrastructure
@@ -226,7 +223,6 @@ const service = new ecs.FargateService(this, "AgentService", {
 });
 
 // ... load balancer omitted for brevity ...
-
 ```
 
 The full example ([agent-fargate-stack.ts](https://github.com/strands-agents/docs/tree/main/docs/examples/cdk/deploy_to_fargate/lib/agent-fargate-stack.ts)):
@@ -252,8 +248,7 @@ npx cdk bootstrap
 podman machine start 
 
 # Deploy the stack
-CDK_DOCKER=podman npx cdk deploy  
-
+CDK_DOCKER=podman npx cdk deploy
 ```
 
 Once deployed, you can test your agent using the Application Load Balancer URL:
@@ -273,7 +268,6 @@ curl -X POST \
   http://$SERVICE_URL/weather-streaming \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in New York in Celsius?"}'
-
 ```
 
 ## Summary

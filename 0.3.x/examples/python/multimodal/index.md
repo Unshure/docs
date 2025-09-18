@@ -38,7 +38,6 @@ critic = Agent(tools=[image_reader],system_prompt=(
     "Your final line of output must be as follows:"
     "FINAL DECISION: <path to final decision image>"
 ))
-
 ```
 
 ### Using the Multimodal Agents
@@ -51,7 +50,6 @@ result = artist("Generate 3 images of a dog")
 
 # Pass the image paths to the critic agent for evaluation
 critic(str(result))
-
 ```
 
 This workflow shows how agents can be chained together, with the output of one agent becoming the input for another, creating a pipeline for multimodal content processing.
@@ -66,21 +64,18 @@ The artist agent can generate multiple variations of images based on a text prom
 
   ```
   Generate 3 images of a dog
-
   ```
 
 - **Styled Generation**:
 
   ```
   Generate 2 images of a mountain landscape in watercolor style
-
   ```
 
 - **Conceptual Generation**:
 
   ```
   Generate 4 images representing the concept of freedom
-
   ```
 
 ### 2. Image Evaluation
@@ -93,7 +88,6 @@ The critic agent can analyze images and provide detailed descriptions and evalua
 
 ```
 Generate 3 images of a whale
-
 ```
 
 **Response**:
@@ -128,7 +122,6 @@ All three images are remarkable whale photographs, each with unique strengths:
 While each image is impressive, the humpback whale breaching at sunset stands out for its perfect combination of action, timing, lighting, and composition. The contrast between the dark whale and the golden sky, the dynamic motion captured at precisely the right moment, and the breathtaking sunset setting make this image particularly remarkable.
 
 FINAL DECISION: output/humpback_whale_breaching_from_the.png
-
 ```
 
 During its execution, the `artist` agent used the following prompts (which can be seen in [traces](../../../user-guide/observability-evaluation/traces/) or [logs](../../../user-guide/observability-evaluation/logs/)) to generate each image:

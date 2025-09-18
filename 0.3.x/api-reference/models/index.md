@@ -74,6 +74,7 @@ class Model(abc.ABC):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[StreamEvent]:
         """Stream conversation with the model.
@@ -88,6 +89,7 @@ class Model(abc.ABC):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -97,7 +99,6 @@ class Model(abc.ABC):
             ModelThrottledException: When the model service is throttling requests from the client.
         """
         pass
-
 ```
 
 #### `get_config()`
@@ -120,10 +121,9 @@ def get_config(self) -> Any:
         The model's configuration.
     """
     pass
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the model.
 
@@ -135,7 +135,7 @@ This method handles the full lifecycle of conversing with the model:
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -155,6 +155,7 @@ def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncIterable[StreamEvent]:
     """Stream conversation with the model.
@@ -169,6 +170,7 @@ def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -178,7 +180,6 @@ def stream(
         ModelThrottledException: When the model service is throttling requests from the client.
     """
     pass
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -220,7 +221,6 @@ def structured_output(
         ValidationException: The response format from the model does not match the output_model
     """
     pass
-
 ```
 
 #### `update_config(**model_config)`
@@ -243,7 +243,6 @@ def update_config(self, **model_config: Any) -> None:
         **model_config: Configuration overrides.
     """
     pass
-
 ```
 
 ## `strands.models.bedrock`
@@ -268,7 +267,7 @@ The implementation handles Bedrock-specific features such as:
 
 Source code in `strands/models/bedrock.py`
 
-```
+`````
 class BedrockModel(Model):
     """AWS Bedrock model provider implementation.
 
@@ -300,6 +299,8 @@ class BedrockModel(Model):
             guardrail_redact_output_message: If a Bedrock Output guardrail triggers, replace output with this message.
             max_tokens: Maximum number of tokens to generate in the response
             model_id: The Bedrock model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0")
+            include_tool_result_status: Flag to include status field in tool results.
+                True includes status, False removes status, "auto" determines based on model_id. Defaults to "auto".
             stop_sequences: List of sequences that will stop generation when encountered
             streaming: Flag to enable/disable streaming. Defaults to True.
             temperature: Controls randomness in generation (higher = more random)
@@ -321,6 +322,7 @@ class BedrockModel(Model):
         guardrail_redact_output_message: Optional[str]
         max_tokens: Optional[int]
         model_id: str
+        include_tool_result_status: Optional[Literal["auto"] | bool]
         stop_sequences: Optional[list[str]]
         streaming: Optional[bool]
         temperature: Optional[float]
@@ -332,6 +334,7 @@ class BedrockModel(Model):
         boto_session: Optional[boto3.Session] = None,
         boto_client_config: Optional[BotocoreConfig] = None,
         region_name: Optional[str] = None,
+        endpoint_url: Optional[str] = None,
         **model_config: Unpack[BedrockConfig],
     ):
         """Initialize provider instance.
@@ -341,17 +344,21 @@ class BedrockModel(Model):
             boto_client_config: Configuration to use when creating the Bedrock-Runtime Boto Client.
             region_name: AWS region to use for the Bedrock service.
                 Defaults to the AWS_REGION environment variable if set, or "us-west-2" if not set.
+            endpoint_url: Custom endpoint URL for VPC endpoints (PrivateLink)
             **model_config: Configuration options for the Bedrock model.
         """
         if region_name and boto_session:
             raise ValueError("Cannot specify both `region_name` and `boto_session`.")
 
-        self.config = BedrockModel.BedrockConfig(model_id=DEFAULT_BEDROCK_MODEL_ID)
+        session = boto_session or boto3.Session()
+        resolved_region = region_name or session.region_name or os.environ.get("AWS_REGION") or DEFAULT_BEDROCK_REGION
+        self.config = BedrockModel.BedrockConfig(
+            model_id=BedrockModel._get_default_model_with_warning(resolved_region, model_config),
+            include_tool_result_status="auto",
+        )
         self.update_config(**model_config)
 
         logger.debug("config=<%s> | initializing", self.config)
-
-        session = boto_session or boto3.Session()
 
         # Add strands-agents to the request user agent
         if boto_client_config:
@@ -365,13 +372,12 @@ class BedrockModel(Model):
 
             client_config = boto_client_config.merge(BotocoreConfig(user_agent_extra=new_user_agent))
         else:
-            client_config = BotocoreConfig(user_agent_extra="strands-agents")
-
-        resolved_region = region_name or session.region_name or os.environ.get("AWS_REGION") or DEFAULT_BEDROCK_REGION
+            client_config = BotocoreConfig(user_agent_extra="strands-agents", read_timeout=DEFAULT_READ_TIMEOUT)
 
         self.client = session.client(
             service_name="bedrock-runtime",
             config=client_config,
+            endpoint_url=endpoint_url,
             region_name=resolved_region,
         )
 
@@ -384,6 +390,7 @@ class BedrockModel(Model):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.BedrockConfig)
         self.config.update(model_config)
 
     @override
@@ -395,11 +402,23 @@ class BedrockModel(Model):
         """
         return self.config
 
+    def _should_include_tool_result_status(self) -> bool:
+        """Determine whether to include tool result status based on current config."""
+        include_status = self.config.get("include_tool_result_status", "auto")
+
+        if include_status is True:
+            return True
+        elif include_status is False:
+            return False
+        else:  # "auto"
+            return any(model in self.config["model_id"] for model in _MODELS_INCLUDE_STATUS)
+
     def format_request(
         self,
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
     ) -> dict[str, Any]:
         """Format a Bedrock converse stream request.
 
@@ -407,6 +426,7 @@ class BedrockModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
 
         Returns:
             A Bedrock converse stream request.
@@ -429,7 +449,7 @@ class BedrockModel(Model):
                                 else []
                             ),
                         ],
-                        "toolChoice": {"auto": {}},
+                        **({"toolChoice": tool_choice if tool_choice else {"auto": {}}}),
                     }
                 }
                 if tool_specs
@@ -482,6 +502,7 @@ class BedrockModel(Model):
         """Format messages for Bedrock API compatibility.
 
         This function ensures messages conform to Bedrock's expected format by:
+        - Filtering out SDK_UNKNOWN_MEMBER content blocks
         - Cleaning tool result content blocks by removing additional fields that may be
           useful for retaining information in hooks but would cause Bedrock validation
           exceptions when presented with unexpected fields
@@ -500,18 +521,40 @@ class BedrockModel(Model):
         """
         cleaned_messages = []
 
+        filtered_unknown_members = False
+        dropped_deepseek_reasoning_content = False
+
         for message in messages:
             cleaned_content: list[ContentBlock] = []
 
             for content_block in message["content"]:
+                # Filter out SDK_UNKNOWN_MEMBER content blocks
+                if "SDK_UNKNOWN_MEMBER" in content_block:
+                    filtered_unknown_members = True
+                    continue
+
+                # DeepSeek models have issues with reasoningContent
+                # TODO: Replace with systematic model configuration registry (https://github.com/strands-agents/sdk-python/issues/780)
+                if "deepseek" in self.config["model_id"].lower() and "reasoningContent" in content_block:
+                    dropped_deepseek_reasoning_content = True
+                    continue
+
                 if "toolResult" in content_block:
                     # Create a new content block with only the cleaned toolResult
                     tool_result: ToolResult = content_block["toolResult"]
 
-                    # Keep only the required fields for Bedrock
-                    cleaned_tool_result = ToolResult(
-                        content=tool_result["content"], toolUseId=tool_result["toolUseId"], status=tool_result["status"]
-                    )
+                    if self._should_include_tool_result_status():
+                        # Include status field
+                        cleaned_tool_result = ToolResult(
+                            content=tool_result["content"],
+                            toolUseId=tool_result["toolUseId"],
+                            status=tool_result["status"],
+                        )
+                    else:
+                        # Remove status field
+                        cleaned_tool_result = ToolResult(  # type: ignore[typeddict-item]
+                            toolUseId=tool_result["toolUseId"], content=tool_result["content"]
+                        )
 
                     cleaned_block: ContentBlock = {"toolResult": cleaned_tool_result}
                     cleaned_content.append(cleaned_block)
@@ -519,9 +562,19 @@ class BedrockModel(Model):
                     # Keep other content blocks as-is
                     cleaned_content.append(content_block)
 
-            # Create new message with cleaned content
-            cleaned_message: Message = Message(content=cleaned_content, role=message["role"])
-            cleaned_messages.append(cleaned_message)
+            # Create new message with cleaned content (skip if empty for DeepSeek)
+            if cleaned_content:
+                cleaned_message: Message = Message(content=cleaned_content, role=message["role"])
+                cleaned_messages.append(cleaned_message)
+
+        if filtered_unknown_members:
+            logger.warning(
+                "Filtered out SDK_UNKNOWN_MEMBER content blocks from messages, consider upgrading boto3 version"
+            )
+        if dropped_deepseek_reasoning_content:
+            logger.debug(
+                "Filtered DeepSeek reasoningContent content blocks from messages - https://api-docs.deepseek.com/guides/reasoning_model#multi-round-conversation"
+            )
 
         return cleaned_messages
 
@@ -573,7 +626,8 @@ class BedrockModel(Model):
                 {
                     "redactContent": {
                         "redactAssistantContentMessage": self.config.get(
-                            "guardrail_redact_output_message", "[Assistant output redacted.]"
+                            "guardrail_redact_output_message",
+                            "[Assistant output redacted.]",
                         )
                     }
                 }
@@ -587,6 +641,7 @@ class BedrockModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the Bedrock model.
@@ -598,6 +653,7 @@ class BedrockModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -616,7 +672,7 @@ class BedrockModel(Model):
         loop = asyncio.get_event_loop()
         queue: asyncio.Queue[Optional[StreamEvent]] = asyncio.Queue()
 
-        thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt)
+        thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt, tool_choice)
         task = asyncio.create_task(thread)
 
         while True:
@@ -634,6 +690,7 @@ class BedrockModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
     ) -> None:
         """Stream conversation with the Bedrock model.
 
@@ -645,22 +702,25 @@ class BedrockModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
 
         Raises:
             ContextWindowOverflowException: If the input exceeds the model's context window.
             ModelThrottledException: If the model service is throttling requests.
         """
-        logger.debug("formatting request")
-        request = self.format_request(messages, tool_specs, system_prompt)
-        logger.debug("request=<%s>", request)
-
-        logger.debug("invoking model")
-        streaming = self.config.get("streaming", True)
-
         try:
+            logger.debug("formatting request")
+            request = self.format_request(messages, tool_specs, system_prompt, tool_choice)
+            logger.debug("request=<%s>", request)
+
+            logger.debug("invoking model")
+            streaming = self.config.get("streaming", True)
+
             logger.debug("got response from model")
             if streaming:
                 response = self.client.converse_stream(**request)
+                # Track tool use events to fix stopReason for streaming responses
+                has_tool_use = False
                 for chunk in response["stream"]:
                     if (
                         "metadata" in chunk
@@ -672,7 +732,24 @@ class BedrockModel(Model):
                             for event in self._generate_redaction_events():
                                 callback(event)
 
-                    callback(chunk)
+                    # Track if we see tool use events
+                    if "contentBlockStart" in chunk and chunk["contentBlockStart"].get("start", {}).get("toolUse"):
+                        has_tool_use = True
+
+                    # Fix stopReason for streaming responses that contain tool use
+                    if (
+                        has_tool_use
+                        and "messageStop" in chunk
+                        and (message_stop := chunk["messageStop"]).get("stopReason") == "end_turn"
+                    ):
+                        # Create corrected chunk with tool_use stopReason
+                        modified_chunk = chunk.copy()
+                        modified_chunk["messageStop"] = message_stop.copy()
+                        modified_chunk["messageStop"]["stopReason"] = "tool_use"
+                        logger.warning("Override stop reason from end_turn to tool_use")
+                        callback(modified_chunk)
+                    else:
+                        callback(chunk)
 
             else:
                 response = self.client.converse(**request)
@@ -742,7 +819,7 @@ class BedrockModel(Model):
         yield {"messageStart": {"role": response["output"]["message"]["role"]}}
 
         # Process content blocks
-        for content in response["output"]["message"]["content"]:
+        for content in cast(list[ContentBlock], response["output"]["message"]["content"]):
             # Yield contentBlockStart event if needed
             if "toolUse" in content:
                 yield {
@@ -785,14 +862,40 @@ class BedrockModel(Model):
                             }
                         }
                     }
+            elif "citationsContent" in content:
+                # For non-streaming citations, emit text and metadata deltas in sequence
+                # to match streaming behavior where they flow naturally
+                if "content" in content["citationsContent"]:
+                    text_content = "".join([content["text"] for content in content["citationsContent"]["content"]])
+                    yield {
+                        "contentBlockDelta": {"delta": {"text": text_content}},
+                    }
+
+                for citation in content["citationsContent"]["citations"]:
+                    # Then emit citation metadata (for structure)
+
+                    citation_metadata: CitationsDelta = {
+                        "title": citation["title"],
+                        "location": citation["location"],
+                        "sourceContent": citation["sourceContent"],
+                    }
+                    yield {"contentBlockDelta": {"delta": {"citation": citation_metadata}}}
 
             # Yield contentBlockStop event
             yield {"contentBlockStop": {}}
 
         # Yield messageStop event
+        # Fix stopReason for models that return end_turn when they should return tool_use on non-streaming side
+        current_stop_reason = response["stopReason"]
+        if current_stop_reason == "end_turn":
+            message_content = response["output"]["message"]["content"]
+            if any("toolUse" in content for content in message_content):
+                current_stop_reason = "tool_use"
+                logger.warning("Override stop reason from end_turn to tool_use")
+
         yield {
             "messageStop": {
-                "stopReason": response["stopReason"],
+                "stopReason": current_stop_reason,
                 "additionalModelResponseFields": response.get("additionalModelResponseFields"),
             }
         }
@@ -841,7 +944,11 @@ class BedrockModel(Model):
 
     @override
     async def structured_output(
-        self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
+        self,
+        output_model: Type[T],
+        prompt: Messages,
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
     ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
         """Get structured output from the model.
 
@@ -856,14 +963,20 @@ class BedrockModel(Model):
         """
         tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-        response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+        response = self.stream(
+            messages=prompt,
+            tool_specs=[tool_spec],
+            system_prompt=system_prompt,
+            tool_choice=cast(ToolChoice, {"any": {}}),
+            **kwargs,
+        )
         async for event in streaming.process_stream(response):
             yield event
 
         stop_reason, messages, _, _ = event["stop"]
 
         if stop_reason != "tool_use":
-            raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
+            raise ValueError(f'Model returned stop_reason: {stop_reason} instead of "tool_use".')
 
         content = messages["content"]
         output_response: dict[str, Any] | None = None
@@ -880,7 +993,49 @@ class BedrockModel(Model):
 
         yield {"output": output_model(**output_response)}
 
-```
+    @staticmethod
+    def _get_default_model_with_warning(region_name: str, model_config: Optional[BedrockConfig] = None) -> str:
+        """Get the default Bedrock modelId based on region.
+
+        If the region is not **known** to support inference then we show a helpful warning
+        that compliments the exception that Bedrock will throw.
+        If the customer provided a model_id in their config or they overrode the `DEFAULT_BEDROCK_MODEL_ID`
+        then we should not process further.
+
+        Args:
+            region_name (str): region for bedrock model
+            model_config (Optional[dict[str, Any]]): Model Config that caller passes in on init
+        """
+        if DEFAULT_BEDROCK_MODEL_ID != _DEFAULT_BEDROCK_MODEL_ID.format("us"):
+            return DEFAULT_BEDROCK_MODEL_ID
+
+        model_config = model_config or {}
+        if model_config.get("model_id"):
+            return model_config["model_id"]
+
+        prefix_inference_map = {"ap": "apac"}  # some inference endpoints can be a bit different than the region prefix
+
+        prefix = "-".join(region_name.split("-")[:-2]).lower()  # handles `us-east-1` or `us-gov-east-1`
+        if prefix not in {"us", "eu", "ap", "us-gov"}:
+            warnings.warn(
+                f"""
+            ================== WARNING ==================
+
+                This region {region_name} does not support
+                our default inference endpoint: {_DEFAULT_BEDROCK_MODEL_ID.format(prefix)}.
+                Update the agent to pass in a 'model_id' like so:
+                ```
+                Agent(..., model='valid_model_id', ...)
+                ````
+                Documentation: https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html
+
+            ==================================================
+            """,
+                stacklevel=2,
+            )
+
+        return _DEFAULT_BEDROCK_MODEL_ID.format(prefix_inference_map.get(prefix, prefix))
+`````
 
 #### `BedrockConfig`
 
@@ -890,7 +1045,7 @@ Configuration options for Bedrock models.
 
 Attributes:
 
-| Name | Type | Description | | --- | --- | --- | | `additional_args` | `Optional[dict[str, Any]]` | Any additional arguments to include in the request | | `additional_request_fields` | `Optional[dict[str, Any]]` | Additional fields to include in the Bedrock request | | `additional_response_field_paths` | `Optional[list[str]]` | Additional response field paths to extract | | `cache_prompt` | `Optional[str]` | Cache point type for the system prompt | | `cache_tools` | `Optional[str]` | Cache point type for tools | | `guardrail_id` | `Optional[str]` | ID of the guardrail to apply | | `guardrail_trace` | `Optional[Literal['enabled', 'disabled', 'enabled_full']]` | Guardrail trace mode. Defaults to enabled. | | `guardrail_version` | `Optional[str]` | Version of the guardrail to apply | | `guardrail_stream_processing_mode` | `Optional[Literal['sync', 'async']]` | The guardrail processing mode | | `guardrail_redact_input` | `Optional[bool]` | Flag to redact input if a guardrail is triggered. Defaults to True. | | `guardrail_redact_input_message` | `Optional[str]` | If a Bedrock Input guardrail triggers, replace the input with this message. | | `guardrail_redact_output` | `Optional[bool]` | Flag to redact output if guardrail is triggered. Defaults to False. | | `guardrail_redact_output_message` | `Optional[str]` | If a Bedrock Output guardrail triggers, replace output with this message. | | `max_tokens` | `Optional[int]` | Maximum number of tokens to generate in the response | | `model_id` | `str` | The Bedrock model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0") | | `stop_sequences` | `Optional[list[str]]` | List of sequences that will stop generation when encountered | | `streaming` | `Optional[bool]` | Flag to enable/disable streaming. Defaults to True. | | `temperature` | `Optional[float]` | Controls randomness in generation (higher = more random) | | `top_p` | `Optional[float]` | Controls diversity via nucleus sampling (alternative to temperature) |
+| Name | Type | Description | | --- | --- | --- | | `additional_args` | `Optional[dict[str, Any]]` | Any additional arguments to include in the request | | `additional_request_fields` | `Optional[dict[str, Any]]` | Additional fields to include in the Bedrock request | | `additional_response_field_paths` | `Optional[list[str]]` | Additional response field paths to extract | | `cache_prompt` | `Optional[str]` | Cache point type for the system prompt | | `cache_tools` | `Optional[str]` | Cache point type for tools | | `guardrail_id` | `Optional[str]` | ID of the guardrail to apply | | `guardrail_trace` | `Optional[Literal['enabled', 'disabled', 'enabled_full']]` | Guardrail trace mode. Defaults to enabled. | | `guardrail_version` | `Optional[str]` | Version of the guardrail to apply | | `guardrail_stream_processing_mode` | `Optional[Literal['sync', 'async']]` | The guardrail processing mode | | `guardrail_redact_input` | `Optional[bool]` | Flag to redact input if a guardrail is triggered. Defaults to True. | | `guardrail_redact_input_message` | `Optional[str]` | If a Bedrock Input guardrail triggers, replace the input with this message. | | `guardrail_redact_output` | `Optional[bool]` | Flag to redact output if guardrail is triggered. Defaults to False. | | `guardrail_redact_output_message` | `Optional[str]` | If a Bedrock Output guardrail triggers, replace output with this message. | | `max_tokens` | `Optional[int]` | Maximum number of tokens to generate in the response | | `model_id` | `str` | The Bedrock model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0") | | `include_tool_result_status` | `Optional[Literal['auto'] | bool]` | Flag to include status field in tool results. True includes status, False removes status, "auto" determines based on model_id. Defaults to "auto". | | `stop_sequences` | `Optional[list[str]]` | List of sequences that will stop generation when encountered | | `streaming` | `Optional[bool]` | Flag to enable/disable streaming. Defaults to True. | | `temperature` | `Optional[float]` | Controls randomness in generation (higher = more random) | | `top_p` | `Optional[float]` | Controls diversity via nucleus sampling (alternative to temperature) |
 
 Source code in `strands/models/bedrock.py`
 
@@ -914,6 +1069,8 @@ class BedrockConfig(TypedDict, total=False):
         guardrail_redact_output_message: If a Bedrock Output guardrail triggers, replace output with this message.
         max_tokens: Maximum number of tokens to generate in the response
         model_id: The Bedrock model ID (e.g., "us.anthropic.claude-sonnet-4-20250514-v1:0")
+        include_tool_result_status: Flag to include status field in tool results.
+            True includes status, False removes status, "auto" determines based on model_id. Defaults to "auto".
         stop_sequences: List of sequences that will stop generation when encountered
         streaming: Flag to enable/disable streaming. Defaults to True.
         temperature: Controls randomness in generation (higher = more random)
@@ -935,20 +1092,20 @@ class BedrockConfig(TypedDict, total=False):
     guardrail_redact_output_message: Optional[str]
     max_tokens: Optional[int]
     model_id: str
+    include_tool_result_status: Optional[Literal["auto"] | bool]
     stop_sequences: Optional[list[str]]
     streaming: Optional[bool]
     temperature: Optional[float]
     top_p: Optional[float]
-
 ```
 
-#### `__init__(*, boto_session=None, boto_client_config=None, region_name=None, **model_config)`
+#### `__init__(*, boto_session=None, boto_client_config=None, region_name=None, endpoint_url=None, **model_config)`
 
 Initialize provider instance.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `boto_session` | `Optional[Session]` | Boto Session to use when calling the Bedrock Model. | `None` | | `boto_client_config` | `Optional[Config]` | Configuration to use when creating the Bedrock-Runtime Boto Client. | `None` | | `region_name` | `Optional[str]` | AWS region to use for the Bedrock service. Defaults to the AWS_REGION environment variable if set, or "us-west-2" if not set. | `None` | | `**model_config` | `Unpack[BedrockConfig]` | Configuration options for the Bedrock model. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `boto_session` | `Optional[Session]` | Boto Session to use when calling the Bedrock Model. | `None` | | `boto_client_config` | `Optional[Config]` | Configuration to use when creating the Bedrock-Runtime Boto Client. | `None` | | `region_name` | `Optional[str]` | AWS region to use for the Bedrock service. Defaults to the AWS_REGION environment variable if set, or "us-west-2" if not set. | `None` | | `endpoint_url` | `Optional[str]` | Custom endpoint URL for VPC endpoints (PrivateLink) | `None` | | `**model_config` | `Unpack[BedrockConfig]` | Configuration options for the Bedrock model. | `{}` |
 
 Source code in `strands/models/bedrock.py`
 
@@ -959,6 +1116,7 @@ def __init__(
     boto_session: Optional[boto3.Session] = None,
     boto_client_config: Optional[BotocoreConfig] = None,
     region_name: Optional[str] = None,
+    endpoint_url: Optional[str] = None,
     **model_config: Unpack[BedrockConfig],
 ):
     """Initialize provider instance.
@@ -968,17 +1126,21 @@ def __init__(
         boto_client_config: Configuration to use when creating the Bedrock-Runtime Boto Client.
         region_name: AWS region to use for the Bedrock service.
             Defaults to the AWS_REGION environment variable if set, or "us-west-2" if not set.
+        endpoint_url: Custom endpoint URL for VPC endpoints (PrivateLink)
         **model_config: Configuration options for the Bedrock model.
     """
     if region_name and boto_session:
         raise ValueError("Cannot specify both `region_name` and `boto_session`.")
 
-    self.config = BedrockModel.BedrockConfig(model_id=DEFAULT_BEDROCK_MODEL_ID)
+    session = boto_session or boto3.Session()
+    resolved_region = region_name or session.region_name or os.environ.get("AWS_REGION") or DEFAULT_BEDROCK_REGION
+    self.config = BedrockModel.BedrockConfig(
+        model_id=BedrockModel._get_default_model_with_warning(resolved_region, model_config),
+        include_tool_result_status="auto",
+    )
     self.update_config(**model_config)
 
     logger.debug("config=<%s> | initializing", self.config)
-
-    session = boto_session or boto3.Session()
 
     # Add strands-agents to the request user agent
     if boto_client_config:
@@ -992,27 +1154,25 @@ def __init__(
 
         client_config = boto_client_config.merge(BotocoreConfig(user_agent_extra=new_user_agent))
     else:
-        client_config = BotocoreConfig(user_agent_extra="strands-agents")
-
-    resolved_region = region_name or session.region_name or os.environ.get("AWS_REGION") or DEFAULT_BEDROCK_REGION
+        client_config = BotocoreConfig(user_agent_extra="strands-agents", read_timeout=DEFAULT_READ_TIMEOUT)
 
     self.client = session.client(
         service_name="bedrock-runtime",
         config=client_config,
+        endpoint_url=endpoint_url,
         region_name=resolved_region,
     )
 
     logger.debug("region=<%s> | bedrock client created", self.client.meta.region_name)
-
 ```
 
-#### `format_request(messages, tool_specs=None, system_prompt=None)`
+#### `format_request(messages, tool_specs=None, system_prompt=None, tool_choice=None)`
 
 Format a Bedrock converse stream request.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` |
 
 Returns:
 
@@ -1026,6 +1186,7 @@ def format_request(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
 ) -> dict[str, Any]:
     """Format a Bedrock converse stream request.
 
@@ -1033,6 +1194,7 @@ def format_request(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
 
     Returns:
         A Bedrock converse stream request.
@@ -1055,7 +1217,7 @@ def format_request(
                             else []
                         ),
                     ],
-                    "toolChoice": {"auto": {}},
+                    **({"toolChoice": tool_choice if tool_choice else {"auto": {}}}),
                 }
             }
             if tool_specs
@@ -1103,7 +1265,6 @@ def format_request(
             else {}
         ),
     }
-
 ```
 
 #### `get_config()`
@@ -1125,10 +1286,9 @@ def get_config(self) -> BedrockConfig:
         The Bedrock model configuration.
     """
     return self.config
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the Bedrock model.
 
@@ -1136,7 +1296,7 @@ This method calls either the Bedrock converse_stream API or the converse API bas
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -1155,6 +1315,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the Bedrock model.
@@ -1166,6 +1327,7 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -1184,7 +1346,7 @@ async def stream(
     loop = asyncio.get_event_loop()
     queue: asyncio.Queue[Optional[StreamEvent]] = asyncio.Queue()
 
-    thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt)
+    thread = asyncio.to_thread(self._stream, callback, messages, tool_specs, system_prompt, tool_choice)
     task = asyncio.create_task(thread)
 
     while True:
@@ -1195,7 +1357,6 @@ async def stream(
         yield event
 
     await task
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -1215,7 +1376,11 @@ Source code in `strands/models/bedrock.py`
 ```
 @override
 async def structured_output(
-    self, output_model: Type[T], prompt: Messages, system_prompt: Optional[str] = None, **kwargs: Any
+    self,
+    output_model: Type[T],
+    prompt: Messages,
+    system_prompt: Optional[str] = None,
+    **kwargs: Any,
 ) -> AsyncGenerator[dict[str, Union[T, Any]], None]:
     """Get structured output from the model.
 
@@ -1230,14 +1395,20 @@ async def structured_output(
     """
     tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-    response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+    response = self.stream(
+        messages=prompt,
+        tool_specs=[tool_spec],
+        system_prompt=system_prompt,
+        tool_choice=cast(ToolChoice, {"any": {}}),
+        **kwargs,
+    )
     async for event in streaming.process_stream(response):
         yield event
 
     stop_reason, messages, _, _ = event["stop"]
 
     if stop_reason != "tool_use":
-        raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
+        raise ValueError(f'Model returned stop_reason: {stop_reason} instead of "tool_use".')
 
     content = messages["content"]
     output_response: dict[str, Any] | None = None
@@ -1253,7 +1424,6 @@ async def structured_output(
         raise ValueError("No valid tool use or tool use input was found in the Bedrock response.")
 
     yield {"output": output_model(**output_response)}
-
 ```
 
 #### `update_config(**model_config)`
@@ -1274,8 +1444,8 @@ def update_config(self, **model_config: Unpack[BedrockConfig]) -> None:  # type:
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.BedrockConfig)
     self.config.update(model_config)
-
 ```
 
 ## `strands.models.anthropic`
@@ -1322,7 +1492,7 @@ class AnthropicModel(Model):
                 For a complete list of supported parameters, see https://docs.anthropic.com/en/api/messages.
         """
 
-        max_tokens: Required[str]
+        max_tokens: Required[int]
         model_id: Required[str]
         params: Optional[dict[str, Any]]
 
@@ -1334,6 +1504,7 @@ class AnthropicModel(Model):
                 For a complete list of supported arguments, see https://docs.anthropic.com/en/api/client-sdks.
             **model_config: Configuration options for the Anthropic model.
         """
+        validate_config_keys(model_config, self.AnthropicConfig)
         self.config = AnthropicModel.AnthropicConfig(**model_config)
 
         logger.debug("config=<%s> | initializing", self.config)
@@ -1348,6 +1519,7 @@ class AnthropicModel(Model):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.AnthropicConfig)
         self.config.update(model_config)
 
     @override
@@ -1459,7 +1631,11 @@ class AnthropicModel(Model):
         return formatted_messages
 
     def format_request(
-        self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
     ) -> dict[str, Any]:
         """Format an Anthropic streaming request.
 
@@ -1467,6 +1643,7 @@ class AnthropicModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
 
         Returns:
             An Anthropic streaming request.
@@ -1487,9 +1664,24 @@ class AnthropicModel(Model):
                 }
                 for tool_spec in tool_specs or []
             ],
+            **(self._format_tool_choice(tool_choice)),
             **({"system": system_prompt} if system_prompt else {}),
             **(self.config.get("params") or {}),
         }
+
+    @staticmethod
+    def _format_tool_choice(tool_choice: ToolChoice | None) -> dict:
+        if tool_choice is None:
+            return {}
+
+        if "any" in tool_choice:
+            return {"tool_choice": {"type": "any"}}
+        elif "auto" in tool_choice:
+            return {"tool_choice": {"type": "auto"}}
+        elif "tool" in tool_choice:
+            return {"tool_choice": {"type": "tool", "name": cast(ToolChoiceToolDict, tool_choice)["tool"]["name"]}}
+        else:
+            return {}
 
     def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
         """Format the Anthropic response events into standardized message chunks.
@@ -1614,6 +1806,7 @@ class AnthropicModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the Anthropic model.
@@ -1622,6 +1815,7 @@ class AnthropicModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -1632,7 +1826,7 @@ class AnthropicModel(Model):
             ModelThrottledException: If the request is throttled by Anthropic.
         """
         logger.debug("formatting request")
-        request = self.format_request(messages, tool_specs, system_prompt)
+        request = self.format_request(messages, tool_specs, system_prompt, tool_choice)
         logger.debug("request=<%s>", request)
 
         logger.debug("invoking model")
@@ -1674,14 +1868,20 @@ class AnthropicModel(Model):
         """
         tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-        response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+        response = self.stream(
+            messages=prompt,
+            tool_specs=[tool_spec],
+            system_prompt=system_prompt,
+            tool_choice=cast(ToolChoice, {"any": {}}),
+            **kwargs,
+        )
         async for event in process_stream(response):
             yield event
 
         stop_reason, messages, _, _ = event["stop"]
 
         if stop_reason != "tool_use":
-            raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
+            raise ValueError(f'Model returned stop_reason: {stop_reason} instead of "tool_use".')
 
         content = messages["content"]
         output_response: dict[str, Any] | None = None
@@ -1697,7 +1897,6 @@ class AnthropicModel(Model):
             raise ValueError("No valid tool use or tool use input was found in the Anthropic response.")
 
         yield {"output": output_model(**output_response)}
-
 ```
 
 #### `AnthropicConfig`
@@ -1708,7 +1907,7 @@ Configuration options for Anthropic models.
 
 Attributes:
 
-| Name | Type | Description | | --- | --- | --- | | `max_tokens` | `Required[str]` | Maximum number of tokens to generate. | | `model_id` | `Required[str]` | Calude model ID (e.g., "claude-3-7-sonnet-latest"). For a complete list of supported models, see https://docs.anthropic.com/en/docs/about-claude/models/all-models. | | `params` | `Optional[dict[str, Any]]` | Additional model parameters (e.g., temperature). For a complete list of supported parameters, see https://docs.anthropic.com/en/api/messages. |
+| Name | Type | Description | | --- | --- | --- | | `max_tokens` | `Required[int]` | Maximum number of tokens to generate. | | `model_id` | `Required[str]` | Calude model ID (e.g., "claude-3-7-sonnet-latest"). For a complete list of supported models, see https://docs.anthropic.com/en/docs/about-claude/models/all-models. | | `params` | `Optional[dict[str, Any]]` | Additional model parameters (e.g., temperature). For a complete list of supported parameters, see https://docs.anthropic.com/en/api/messages. |
 
 Source code in `strands/models/anthropic.py`
 
@@ -1725,10 +1924,9 @@ class AnthropicConfig(TypedDict, total=False):
             For a complete list of supported parameters, see https://docs.anthropic.com/en/api/messages.
     """
 
-    max_tokens: Required[str]
+    max_tokens: Required[int]
     model_id: Required[str]
     params: Optional[dict[str, Any]]
-
 ```
 
 #### `__init__(*, client_args=None, **model_config)`
@@ -1750,13 +1948,13 @@ def __init__(self, *, client_args: Optional[dict[str, Any]] = None, **model_conf
             For a complete list of supported arguments, see https://docs.anthropic.com/en/api/client-sdks.
         **model_config: Configuration options for the Anthropic model.
     """
+    validate_config_keys(model_config, self.AnthropicConfig)
     self.config = AnthropicModel.AnthropicConfig(**model_config)
 
     logger.debug("config=<%s> | initializing", self.config)
 
     client_args = client_args or {}
     self.client = anthropic.AsyncAnthropic(**client_args)
-
 ```
 
 #### `format_chunk(event)`
@@ -1894,16 +2092,15 @@ def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
 
         case _:
             raise RuntimeError(f"event_type=<{event['type']} | unknown type")
-
 ```
 
-#### `format_request(messages, tool_specs=None, system_prompt=None)`
+#### `format_request(messages, tool_specs=None, system_prompt=None, tool_choice=None)`
 
 Format an Anthropic streaming request.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` |
 
 Returns:
 
@@ -1917,7 +2114,11 @@ Source code in `strands/models/anthropic.py`
 
 ```
 def format_request(
-    self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
 ) -> dict[str, Any]:
     """Format an Anthropic streaming request.
 
@@ -1925,6 +2126,7 @@ def format_request(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
 
     Returns:
         An Anthropic streaming request.
@@ -1945,10 +2147,10 @@ def format_request(
             }
             for tool_spec in tool_specs or []
         ],
+        **(self._format_tool_choice(tool_choice)),
         **({"system": system_prompt} if system_prompt else {}),
         **(self.config.get("params") or {}),
     }
-
 ```
 
 #### `get_config()`
@@ -1970,16 +2172,15 @@ def get_config(self) -> AnthropicConfig:
         The Anthropic model configuration.
     """
     return self.config
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the Anthropic model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -1998,6 +2199,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the Anthropic model.
@@ -2006,6 +2208,7 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -2016,7 +2219,7 @@ async def stream(
         ModelThrottledException: If the request is throttled by Anthropic.
     """
     logger.debug("formatting request")
-    request = self.format_request(messages, tool_specs, system_prompt)
+    request = self.format_request(messages, tool_specs, system_prompt, tool_choice)
     logger.debug("request=<%s>", request)
 
     logger.debug("invoking model")
@@ -2040,7 +2243,6 @@ async def stream(
         raise error
 
     logger.debug("finished streaming response from model")
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -2075,14 +2277,20 @@ async def structured_output(
     """
     tool_spec = convert_pydantic_to_tool_spec(output_model)
 
-    response = self.stream(messages=prompt, tool_specs=[tool_spec], system_prompt=system_prompt, **kwargs)
+    response = self.stream(
+        messages=prompt,
+        tool_specs=[tool_spec],
+        system_prompt=system_prompt,
+        tool_choice=cast(ToolChoice, {"any": {}}),
+        **kwargs,
+    )
     async for event in process_stream(response):
         yield event
 
     stop_reason, messages, _, _ = event["stop"]
 
     if stop_reason != "tool_use":
-        raise ValueError(f"Model returned stop_reason: {stop_reason} instead of \"tool_use\".")
+        raise ValueError(f'Model returned stop_reason: {stop_reason} instead of "tool_use".')
 
     content = messages["content"]
     output_response: dict[str, Any] | None = None
@@ -2098,7 +2306,6 @@ async def structured_output(
         raise ValueError("No valid tool use or tool use input was found in the Anthropic response.")
 
     yield {"output": output_model(**output_response)}
-
 ```
 
 #### `update_config(**model_config)`
@@ -2119,8 +2326,8 @@ def update_config(self, **model_config: Unpack[AnthropicConfig]) -> None:  # typ
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.AnthropicConfig)
     self.config.update(model_config)
-
 ```
 
 ## `strands.models.litellm`
@@ -2165,7 +2372,9 @@ class LiteLLMModel(OpenAIModel):
             **model_config: Configuration options for the LiteLLM model.
         """
         self.client_args = client_args or {}
+        validate_config_keys(model_config, self.LiteLLMConfig)
         self.config = dict(model_config)
+        self._apply_proxy_prefix()
 
         logger.debug("config=<%s> | initializing", self.config)
 
@@ -2176,7 +2385,9 @@ class LiteLLMModel(OpenAIModel):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.LiteLLMConfig)
         self.config.update(model_config)
+        self._apply_proxy_prefix()
 
     @override
     def get_config(self) -> LiteLLMConfig:
@@ -2225,6 +2436,7 @@ class LiteLLMModel(OpenAIModel):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the LiteLLM model.
@@ -2233,13 +2445,14 @@ class LiteLLMModel(OpenAIModel):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Formatted message chunks from the model.
         """
         logger.debug("formatting request")
-        request = self.format_request(messages, tool_specs, system_prompt)
+        request = self.format_request(messages, tool_specs, system_prompt, tool_choice)
         logger.debug("request=<%s>", request)
 
         logger.debug("invoking model")
@@ -2313,6 +2526,9 @@ class LiteLLMModel(OpenAIModel):
         Yields:
             Model events with the last being the structured output.
         """
+        if not supports_response_schema(self.get_config()["model_id"]):
+            raise ValueError("Model does not support response_format")
+
         response = await litellm.acompletion(
             **self.client_args,
             model=self.get_config()["model_id"],
@@ -2320,8 +2536,6 @@ class LiteLLMModel(OpenAIModel):
             response_format=output_model,
         )
 
-        if not supports_response_schema(self.get_config()["model_id"]):
-            raise ValueError("Model does not support response_format")
         if len(response.choices) > 1:
             raise ValueError("Multiple choices found in the response.")
 
@@ -2340,6 +2554,16 @@ class LiteLLMModel(OpenAIModel):
         # If no tool_calls found, raise an error
         raise ValueError("No tool_calls found in response")
 
+    def _apply_proxy_prefix(self) -> None:
+        """Apply litellm_proxy/ prefix to model_id when use_litellm_proxy is True.
+
+        This is a workaround for https://github.com/BerriAI/litellm/issues/13454
+        where use_litellm_proxy parameter is not honored.
+        """
+        if self.client_args.get("use_litellm_proxy") and "model_id" in self.config:
+            model_id = self.get_config()["model_id"]
+            if not model_id.startswith("litellm_proxy/"):
+                self.config["model_id"] = f"litellm_proxy/{model_id}"
 ```
 
 #### `LiteLLMConfig`
@@ -2368,7 +2592,6 @@ class LiteLLMConfig(TypedDict, total=False):
 
     model_id: str
     params: Optional[dict[str, Any]]
-
 ```
 
 #### `__init__(client_args=None, **model_config)`
@@ -2392,10 +2615,11 @@ def __init__(self, client_args: Optional[dict[str, Any]] = None, **model_config:
         **model_config: Configuration options for the LiteLLM model.
     """
     self.client_args = client_args or {}
+    validate_config_keys(model_config, self.LiteLLMConfig)
     self.config = dict(model_config)
+    self._apply_proxy_prefix()
 
     logger.debug("config=<%s> | initializing", self.config)
-
 ```
 
 #### `format_request_message_content(content)`
@@ -2448,7 +2672,6 @@ def format_request_message_content(cls, content: ContentBlock) -> dict[str, Any]
         }
 
     return super().format_request_message_content(content)
-
 ```
 
 #### `get_config()`
@@ -2470,16 +2693,15 @@ def get_config(self) -> LiteLLMConfig:
         The LiteLLM model configuration.
     """
     return cast(LiteLLMModel.LiteLLMConfig, self.config)
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the LiteLLM model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -2494,6 +2716,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the LiteLLM model.
@@ -2502,13 +2725,14 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Formatted message chunks from the model.
     """
     logger.debug("formatting request")
-    request = self.format_request(messages, tool_specs, system_prompt)
+    request = self.format_request(messages, tool_specs, system_prompt, tool_choice)
     logger.debug("request=<%s>", request)
 
     logger.debug("invoking model")
@@ -2566,7 +2790,6 @@ async def stream(
         yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
 
     logger.debug("finished streaming response from model")
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -2599,6 +2822,9 @@ async def structured_output(
     Yields:
         Model events with the last being the structured output.
     """
+    if not supports_response_schema(self.get_config()["model_id"]):
+        raise ValueError("Model does not support response_format")
+
     response = await litellm.acompletion(
         **self.client_args,
         model=self.get_config()["model_id"],
@@ -2606,8 +2832,6 @@ async def structured_output(
         response_format=output_model,
     )
 
-    if not supports_response_schema(self.get_config()["model_id"]):
-        raise ValueError("Model does not support response_format")
     if len(response.choices) > 1:
         raise ValueError("Multiple choices found in the response.")
 
@@ -2625,7 +2849,6 @@ async def structured_output(
 
     # If no tool_calls found, raise an error
     raise ValueError("No tool_calls found in response")
-
 ```
 
 #### `update_config(**model_config)`
@@ -2646,8 +2869,9 @@ def update_config(self, **model_config: Unpack[LiteLLMConfig]) -> None:  # type:
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.LiteLLMConfig)
     self.config.update(model_config)
-
+    self._apply_proxy_prefix()
 ```
 
 ## `strands.models.llamaapi`
@@ -2699,6 +2923,7 @@ class LlamaAPIModel(Model):
             client_args: Arguments for the Llama API client.
             **model_config: Configuration options for the Llama API model.
         """
+        validate_config_keys(model_config, self.LlamaConfig)
         self.config = LlamaAPIModel.LlamaConfig(**model_config)
         logger.debug("config=<%s> | initializing", self.config)
 
@@ -2714,6 +2939,7 @@ class LlamaAPIModel(Model):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.LlamaConfig)
         self.config.update(model_config)
 
     @override
@@ -2966,6 +3192,7 @@ class LlamaAPIModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the LlamaAPI model.
@@ -2974,6 +3201,8 @@ class LlamaAPIModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+                interface consistency but is currently ignored for this model provider.**
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -2982,6 +3211,8 @@ class LlamaAPIModel(Model):
         Raises:
             ModelThrottledException: When the model service is throttling requests from the client.
         """
+        warn_on_tool_choice_not_supported(tool_choice)
+
         logger.debug("formatting request")
         request = self.format_request(messages, tool_specs, system_prompt)
         logger.debug("request=<%s>", request)
@@ -3075,7 +3306,6 @@ class LlamaAPIModel(Model):
         #     response_format=response_format,
         # )
         raise NotImplementedError("Strands sdk-python does not implement this in the Llama API Preview.")
-
 ```
 
 #### `LlamaConfig`
@@ -3109,7 +3339,6 @@ class LlamaConfig(TypedDict, total=False):
     top_p: Optional[float]
     max_completion_tokens: Optional[int]
     top_k: Optional[int]
-
 ```
 
 #### `__init__(*, client_args=None, **model_config)`
@@ -3135,6 +3364,7 @@ def __init__(
         client_args: Arguments for the Llama API client.
         **model_config: Configuration options for the Llama API model.
     """
+    validate_config_keys(model_config, self.LlamaConfig)
     self.config = LlamaAPIModel.LlamaConfig(**model_config)
     logger.debug("config=<%s> | initializing", self.config)
 
@@ -3142,7 +3372,6 @@ def __init__(
         self.client = LlamaAPIClient()
     else:
         self.client = LlamaAPIClient(**client_args)
-
 ```
 
 #### `format_chunk(event)`
@@ -3232,7 +3461,6 @@ def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
 
         case _:
             raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
-
 ```
 
 #### `format_request(messages, tool_specs=None, system_prompt=None)`
@@ -3299,7 +3527,6 @@ def format_request(
         request["top_k"] = self.config["top_k"]
 
     return request
-
 ```
 
 #### `get_config()`
@@ -3321,16 +3548,15 @@ def get_config(self) -> LlamaConfig:
         The Llama API model configuration.
     """
     return self.config
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the LlamaAPI model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. Note: This parameter is accepted for interface consistency but is currently ignored for this model provider. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -3349,6 +3575,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the LlamaAPI model.
@@ -3357,6 +3584,8 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+            interface consistency but is currently ignored for this model provider.**
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -3365,6 +3594,8 @@ async def stream(
     Raises:
         ModelThrottledException: When the model service is throttling requests from the client.
     """
+    warn_on_tool_choice_not_supported(tool_choice)
+
     logger.debug("formatting request")
     request = self.format_request(messages, tool_specs, system_prompt)
     logger.debug("request=<%s>", request)
@@ -3426,7 +3657,6 @@ async def stream(
         yield self.format_chunk({"chunk_type": "metadata", "data": metrics_event})
 
     logger.debug("finished streaming response from model")
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -3479,7 +3709,6 @@ def structured_output(
     #     response_format=response_format,
     # )
     raise NotImplementedError("Strands sdk-python does not implement this in the Llama API Preview.")
-
 ```
 
 #### `update_config(**model_config)`
@@ -3500,8 +3729,8 @@ def update_config(self, **model_config: Unpack[LlamaConfig]) -> None:  # type: i
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.LlamaConfig)
     self.config.update(model_config)
-
 ```
 
 ## `strands.models.mistral`
@@ -3585,6 +3814,7 @@ class MistralModel(Model):
             if not 0.0 <= top_p <= 1.0:
                 raise ValueError(f"top_p must be between 0.0 and 1.0, got {top_p}")
 
+        validate_config_keys(model_config, self.MistralConfig)
         self.config = MistralModel.MistralConfig(**model_config)
 
         # Set default stream to True if not specified
@@ -3604,6 +3834,7 @@ class MistralModel(Model):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.MistralConfig)
         self.config.update(model_config)
 
     @override
@@ -3897,6 +4128,7 @@ class MistralModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the Mistral model.
@@ -3905,6 +4137,8 @@ class MistralModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+                interface consistency but is currently ignored for this model provider.**
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -3913,6 +4147,8 @@ class MistralModel(Model):
         Raises:
             ModelThrottledException: When the model service is throttling requests.
         """
+        warn_on_tool_choice_not_supported(tool_choice)
+
         logger.debug("formatting request")
         request = self.format_request(messages, tool_specs, system_prompt)
         logger.debug("request=<%s>", request)
@@ -4040,7 +4276,6 @@ class MistralModel(Model):
                 raise ValueError(f"Failed to parse tool call arguments into model: {e}") from e
 
         raise ValueError("No tool calls found in response")
-
 ```
 
 #### `MistralConfig`
@@ -4072,7 +4307,6 @@ class MistralConfig(TypedDict, total=False):
     temperature: Optional[float]
     top_p: Optional[float]
     stream: Optional[bool]
-
 ```
 
 #### `__init__(api_key=None, *, client_args=None, **model_config)`
@@ -4117,6 +4351,7 @@ def __init__(
         if not 0.0 <= top_p <= 1.0:
             raise ValueError(f"top_p must be between 0.0 and 1.0, got {top_p}")
 
+    validate_config_keys(model_config, self.MistralConfig)
     self.config = MistralModel.MistralConfig(**model_config)
 
     # Set default stream to True if not specified
@@ -4128,7 +4363,6 @@ def __init__(
     self.client_args = client_args or {}
     if api_key:
         self.client_args["api_key"] = api_key
-
 ```
 
 #### `format_chunk(event)`
@@ -4219,7 +4453,6 @@ def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
 
         case _:
             raise RuntimeError(f"chunk_type=<{event['chunk_type']}> | unknown type")
-
 ```
 
 #### `format_request(messages, tool_specs=None, system_prompt=None)`
@@ -4286,7 +4519,6 @@ def format_request(
         ]
 
     return request
-
 ```
 
 #### `get_config()`
@@ -4308,16 +4540,15 @@ def get_config(self) -> MistralConfig:
         The Mistral model configuration.
     """
     return self.config
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the Mistral model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. Note: This parameter is accepted for interface consistency but is currently ignored for this model provider. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -4336,6 +4567,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the Mistral model.
@@ -4344,6 +4576,8 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+            interface consistency but is currently ignored for this model provider.**
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -4352,6 +4586,8 @@ async def stream(
     Raises:
         ModelThrottledException: When the model service is throttling requests.
     """
+    warn_on_tool_choice_not_supported(tool_choice)
+
     logger.debug("formatting request")
     request = self.format_request(messages, tool_specs, system_prompt)
     logger.debug("request=<%s>", request)
@@ -4432,7 +4668,6 @@ async def stream(
         raise
 
     logger.debug("finished streaming response from model")
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -4500,7 +4735,6 @@ async def structured_output(
             raise ValueError(f"Failed to parse tool call arguments into model: {e}") from e
 
     raise ValueError("No tool calls found in response")
-
 ```
 
 #### `update_config(**model_config)`
@@ -4521,8 +4755,8 @@ def update_config(self, **model_config: Unpack[MistralConfig]) -> None:  # type:
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.MistralConfig)
     self.config.update(model_config)
-
 ```
 
 ## `strands.models.ollama`
@@ -4595,6 +4829,7 @@ class OllamaModel(Model):
         """
         self.host = host
         self.client_args = ollama_client_args or {}
+        validate_config_keys(model_config, self.OllamaConfig)
         self.config = OllamaModel.OllamaConfig(**model_config)
 
         logger.debug("config=<%s> | initializing", self.config)
@@ -4606,6 +4841,7 @@ class OllamaModel(Model):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.OllamaConfig)
         self.config.update(model_config)
 
     @override
@@ -4809,6 +5045,7 @@ class OllamaModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the Ollama model.
@@ -4817,11 +5054,15 @@ class OllamaModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+                interface consistency but is currently ignored for this model provider.**
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Formatted message chunks from the model.
         """
+        warn_on_tool_choice_not_supported(tool_choice)
+
         logger.debug("formatting request")
         request = self.format_request(messages, tool_specs, system_prompt)
         logger.debug("request=<%s>", request)
@@ -4880,7 +5121,6 @@ class OllamaModel(Model):
             yield {"output": output_model.model_validate_json(content)}
         except Exception as e:
             raise ValueError(f"Failed to parse or load content into model: {e}") from e
-
 ```
 
 #### `OllamaConfig`
@@ -4918,7 +5158,6 @@ class OllamaConfig(TypedDict, total=False):
     stop_sequences: Optional[list[str]]
     temperature: Optional[float]
     top_p: Optional[float]
-
 ```
 
 #### `__init__(host, *, ollama_client_args=None, **model_config)`
@@ -4948,10 +5187,10 @@ def __init__(
     """
     self.host = host
     self.client_args = ollama_client_args or {}
+    validate_config_keys(model_config, self.OllamaConfig)
     self.config = OllamaModel.OllamaConfig(**model_config)
 
     logger.debug("config=<%s> | initializing", self.config)
-
 ```
 
 #### `format_chunk(event)`
@@ -5034,7 +5273,6 @@ def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
 
         case _:
             raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
-
 ```
 
 #### `format_request(messages, tool_specs=None, system_prompt=None)`
@@ -5108,7 +5346,6 @@ def format_request(
             else {}
         ),
     }
-
 ```
 
 #### `get_config()`
@@ -5130,16 +5367,15 @@ def get_config(self) -> OllamaConfig:
         The Ollama model configuration.
     """
     return self.config
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the Ollama model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. Note: This parameter is accepted for interface consistency but is currently ignored for this model provider. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -5154,6 +5390,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the Ollama model.
@@ -5162,11 +5399,15 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+            interface consistency but is currently ignored for this model provider.**
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Formatted message chunks from the model.
     """
+    warn_on_tool_choice_not_supported(tool_choice)
+
     logger.debug("formatting request")
     request = self.format_request(messages, tool_specs, system_prompt)
     logger.debug("request=<%s>", request)
@@ -5197,7 +5438,6 @@ async def stream(
     yield self.format_chunk({"chunk_type": "metadata", "data": event})
 
     logger.debug("finished streaming response from model")
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -5242,7 +5482,6 @@ async def structured_output(
         yield {"output": output_model.model_validate_json(content)}
     except Exception as e:
         raise ValueError(f"Failed to parse or load content into model: {e}") from e
-
 ```
 
 #### `update_config(**model_config)`
@@ -5263,8 +5502,8 @@ def update_config(self, **model_config: Unpack[OllamaConfig]) -> None:  # type: 
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.OllamaConfig)
     self.config.update(model_config)
-
 ```
 
 ## `strands.models.openai`
@@ -5290,7 +5529,6 @@ class Client(Protocol):
     def chat(self) -> Any:
         """Chat completions interface."""
         ...
-
 ```
 
 #### `chat`
@@ -5333,12 +5571,11 @@ class OpenAIModel(Model):
                 For a complete list of supported arguments, see https://pypi.org/project/openai/.
             **model_config: Configuration options for the OpenAI model.
         """
+        validate_config_keys(model_config, self.OpenAIConfig)
         self.config = dict(model_config)
+        self.client_args = client_args or {}
 
         logger.debug("config=<%s> | initializing", self.config)
-
-        client_args = client_args or {}
-        self.client = openai.AsyncOpenAI(**client_args)
 
     @override
     def update_config(self, **model_config: Unpack[OpenAIConfig]) -> None:  # type: ignore[override]
@@ -5347,6 +5584,7 @@ class OpenAIModel(Model):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.OpenAIConfig)
         self.config.update(model_config)
 
     @override
@@ -5444,6 +5682,30 @@ class OpenAIModel(Model):
         }
 
     @classmethod
+    def _format_request_tool_choice(cls, tool_choice: ToolChoice | None) -> dict[str, Any]:
+        """Format a tool choice for OpenAI compatibility.
+
+        Args:
+            tool_choice: Tool choice configuration in Bedrock format.
+
+        Returns:
+            OpenAI compatible tool choice format.
+        """
+        if not tool_choice:
+            return {}
+
+        match tool_choice:
+            case {"auto": _}:
+                return {"tool_choice": "auto"}  # OpenAI SDK doesn't define constants for these values
+            case {"any": _}:
+                return {"tool_choice": "required"}
+            case {"tool": {"name": tool_name}}:
+                return {"tool_choice": {"type": "function", "function": {"name": tool_name}}}
+            case _:
+                # This should not happen with proper typing, but handle gracefully
+                return {"tool_choice": "auto"}
+
+    @classmethod
     def format_request_messages(cls, messages: Messages, system_prompt: Optional[str] = None) -> list[dict[str, Any]]:
         """Format an OpenAI compatible messages array.
 
@@ -5485,7 +5747,11 @@ class OpenAIModel(Model):
         return [message for message in formatted_messages if message["content"] or "tool_calls" in message]
 
     def format_request(
-        self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+        self,
+        messages: Messages,
+        tool_specs: Optional[list[ToolSpec]] = None,
+        system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
     ) -> dict[str, Any]:
         """Format an OpenAI compatible chat streaming request.
 
@@ -5493,6 +5759,7 @@ class OpenAIModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
 
         Returns:
             An OpenAI compatible chat streaming request.
@@ -5517,6 +5784,7 @@ class OpenAIModel(Model):
                 }
                 for tool_spec in tool_specs or []
             ],
+            **(self._format_request_tool_choice(tool_choice)),
             **cast(dict[str, Any], self.config.get("params", {})),
         }
 
@@ -5598,6 +5866,7 @@ class OpenAIModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the OpenAI model.
@@ -5606,68 +5875,74 @@ class OpenAIModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation.
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
             Formatted message chunks from the model.
         """
         logger.debug("formatting request")
-        request = self.format_request(messages, tool_specs, system_prompt)
+        request = self.format_request(messages, tool_specs, system_prompt, tool_choice)
         logger.debug("formatted request=<%s>", request)
 
         logger.debug("invoking model")
-        response = await self.client.chat.completions.create(**request)
 
-        logger.debug("got response from model")
-        yield self.format_chunk({"chunk_type": "message_start"})
-        yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+        # We initialize an OpenAI context on every request so as to avoid connection sharing in the underlying httpx
+        # client. The asyncio event loop does not allow connections to be shared. For more details, please refer to
+        # https://github.com/encode/httpx/discussions/2959.
+        async with openai.AsyncOpenAI(**self.client_args) as client:
+            response = await client.chat.completions.create(**request)
 
-        tool_calls: dict[int, list[Any]] = {}
+            logger.debug("got response from model")
+            yield self.format_chunk({"chunk_type": "message_start"})
+            yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
 
-        async for event in response:
-            # Defensive: skip events with empty or missing choices
-            if not getattr(event, "choices", None):
-                continue
-            choice = event.choices[0]
+            tool_calls: dict[int, list[Any]] = {}
 
-            if choice.delta.content:
-                yield self.format_chunk(
-                    {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
-                )
+            async for event in response:
+                # Defensive: skip events with empty or missing choices
+                if not getattr(event, "choices", None):
+                    continue
+                choice = event.choices[0]
 
-            if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
-                yield self.format_chunk(
-                    {
-                        "chunk_type": "content_delta",
-                        "data_type": "reasoning_content",
-                        "data": choice.delta.reasoning_content,
-                    }
-                )
+                if choice.delta.content:
+                    yield self.format_chunk(
+                        {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+                    )
 
-            for tool_call in choice.delta.tool_calls or []:
-                tool_calls.setdefault(tool_call.index, []).append(tool_call)
+                if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
+                    yield self.format_chunk(
+                        {
+                            "chunk_type": "content_delta",
+                            "data_type": "reasoning_content",
+                            "data": choice.delta.reasoning_content,
+                        }
+                    )
 
-            if choice.finish_reason:
-                break
+                for tool_call in choice.delta.tool_calls or []:
+                    tool_calls.setdefault(tool_call.index, []).append(tool_call)
 
-        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+                if choice.finish_reason:
+                    break
 
-        for tool_deltas in tool_calls.values():
-            yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
+            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
-            for tool_delta in tool_deltas:
-                yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
+            for tool_deltas in tool_calls.values():
+                yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
 
-            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+                for tool_delta in tool_deltas:
+                    yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
 
-        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+                yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-        # Skip remaining events as we don't have use for anything except the final usage payload
-        async for event in response:
-            _ = event
+            yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
 
-        if event.usage:
-            yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+            # Skip remaining events as we don't have use for anything except the final usage payload
+            async for event in response:
+                _ = event
+
+            if event.usage:
+                yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
 
         logger.debug("finished streaming response from model")
 
@@ -5686,11 +5961,15 @@ class OpenAIModel(Model):
         Yields:
             Model events with the last being the structured output.
         """
-        response: ParsedChatCompletion = await self.client.beta.chat.completions.parse(  # type: ignore
-            model=self.get_config()["model_id"],
-            messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
-            response_format=output_model,
-        )
+        # We initialize an OpenAI context on every request so as to avoid connection sharing in the underlying httpx
+        # client. The asyncio event loop does not allow connections to be shared. For more details, please refer to
+        # https://github.com/encode/httpx/discussions/2959.
+        async with openai.AsyncOpenAI(**self.client_args) as client:
+            response: ParsedChatCompletion = await client.beta.chat.completions.parse(
+                model=self.get_config()["model_id"],
+                messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
+                response_format=output_model,
+            )
 
         parsed: T | None = None
         # Find the first choice with tool_calls
@@ -5706,7 +5985,6 @@ class OpenAIModel(Model):
             yield {"output": parsed}
         else:
             raise ValueError("No valid tool use or tool use input was found in the OpenAI response.")
-
 ```
 
 #### `OpenAIConfig`
@@ -5735,7 +6013,6 @@ class OpenAIConfig(TypedDict, total=False):
 
     model_id: str
     params: Optional[dict[str, Any]]
-
 ```
 
 #### `__init__(client_args=None, **model_config)`
@@ -5757,13 +6034,11 @@ def __init__(self, client_args: Optional[dict[str, Any]] = None, **model_config:
             For a complete list of supported arguments, see https://pypi.org/project/openai/.
         **model_config: Configuration options for the OpenAI model.
     """
+    validate_config_keys(model_config, self.OpenAIConfig)
     self.config = dict(model_config)
+    self.client_args = client_args or {}
 
     logger.debug("config=<%s> | initializing", self.config)
-
-    client_args = client_args or {}
-    self.client = openai.AsyncOpenAI(**client_args)
-
 ```
 
 #### `format_chunk(event)`
@@ -5856,16 +6131,15 @@ def format_chunk(self, event: dict[str, Any]) -> StreamEvent:
 
         case _:
             raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
-
 ```
 
-#### `format_request(messages, tool_specs=None, system_prompt=None)`
+#### `format_request(messages, tool_specs=None, system_prompt=None, tool_choice=None)`
 
 Format an OpenAI compatible chat streaming request.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` |
 
 Returns:
 
@@ -5879,7 +6153,11 @@ Source code in `strands/models/openai.py`
 
 ```
 def format_request(
-    self, messages: Messages, tool_specs: Optional[list[ToolSpec]] = None, system_prompt: Optional[str] = None
+    self,
+    messages: Messages,
+    tool_specs: Optional[list[ToolSpec]] = None,
+    system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
 ) -> dict[str, Any]:
     """Format an OpenAI compatible chat streaming request.
 
@@ -5887,6 +6165,7 @@ def format_request(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
 
     Returns:
         An OpenAI compatible chat streaming request.
@@ -5911,9 +6190,9 @@ def format_request(
             }
             for tool_spec in tool_specs or []
         ],
+        **(self._format_request_tool_choice(tool_choice)),
         **cast(dict[str, Any], self.config.get("params", {})),
     }
-
 ```
 
 #### `format_request_message_content(content)`
@@ -5976,7 +6255,6 @@ def format_request_message_content(cls, content: ContentBlock) -> dict[str, Any]
         return {"text": content["text"], "type": "text"}
 
     raise TypeError(f"content_type=<{next(iter(content))}> | unsupported type")
-
 ```
 
 #### `format_request_message_tool_call(tool_use)`
@@ -6012,7 +6290,6 @@ def format_request_message_tool_call(cls, tool_use: ToolUse) -> dict[str, Any]:
         "id": tool_use["toolUseId"],
         "type": "function",
     }
-
 ```
 
 #### `format_request_messages(messages, system_prompt=None)`
@@ -6070,7 +6347,6 @@ def format_request_messages(cls, messages: Messages, system_prompt: Optional[str
         formatted_messages.extend(formatted_tool_messages)
 
     return [message for message in formatted_messages if message["content"] or "tool_calls" in message]
-
 ```
 
 #### `format_request_tool_message(tool_result)`
@@ -6111,7 +6387,6 @@ def format_request_tool_message(cls, tool_result: ToolResult) -> dict[str, Any]:
         "tool_call_id": tool_result["toolUseId"],
         "content": [cls.format_request_message_content(content) for content in contents],
     }
-
 ```
 
 #### `get_config()`
@@ -6133,16 +6408,15 @@ def get_config(self) -> OpenAIConfig:
         The OpenAI model configuration.
     """
     return cast(OpenAIModel.OpenAIConfig, self.config)
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the OpenAI model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -6157,6 +6431,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the OpenAI model.
@@ -6165,71 +6440,76 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation.
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Formatted message chunks from the model.
     """
     logger.debug("formatting request")
-    request = self.format_request(messages, tool_specs, system_prompt)
+    request = self.format_request(messages, tool_specs, system_prompt, tool_choice)
     logger.debug("formatted request=<%s>", request)
 
     logger.debug("invoking model")
-    response = await self.client.chat.completions.create(**request)
 
-    logger.debug("got response from model")
-    yield self.format_chunk({"chunk_type": "message_start"})
-    yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
+    # We initialize an OpenAI context on every request so as to avoid connection sharing in the underlying httpx
+    # client. The asyncio event loop does not allow connections to be shared. For more details, please refer to
+    # https://github.com/encode/httpx/discussions/2959.
+    async with openai.AsyncOpenAI(**self.client_args) as client:
+        response = await client.chat.completions.create(**request)
 
-    tool_calls: dict[int, list[Any]] = {}
+        logger.debug("got response from model")
+        yield self.format_chunk({"chunk_type": "message_start"})
+        yield self.format_chunk({"chunk_type": "content_start", "data_type": "text"})
 
-    async for event in response:
-        # Defensive: skip events with empty or missing choices
-        if not getattr(event, "choices", None):
-            continue
-        choice = event.choices[0]
+        tool_calls: dict[int, list[Any]] = {}
 
-        if choice.delta.content:
-            yield self.format_chunk(
-                {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
-            )
+        async for event in response:
+            # Defensive: skip events with empty or missing choices
+            if not getattr(event, "choices", None):
+                continue
+            choice = event.choices[0]
 
-        if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
-            yield self.format_chunk(
-                {
-                    "chunk_type": "content_delta",
-                    "data_type": "reasoning_content",
-                    "data": choice.delta.reasoning_content,
-                }
-            )
+            if choice.delta.content:
+                yield self.format_chunk(
+                    {"chunk_type": "content_delta", "data_type": "text", "data": choice.delta.content}
+                )
 
-        for tool_call in choice.delta.tool_calls or []:
-            tool_calls.setdefault(tool_call.index, []).append(tool_call)
+            if hasattr(choice.delta, "reasoning_content") and choice.delta.reasoning_content:
+                yield self.format_chunk(
+                    {
+                        "chunk_type": "content_delta",
+                        "data_type": "reasoning_content",
+                        "data": choice.delta.reasoning_content,
+                    }
+                )
 
-        if choice.finish_reason:
-            break
+            for tool_call in choice.delta.tool_calls or []:
+                tool_calls.setdefault(tool_call.index, []).append(tool_call)
 
-    yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
+            if choice.finish_reason:
+                break
 
-    for tool_deltas in tool_calls.values():
-        yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
+        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "text"})
 
-        for tool_delta in tool_deltas:
-            yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
+        for tool_deltas in tool_calls.values():
+            yield self.format_chunk({"chunk_type": "content_start", "data_type": "tool", "data": tool_deltas[0]})
 
-        yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
+            for tool_delta in tool_deltas:
+                yield self.format_chunk({"chunk_type": "content_delta", "data_type": "tool", "data": tool_delta})
 
-    yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
+            yield self.format_chunk({"chunk_type": "content_stop", "data_type": "tool"})
 
-    # Skip remaining events as we don't have use for anything except the final usage payload
-    async for event in response:
-        _ = event
+        yield self.format_chunk({"chunk_type": "message_stop", "data": choice.finish_reason})
 
-    if event.usage:
-        yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
+        # Skip remaining events as we don't have use for anything except the final usage payload
+        async for event in response:
+            _ = event
+
+        if event.usage:
+            yield self.format_chunk({"chunk_type": "metadata", "data": event.usage})
 
     logger.debug("finished streaming response from model")
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -6262,11 +6542,15 @@ async def structured_output(
     Yields:
         Model events with the last being the structured output.
     """
-    response: ParsedChatCompletion = await self.client.beta.chat.completions.parse(  # type: ignore
-        model=self.get_config()["model_id"],
-        messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
-        response_format=output_model,
-    )
+    # We initialize an OpenAI context on every request so as to avoid connection sharing in the underlying httpx
+    # client. The asyncio event loop does not allow connections to be shared. For more details, please refer to
+    # https://github.com/encode/httpx/discussions/2959.
+    async with openai.AsyncOpenAI(**self.client_args) as client:
+        response: ParsedChatCompletion = await client.beta.chat.completions.parse(
+            model=self.get_config()["model_id"],
+            messages=self.format_request(prompt, system_prompt=system_prompt)["messages"],
+            response_format=output_model,
+        )
 
     parsed: T | None = None
     # Find the first choice with tool_calls
@@ -6282,7 +6566,6 @@ async def structured_output(
         yield {"output": parsed}
     else:
         raise ValueError("No valid tool use or tool use input was found in the OpenAI response.")
-
 ```
 
 #### `update_config(**model_config)`
@@ -6303,8 +6586,8 @@ def update_config(self, **model_config: Unpack[OpenAIConfig]) -> None:  # type: 
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.OpenAIConfig)
     self.config.update(model_config)
-
 ```
 
 ## `strands.models.writer`
@@ -6351,6 +6634,7 @@ class WriterModel(Model):
             client_args: Arguments for the Writer client (e.g., api_key, base_url, timeout, etc.).
             **model_config: Configuration options for the Writer model.
         """
+        validate_config_keys(model_config, self.WriterConfig)
         self.config = WriterModel.WriterConfig(**model_config)
 
         logger.debug("config=<%s> | initializing", self.config)
@@ -6365,6 +6649,7 @@ class WriterModel(Model):
         Args:
             **model_config: Configuration overrides.
         """
+        validate_config_keys(model_config, self.WriterConfig)
         self.config.update(model_config)
 
     @override
@@ -6650,6 +6935,7 @@ class WriterModel(Model):
         messages: Messages,
         tool_specs: Optional[list[ToolSpec]] = None,
         system_prompt: Optional[str] = None,
+        tool_choice: ToolChoice | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[StreamEvent, None]:
         """Stream conversation with the Writer model.
@@ -6658,6 +6944,8 @@ class WriterModel(Model):
             messages: List of message objects to be processed by the model.
             tool_specs: List of tool specifications to make available to the model.
             system_prompt: System prompt to provide context to the model.
+            tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+                interface consistency but is currently ignored for this model provider.**
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -6666,6 +6954,8 @@ class WriterModel(Model):
         Raises:
             ModelThrottledException: When the model service is throttling requests from the client.
         """
+        warn_on_tool_choice_not_supported(tool_choice)
+
         logger.debug("formatting request")
         request = self.format_request(messages, tool_specs, system_prompt)
         logger.debug("request=<%s>", request)
@@ -6745,7 +7035,6 @@ class WriterModel(Model):
             yield {"output": output_model.model_validate_json(content)}
         except Exception as e:
             raise ValueError(f"Failed to parse or load content into model: {e}") from e
-
 ```
 
 #### `WriterConfig`
@@ -6779,7 +7068,6 @@ class WriterConfig(TypedDict, total=False):
     stream_options: Dict[str, Any]
     temperature: Optional[float]
     top_p: Optional[float]
-
 ```
 
 #### `__init__(client_args=None, **model_config)`
@@ -6800,13 +7088,13 @@ def __init__(self, client_args: Optional[dict[str, Any]] = None, **model_config:
         client_args: Arguments for the Writer client (e.g., api_key, base_url, timeout, etc.).
         **model_config: Configuration options for the Writer model.
     """
+    validate_config_keys(model_config, self.WriterConfig)
     self.config = WriterModel.WriterConfig(**model_config)
 
     logger.debug("config=<%s> | initializing", self.config)
 
     client_args = client_args or {}
     self.client = writerai.AsyncClient(**client_args)
-
 ```
 
 #### `format_chunk(event)`
@@ -6887,7 +7175,6 @@ def format_chunk(self, event: Any) -> StreamEvent:
 
         case _:
             raise RuntimeError(f"chunk_type=<{event['chunk_type']} | unknown type")
-
 ```
 
 #### `format_request(messages, tool_specs=None, system_prompt=None)`
@@ -6945,7 +7232,6 @@ def format_request(
         ]
 
     return request
-
 ```
 
 #### `get_config()`
@@ -6967,16 +7253,15 @@ def get_config(self) -> WriterConfig:
         The Writer model configuration.
     """
     return self.config
-
 ```
 
-#### `stream(messages, tool_specs=None, system_prompt=None, **kwargs)`
+#### `stream(messages, tool_specs=None, system_prompt=None, tool_choice=None, **kwargs)`
 
 Stream conversation with the Writer model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of message objects to be processed by the model. | *required* | | `tool_specs` | `Optional[list[ToolSpec]]` | List of tool specifications to make available to the model. | `None` | | `system_prompt` | `Optional[str]` | System prompt to provide context to the model. | `None` | | `tool_choice` | `ToolChoice | None` | Selection strategy for tool invocation. Note: This parameter is accepted for interface consistency but is currently ignored for this model provider. | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -6995,6 +7280,7 @@ async def stream(
     messages: Messages,
     tool_specs: Optional[list[ToolSpec]] = None,
     system_prompt: Optional[str] = None,
+    tool_choice: ToolChoice | None = None,
     **kwargs: Any,
 ) -> AsyncGenerator[StreamEvent, None]:
     """Stream conversation with the Writer model.
@@ -7003,6 +7289,8 @@ async def stream(
         messages: List of message objects to be processed by the model.
         tool_specs: List of tool specifications to make available to the model.
         system_prompt: System prompt to provide context to the model.
+        tool_choice: Selection strategy for tool invocation. **Note: This parameter is accepted for
+            interface consistency but is currently ignored for this model provider.**
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
@@ -7011,6 +7299,8 @@ async def stream(
     Raises:
         ModelThrottledException: When the model service is throttling requests from the client.
     """
+    warn_on_tool_choice_not_supported(tool_choice)
+
     logger.debug("formatting request")
     request = self.format_request(messages, tool_specs, system_prompt)
     logger.debug("request=<%s>", request)
@@ -7062,7 +7352,6 @@ async def stream(
     yield self.format_chunk({"chunk_type": "metadata", "data": chunk.usage})
 
     logger.debug("finished streaming response from model")
-
 ```
 
 #### `structured_output(output_model, prompt, system_prompt=None, **kwargs)`
@@ -7103,7 +7392,6 @@ async def structured_output(
         yield {"output": output_model.model_validate_json(content)}
     except Exception as e:
         raise ValueError(f"Failed to parse or load content into model: {e}") from e
-
 ```
 
 #### `update_config(**model_config)`
@@ -7124,6 +7412,6 @@ def update_config(self, **model_config: Unpack[WriterConfig]) -> None:  # type: 
     Args:
         **model_config: Configuration overrides.
     """
+    validate_config_keys(model_config, self.WriterConfig)
     self.config.update(model_config)
-
 ```

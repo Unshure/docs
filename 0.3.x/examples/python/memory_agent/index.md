@@ -64,7 +64,6 @@ def process_input(self, user_input: str) -> str:
     # Otherwise, retrieve relevant memories and generate a response
     relevant_memories = self.retrieve_memories(user_input)
     return self.generate_answer_from_memories(user_input, relevant_memories)
-
 ```
 
 This classification examines patterns in the user's input to determine whether to store new information, list existing memories, or retrieve relevant memories to answer a question.
@@ -97,7 +96,6 @@ Try to answer to the point.
     )
 
     return str(response['content'][0]['text'])
-
 ```
 
 This two-step process:
@@ -151,7 +149,6 @@ class MemoryAssistant:
 
     def process_input(self, user_input: str) -> str:
         # Implementation...
-
 ```
 
 This design provides:
@@ -171,7 +168,6 @@ The code uses specialized system prompts for different tasks:
    MEMORY_SYSTEM_PROMPT = """You are a memory specialist agent. You help users store, 
    retrieve, and manage memories. You maintain context across conversations by remembering
    important information about users and their preferences...
-
    ```
 
 1. **Answer Generation System Prompt**: Specialized for generating responses from memories
@@ -179,7 +175,6 @@ The code uses specialized system prompts for different tasks:
    ```
    ANSWER_SYSTEM_PROMPT = """You are an assistant that creates helpful responses based on retrieved memories.
    Use the provided memories to create a natural, conversational response to the user's question...
-
    ```
 
 This specialization improves performance by focusing each prompt on a specific task rather than using a general-purpose prompt.
@@ -192,7 +187,6 @@ The agent initializes with structured memories to demonstrate memory capabilitie
 def initialize_demo_memories(self) -> None:
     init_memories = "My name is Alex. I like to travel and stay in Airbnbs rather than hotels. I am planning a trip to Japan next spring. I enjoy hiking and outdoor photography as hobbies. I have a dog named Max. My favorite cuisine is Italian food."
     self.store_memory(init_memories)
-
 ```
 
 These memories provide:
@@ -224,7 +218,6 @@ This ensures that memories are properly associated with specific users or agents
 > Remember that I prefer window seats on flights
 
 I've stored that information in my memory.
-
 ```
 
 **Interaction 2**: Retrieving Information
@@ -233,7 +226,6 @@ I've stored that information in my memory.
 > What do you know about my travel preferences?
 
 Based on my memory, you prefer to travel and stay in Airbnbs rather than hotels instead of traditional accommodations. You're also planning a trip to Japan next spring. Additionally, you prefer window seats on flights for your travels.
-
 ```
 
 **Interaction 3**: Listing All Memories
@@ -244,7 +236,6 @@ Based on my memory, you prefer to travel and stay in Airbnbs rather than hotels 
 Here's everything I remember:
 1. My name is Alex. I like to travel and stay in Airbnbs rather than hotels. I am planning a trip to Japan next spring. I enjoy hiking and outdoor photography as hobbies. I have a dog named Max. My favorite cuisine is Italian food.
 2. I prefer window seats on flights
-
 ```
 
 ## Extending the Example

@@ -8,22 +8,21 @@ Example Usage
 
 ```
 from strands.hooks import HookProvider, HookRegistry
-from strands.hooks.events import StartRequestEvent, EndRequestEvent
+from strands.hooks.events import BeforeInvocationEvent, AfterInvocationEvent
 
 class LoggingHooks(HookProvider):
     def register_hooks(self, registry: HookRegistry) -> None:
-        registry.add_callback(StartRequestEvent, self.log_start)
-        registry.add_callback(EndRequestEvent, self.log_end)
+        registry.add_callback(BeforeInvocationEvent, self.log_start)
+        registry.add_callback(AfterInvocationEvent, self.log_end)
 
-    def log_start(self, event: StartRequestEvent) -> None:
+    def log_start(self, event: BeforeInvocationEvent) -> None:
         print(f"Request started for {event.agent.name}")
 
-    def log_end(self, event: EndRequestEvent) -> None:
+    def log_end(self, event: AfterInvocationEvent) -> None:
         print(f"Request completed for {event.agent.name}")
 
 # Use with agent
 agent = Agent(hooks=[LoggingHooks()])
-
 ```
 
 This replaces the older callback_handler approach with a more composable, type-safe system that supports multiple subscribers per event type.
@@ -74,7 +73,6 @@ class AfterInvocationEvent(HookEvent):
     def should_reverse_callbacks(self) -> bool:
         """True to invoke callbacks in reverse order."""
         return True
-
 ```
 
 #### `should_reverse_callbacks`
@@ -102,7 +100,6 @@ class AgentInitializedEvent(HookEvent):
     """
 
     pass
-
 ```
 
 ### `BeforeInvocationEvent`
@@ -137,7 +134,6 @@ class BeforeInvocationEvent(HookEvent):
     """
 
     pass
-
 ```
 
 ### `MessageAddedEvent`
@@ -174,7 +170,6 @@ class MessageAddedEvent(HookEvent):
     """
 
     message: Message
-
 ```
 
 ## `strands.hooks.registry`
@@ -204,7 +199,6 @@ Example
 ```
 def my_callback(event: StartRequestEvent) -> None:
     print(f"Request started for agent: {event.agent.name}")
-
 ```
 
 Source code in `strands/hooks/registry.py`
@@ -231,7 +225,6 @@ class HookCallback(Protocol, Generic[TEvent]):
             event: The strongly-typed event to handle.
         """
         ...
-
 ````
 
 #### `__call__(event)`
@@ -252,7 +245,6 @@ def __call__(self, event: TEvent) -> None:
         event: The strongly-typed event to handle.
     """
     ...
-
 ```
 
 ### `HookEvent`
@@ -316,7 +308,6 @@ class HookEvent:
             return super().__setattr__(name, value)
 
         raise AttributeError(f"Property {name} is not writable")
-
 ```
 
 #### `should_reverse_callbacks`
@@ -339,7 +330,6 @@ def __post_init__(self) -> None:
     # This is needed as otherwise the class can't be initialized at all, so we trigger
     # this after class initialization
     super().__setattr__("_disallow_writes", True)
-
 ```
 
 #### `__setattr__(name, value)`
@@ -366,7 +356,6 @@ def __setattr__(self, name: str, value: Any) -> None:
         return super().__setattr__(name, value)
 
     raise AttributeError(f"Property {name} is not writable")
-
 ```
 
 ### `HookProvider`
@@ -386,7 +375,6 @@ class MyHookProvider(HookProvider):
         registry.add_callback(EndRequestEvent, self.on_request_end)
 
 agent = Agent(hooks=[MyHookProvider()])
-
 ```
 
 Source code in `strands/hooks/registry.py`
@@ -418,7 +406,6 @@ class HookProvider(Protocol):
             **kwargs: Additional keyword arguments for future extensibility.
         """
         ...
-
 ````
 
 #### `register_hooks(registry, **kwargs)`
@@ -440,7 +427,6 @@ def register_hooks(self, registry: "HookRegistry", **kwargs: Any) -> None:
         **kwargs: Additional keyword arguments for future extensibility.
     """
     ...
-
 ```
 
 ### `HookRegistry`
@@ -575,7 +561,6 @@ class HookRegistry:
             yield from reversed(callbacks)
         else:
             yield from callbacks
-
 ````
 
 #### `__init__()`
@@ -588,7 +573,6 @@ Source code in `strands/hooks/registry.py`
 def __init__(self) -> None:
     """Initialize an empty hook registry."""
     self._registered_callbacks: dict[Type, list[HookCallback]] = {}
-
 ```
 
 #### `add_callback(event_type, callback)`
@@ -606,7 +590,6 @@ def my_handler(event: StartRequestEvent):
     print("Request started")
 
 registry.add_callback(StartRequestEvent, my_handler)
-
 ```
 
 Source code in `strands/hooks/registry.py`
@@ -629,7 +612,6 @@ def add_callback(self, event_type: Type[TEvent], callback: HookCallback[TEvent])
     """
     callbacks = self._registered_callbacks.setdefault(event_type, [])
     callbacks.append(callback)
-
 ````
 
 #### `add_hook(hook)`
@@ -651,7 +633,6 @@ class MyHooks(HookProvider):
         registry.add_callback(EndRequestEvent, self.on_end)
 
 registry.add_hook(MyHooks())
-
 ```
 
 Source code in `strands/hooks/registry.py`
@@ -678,7 +659,6 @@ def add_hook(self, hook: HookProvider) -> None:
         ```
     """
     hook.register_hooks(self)
-
 ````
 
 #### `get_callbacks_for(event)`
@@ -701,7 +681,6 @@ Example
 event = EndRequestEvent(agent=my_agent)
 for callback in registry.get_callbacks_for(event):
     callback(event)
-
 ```
 
 Source code in `strands/hooks/registry.py`
@@ -734,7 +713,6 @@ def get_callbacks_for(self, event: TEvent) -> Generator[HookCallback[TEvent], No
         yield from reversed(callbacks)
     else:
         yield from callbacks
-
 ````
 
 #### `has_callbacks()`
@@ -750,7 +728,6 @@ Example
 ```
 if registry.has_callbacks():
     print("Registry has callbacks registered")
-
 ```
 
 Source code in `strands/hooks/registry.py`
@@ -769,7 +746,6 @@ def has_callbacks(self) -> bool:
         ```
     """
     return bool(self._registered_callbacks)
-
 ````
 
 #### `invoke_callbacks(event)`
@@ -791,7 +767,6 @@ Example
 ```
 event = StartRequestEvent(agent=my_agent)
 registry.invoke_callbacks(event)
-
 ```
 
 Source code in `strands/hooks/registry.py`
@@ -821,5 +796,4 @@ def invoke_callbacks(self, event: TInvokeEvent) -> TInvokeEvent:
         callback(event)
 
     return event
-
 ````

@@ -70,7 +70,6 @@ class AfterModelInvocationEvent(HookEvent):
     def should_reverse_callbacks(self) -> bool:
         """True to invoke callbacks in reverse order."""
         return True
-
 ```
 
 ##### `should_reverse_callbacks`
@@ -99,7 +98,6 @@ class ModelStopResponse:
 
     message: Message
     stop_reason: StopReason
-
 ```
 
 #### `AfterToolInvocationEvent`
@@ -151,7 +149,6 @@ class AfterToolInvocationEvent(HookEvent):
     def should_reverse_callbacks(self) -> bool:
         """True to invoke callbacks in reverse order."""
         return True
-
 ```
 
 ##### `should_reverse_callbacks`
@@ -183,7 +180,6 @@ class BeforeModelInvocationEvent(HookEvent):
     """
 
     pass
-
 ```
 
 #### `BeforeToolInvocationEvent`
@@ -223,5 +219,4 @@ class BeforeToolInvocationEvent(HookEvent):
 
     def _can_write(self, name: str) -> bool:
         return name in ["selected_tool", "tool_use"]
-
 ```

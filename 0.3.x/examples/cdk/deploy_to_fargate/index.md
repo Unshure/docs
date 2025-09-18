@@ -40,14 +40,12 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install Python dependencies for the local development
 pip install -r ./docker/requirements.txt
-
 ```
 
 1. Bootstrap your AWS environment (if not already done):
 
 ```
 npx cdk bootstrap
-
 ```
 
 1. Ensure podman is started (one time):
@@ -55,14 +53,12 @@ npx cdk bootstrap
 ```
 podman machine init
 podman machine start
-
 ```
 
 1. Package & deploy via CDK:
 
 ```
 CDK_DOCKER=podman npx cdk deploy
-
 ```
 
 ## Usage
@@ -72,7 +68,6 @@ After deployment, you can access the weather service using the Application Load 
 ```
 # Get the service URL from the CDK output
 SERVICE_URL=$(aws cloudformation describe-stacks --stack-name AgentFargateStack --query "Stacks[0].Outputs[?ExportName=='AgentServiceEndpoint'].OutputValue" --output text)
-
 ```
 
 The service exposes a REST API endpoint that you can call using curl or any HTTP client:
@@ -89,7 +84,6 @@ curl -X POST \
   http://$SERVICE_URL/weather-streaming \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in New York in Celsius?"}'
-
 ```
 
 ## Local testing (python)
@@ -98,14 +92,12 @@ You can run the python app directly for local testing via:
 
 ```
 python ./docker/app/app.py
-
 ```
 
 Then, set the SERVICE_URL to point to your local server
 
 ```
 SERVICE_URL=127.0.0.1:8000
-
 ```
 
 and you can use the curl commands above to test locally.
@@ -117,14 +109,12 @@ Build & run the container:
 ```
 podman build ./docker/ -t agent_container
 podman run -p 127.0.0.1:8000:8000 -t agent_container
-
 ```
 
 Then, set the SERVICE_URL to point to your local server
 
 ```
 SERVICE_URL=127.0.0.1:8000
-
 ```
 
 and you can use the curl commands above to test locally.
@@ -135,7 +125,6 @@ To remove all resources created by this example:
 
 ```
 npx cdk destroy
-
 ```
 
 ## Additional Resources

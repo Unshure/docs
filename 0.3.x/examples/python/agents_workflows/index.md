@@ -59,7 +59,6 @@ writer_agent = Agent(
         "3. Keep reports under 500 words with brief source mentions"
     )
 )
-
 ```
 
 ### 2. Workflow Orchestration
@@ -86,7 +85,6 @@ def run_research_workflow(user_input):
     )
 
     return final_report
-
 ```
 
 ### 3. Output Suppression
@@ -104,7 +102,6 @@ researcher_agent = Agent(
     callback_handler=None, # Suppresses output
     tools=[http_request]
 )
-
 ```
 
 Without this suppression, the default [callback_handler](https://github.com/strands-agents/sdk-python/blob/main/src/strands/handlers/callback_handler.py) would print all outputs to stdout, creating a cluttered experience with duplicate information from each agent's thinking process and tool calls. Suppressing the output creates a clean user experience by preventing intermediate outputs while still allowing responses to be captured programmatically and enabling proper information flow between agents. Instead of verbose agent outputs, the code provides concise progress feedback through simple print statements:
@@ -114,7 +111,6 @@ print("\nProcessing: '{user_input}'")
 print("\nStep 1: Researcher Agent gathering web information...")
 print("Research complete")
 print("Passing research findings to Analyst Agent...\n")
-
 ```
 
 ## Sample Queries and Responses

@@ -17,8 +17,7 @@ The [`OllamaModel`](../../../../api-reference/models/#strands.models.ollama) cla
 First install the python client into your python environment:
 
 ```
-pip install 'strands-agents[ollama]'
-
+pip install 'strands-agents[ollama]' strands-agents-tools
 ```
 
 Next, you'll need to install and setup ollama itself.
@@ -30,15 +29,13 @@ Next, you'll need to install and setup ollama itself.
 1. Pull your desired model:
 
    ```
-   ollama pull llama3
-
+   ollama pull llama3.1
    ```
 
 1. Start the Ollama server:
 
    ```
    ollama serve
-
    ```
 
 #### Option 2: Docker Installation
@@ -47,14 +44,12 @@ Next, you'll need to install and setup ollama itself.
 
    ```
    docker pull ollama/ollama
-
    ```
 
 1. Run the Ollama container:
 
    ```
    docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
-
    ```
 
 > Note: Add `--gpus=all` if you have a GPU and if Docker GPU support is configured.
@@ -62,15 +57,13 @@ Next, you'll need to install and setup ollama itself.
 1. Pull a model using the Docker container:
 
    ```
-   docker exec -it ollama ollama pull llama3
-
+   docker exec -it ollama ollama pull llama3.1
    ```
 
 1. Verify the Ollama server is running:
 
    ```
    curl http://localhost:11434/api/tags
-
    ```
 
 ## Basic Usage
@@ -84,7 +77,7 @@ from strands.models.ollama import OllamaModel
 # Create an Ollama model instance
 ollama_model = OllamaModel(
     host="http://localhost:11434",  # Ollama server address
-    model_id="llama3"               # Specify which model to use
+    model_id="llama3.1"               # Specify which model to use
 )
 
 # Create an agent using the Ollama model
@@ -92,7 +85,6 @@ agent = Agent(model=ollama_model)
 
 # Use the agent
 agent("Tell me about Strands agents.") # Prints model output to stdout by default
-
 ```
 
 ## Configuration Options
@@ -110,7 +102,7 @@ from strands.models.ollama import OllamaModel
 # Create a configured Ollama model
 ollama_model = OllamaModel(
     host="http://localhost:11434",
-    model_id="llama3",
+    model_id="llama3.1",
     temperature=0.7,
     keep_alive="10m",
     stop_sequences=["###", "END"],
@@ -122,7 +114,6 @@ agent = Agent(model=ollama_model)
 
 # Use the agent
 response = agent("Write a short story about an AI assistant.")
-
 ```
 
 ## Advanced Features
@@ -135,7 +126,7 @@ You can update the model configuration during runtime:
 # Create the model with initial configuration
 ollama_model = OllamaModel(
     host="http://localhost:11434",
-    model_id="llama3",
+    model_id="llama3.1",
     temperature=0.7
 )
 
@@ -144,7 +135,6 @@ ollama_model.update_config(
     temperature=0.9,
     top_p=0.8
 )
-
 ```
 
 This is especially useful if you want a tool to update the model's config for you:
@@ -174,7 +164,6 @@ def update_temperature(temperature: float, agent: Agent) -> str:
     print(f"Updating Temperature to {temperature}")
     agent.model.update_config(temperature=temperature)
     return f"Temperature updated to {temperature}"
-
 ```
 
 ### Using Different Models
@@ -185,7 +174,7 @@ Ollama supports many different models. You can switch between them (make sure th
 # Create models for different use cases
 creative_model = OllamaModel(
     host="http://localhost:11434",
-    model_id="llama3",
+    model_id="llama3.1",
     temperature=0.8
 )
 
@@ -198,7 +187,6 @@ factual_model = OllamaModel(
 # Create agents with different models
 creative_agent = Agent(model=creative_model)
 factual_agent = Agent(model=factual_model)
-
 ```
 
 ### Structured Output
@@ -220,7 +208,7 @@ class BookAnalysis(BaseModel):
 
 ollama_model = OllamaModel(
     host="http://localhost:11434",
-    model_id="llama3",
+    model_id="llama3.1",
 )
 
 agent = Agent(model=ollama_model)
@@ -238,7 +226,6 @@ print(f"Title: {result.title}")
 print(f"Author: {result.author}")
 print(f"Genre: {result.genre}")
 print(f"Rating: {result.rating}")
-
 ```
 
 ## Tool Support
@@ -253,7 +240,7 @@ from strands_tools import calculator, current_time
 # Create an Ollama model
 ollama_model = OllamaModel(
     host="http://localhost:11434",
-    model_id="llama3"
+    model_id="llama3.1"
 )
 
 # Create an agent with tools
@@ -264,7 +251,6 @@ agent = Agent(
 
 # Use the agent with tools
 response = agent("What's the square root of 144 plus the current time?")
-
 ```
 
 ## Troubleshooting

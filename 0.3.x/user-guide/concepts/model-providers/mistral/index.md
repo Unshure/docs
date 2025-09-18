@@ -9,8 +9,7 @@ Mistral AI offers both premier models and free models, driving innovation and co
 Mistral API is configured as an optional dependency in Strands Agents. To install, run:
 
 ```
-pip install 'strands-agents[mistral]'
-
+pip install 'strands-agents[mistral]' strands-agents-tools
 ```
 
 ## Usage
@@ -31,7 +30,6 @@ model = MistralModel(
 agent = Agent(model=model, tools=[calculator])
 response = agent("What is 2+2")
 print(response)
-
 ```
 
 ## Configuration
@@ -49,7 +47,6 @@ model = MistralModel(
     },
     model_id="mistral-large-latest"
 )
-
 ```
 
 For a complete list of available client arguments, please refer to the Mistral AI [documentation](https://docs.mistral.ai/).
@@ -66,14 +63,12 @@ You can set your Mistral API key as an environment variable instead of passing i
 
 ```
 export MISTRAL_API_KEY="your_api_key_here"
-
 ```
 
 Then initialize the model without the API key parameter:
 
 ```
 model = MistralModel(model_id="mistral-large-latest")
-
 ```
 
 ## Troubleshooting

@@ -36,28 +36,24 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 # Install Python dependencies for lambda with correct architecture
 pip install -r requirements.txt --python-version 3.12 --platform manylinux2014_aarch64 --target ./packaging/_dependencies --only-binary=:all:
-
 ```
 
 1. Package the lambda:
 
 ```
 python ./bin/package_for_lambda.py
-
 ```
 
 1. Bootstrap your AWS environment (if not already done):
 
 ```
 npx cdk bootstrap
-
 ```
 
 1. Deploy the lambda:
 
 ```
 npx cdk deploy
-
 ```
 
 ## Usage
@@ -70,14 +66,12 @@ aws lambda invoke --function-name AgentFunction \
       --cli-binary-format raw-in-base64-out \
       --payload '{"prompt": "What is the weather in New York?"}' \
       output.json
-
 ```
 
 If you have jq installed, you can output the response from output.json like so:
 
 ```
 jq -r '.' ./output.json
-
 ```
 
 Otherwise, open output.json to view the result.
@@ -88,7 +82,6 @@ To remove all resources created by this example:
 
 ```
 npx cdk destroy
-
 ```
 
 ## Additional Resources

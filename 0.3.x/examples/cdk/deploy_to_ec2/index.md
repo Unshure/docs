@@ -39,21 +39,18 @@ pip install -r ./requirements.txt
 
 # Install Python dependencies for the app distribution
 pip install -r requirements.txt --python-version 3.12 --platform manylinux2014_aarch64 --target ./packaging/_dependencies --only-binary=:all:
-
 ```
 
 1. Bootstrap your AWS environment (if not already done):
 
 ```
 npx cdk bootstrap
-
 ```
 
 1. Deploy the stack:
 
 ```
 npx cdk deploy
-
 ```
 
 ## How It Works
@@ -74,7 +71,6 @@ After deployment, you can access the weather service using the Application Load 
 ```
 # Get the service URL from the CDK output
 SERVICE_URL=$(aws cloudformation describe-stacks --stack-name AgentEC2Stack --region us-east-1 --query "Stacks[0].Outputs[?ExportName=='Ec2ServiceEndpoint'].OutputValue" --output text)
-
 ```
 
 The service exposes a REST API endpoint that you can call using curl or any HTTP client:
@@ -91,7 +87,6 @@ curl -X POST \
   http://$SERVICE_URL/weather-streaming \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in New York in Celsius?"}'
-
 ```
 
 ## Local testing
@@ -100,14 +95,12 @@ You can run the python app directly for local testing via:
 
 ```
 python app/app.py
-
 ```
 
 Then, set the SERVICE_URL to point to your local server
 
 ```
 SERVICE_URL=127.0.0.1:8000
-
 ```
 
 and you can use the curl commands above to test locally.
@@ -118,7 +111,6 @@ To remove all resources created by this example:
 
 ```
 npx cdk destroy
-
 ```
 
 ## Callouts and considerations

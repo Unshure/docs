@@ -28,7 +28,6 @@ agent = Agent(session_manager=session_manager)
 
 # Use the agent - all messages and state are automatically persisted
 agent("Hello!")  # This conversation is persisted
-
 ```
 
 The conversation, and associated state, is persisted to the underlying filesystem.
@@ -59,7 +58,6 @@ agent = Agent(session_manager=session_manager)
 
 # Use the agent normally - state and messages will be persisted automatically
 agent("Hello, I'm a new user!")
-
 ```
 
 #### File Storage Structure
@@ -76,7 +74,6 @@ When using [`FileSessionManager`](../../../../api-reference/session/#strands.ses
             └── messages/
                 ├── message_<message_id>.json
                 └── message_<message_id>.json
-
 ```
 
 ### S3SessionManager
@@ -105,7 +102,6 @@ agent = Agent(session_manager=session_manager)
 
 # Use the agent normally - state and messages will be persisted to S3
 agent("Tell me about AWS S3")
-
 ```
 
 #### S3 Storage Structure
@@ -122,7 +118,6 @@ Just like in the [`FileSessionManager`](../../../../api-reference/session/#stran
             └── messages/
                 ├── message_<message_id>.json
                 └── message_<message_id>.json
-
 ```
 
 #### Required S3 Permissions
@@ -156,7 +151,6 @@ Here's a sample IAM policy that grants these permissions for a specific bucket:
         }
     ]
 }
-
 ```
 
 ## How Session Management Works
@@ -258,7 +252,6 @@ session_manager = RepositorySessionManager(
 )
 
 agent = Agent(session_manager=session_manager)
-
 ```
 
 This approach allows you to store session data in any backend system while leveraging the built-in session management logic.

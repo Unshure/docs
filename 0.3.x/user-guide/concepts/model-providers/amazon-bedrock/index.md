@@ -41,7 +41,6 @@ Here's a sample IAM policy that grants the necessary permissions:
         }
     ]
 }
-
 ```
 
 For production environments, it's recommended to scope down the `Resource` to specific model ARNs.
@@ -72,7 +71,6 @@ For development environments, configure credentials using one of these methods:
 
 ```
 aws configure
-
 ```
 
 **Option 2: Environment Variables**
@@ -82,7 +80,6 @@ export AWS_ACCESS_KEY_ID=your_access_key
 export AWS_SECRET_ACCESS_KEY=your_secret_key
 export AWS_SESSION_TOKEN=your_session_token  # If using temporary credentials
 export AWS_REGION="us-west-2"  # Used if a custom Boto3 Session is not provided
-
 ```
 
 **Option 3: Custom Boto3 Session** You can configure a custom [boto3 Session](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/core/session.html) and pass it to the [`BedrockModel`](../../../../api-reference/models/#strands.models.bedrock):
@@ -105,7 +102,6 @@ bedrock_model = BedrockModel(
     model_id="anthropic.claude-sonnet-4-20250514-v1:0",
     boto_session=session
 )
-
 ```
 
 For complete details on credential configuration and resolution, see the [boto3 credentials documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials).
@@ -120,8 +116,9 @@ from strands import Agent
 agent = Agent()
 
 response = agent("Tell me about Amazon Bedrock.")
-
 ```
+
+> **Note:** See [Bedrock troubleshooting](./#troubleshooting) if you encounter any issues.
 
 You can specify which Bedrock model to use by passing in the model ID string directly to the Agent constructor:
 
@@ -132,7 +129,6 @@ from strands import Agent
 agent = Agent(model="anthropic.claude-sonnet-4-20250514-v1:0")
 
 response = agent("Tell me about Amazon Bedrock.")
-
 ```
 
 For more control over model configuration, you can create an instance of the [`BedrockModel`](../../../../api-reference/models/#strands.models.bedrock) class:
@@ -153,7 +149,6 @@ agent = Agent(model=bedrock_model)
 
 # Use the agent
 response = agent("Tell me about Amazon Bedrock.")
-
 ```
 
 ## Configuration Options
@@ -191,7 +186,6 @@ agent = Agent(model=bedrock_model)
 
 # Use the agent
 response = agent("Write a short story about an AI assistant.")
-
 ```
 
 ## Advanced Features
@@ -212,7 +206,6 @@ non_streaming_model = BedrockModel(
     model_id="us.meta.llama3-2-90b-instruct-v1:0",
     streaming=False,  # Disable streaming
 )
-
 ```
 
 See the Amazon Bedrock documentation for [Supported models and model features](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html) to learn about the streaming support for different models.
@@ -248,7 +241,6 @@ response = agent(
         }
     ]
 )
-
 ```
 
 For a complete list of input types, please refer to the [API Reference](../../../../api-reference/types/#strands.types.content.ContentBlock).
@@ -277,7 +269,6 @@ bedrock_model = BedrockModel(
 guardrail_agent = Agent(model=bedrock_model)
 
 response = guardrail_agent("Can you tell me about the Strands SDK?")
-
 ```
 
 When a guardrail is triggered:
@@ -293,6 +284,21 @@ Strands supports caching system prompts, tools, and messages to improve performa
 When you enable prompt caching, Amazon Bedrock creates a cache composed of **cache checkpoints**. These are markers that define the contiguous subsection of your prompt that you wish to cache (often referred to as a prompt prefix). These prompt prefixes should be static between requests; alterations to the prompt prefix in subsequent requests will result in a cache miss.
 
 The cache has a five-minute Time To Live (TTL), which resets with each successful cache hit. During this period, the context in the cache is preserved. If no cache hits occur within the TTL window, your cache expires.
+
+When using prompt caching, Amazon Bedrock provides cache statistics including `CacheReadInputTokens` and `CacheWriteInputTokens`.
+
+- `CacheWriteInputTokens`: Number of input tokens written to the cache (occurs on first request with new content).
+- `CacheReadInputTokens`: Number of input tokens read from the cache (occurs on subsequent requests with cached content).
+
+Strands automatically captures these metrics and makes them available through multiple methods:
+
+- Method 1: AgentResult Metrics (Recommended)
+
+  Cache statistics are automatically included in the `AgentResult.metrics.accumulated_usage`
+
+- Method 2: OpenTelemetry Traces
+
+  Cache metrics are automatically recorded in OpenTelemetry traces when telemetry is enabled
 
 For detailed information about supported models, minimum token requirements, and other limitations, see the [Amazon Bedrock documentation on prompt caching](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html).
 
@@ -320,10 +326,13 @@ agent = Agent(
 
 # First request will cache the system prompt
 response1 = agent("Tell me about Python")
+print(f"Cache write tokens: {response1.metrics.accumulated_usage.get('cacheWriteInputTokens')}")
+print(f"Cache read tokens: {response1.metrics.accumulated_usage.get('cacheReadInputTokens')}")
 
 # Second request will reuse the cached system prompt
 response2 = agent("Tell me about JavaScript")
-
+print(f"Cache write tokens: {response2.metrics.accumulated_usage.get('cacheWriteInputTokens')}")
+print(f"Cache read tokens: {response2.metrics.accumulated_usage.get('cacheReadInputTokens')}")
 ```
 
 #### Tool Caching
@@ -348,10 +357,13 @@ agent = Agent(
 )
 # First request will cache the tools
 response1 = agent("What time is it?")
+print(f"Cache write tokens: {response1.metrics.accumulated_usage.get('cacheWriteInputTokens')}")
+print(f"Cache read tokens: {response1.metrics.accumulated_usage.get('cacheReadInputTokens')}")
 
 # Second request will reuse the cached tools
 response2 = agent("What is the square root of 1764?")
-
+print(f"Cache write tokens: {response2.metrics.accumulated_usage.get('cacheWriteInputTokens')}")
+print(f"Cache read tokens: {response2.metrics.accumulated_usage.get('cacheReadInputTokens')}")
 ```
 
 #### Messages Caching
@@ -403,7 +415,6 @@ response1 = agent("What is in that document?")
 
 # Second request will reuse the cached message
 response2 = agent("How long is the document?")
-
 ```
 
 > **Note**: Each model has its own minimum token requirement for creating cache checkpoints. If your system prompt or tool definitions don't meet this minimum token threshold, a cache checkpoint will not be created. For optimal caching, ensure your system prompts and tool definitions are substantial enough to meet these requirements.
@@ -424,7 +435,6 @@ bedrock_model.update_config(
     temperature=0.3,
     top_p=0.2,
 )
-
 ```
 
 This is especially useful for tools that need to update the model's configuration:
@@ -454,7 +464,6 @@ def update_temperature(temperature: float, agent: Agent) -> str:
     print(f"Updating Temperature to {temperature}")
     agent.model.update_config(temperature=temperature)
     return f"Temperature updated to {temperature}"
-
 ```
 
 ### Reasoning Support
@@ -483,7 +492,6 @@ agent = Agent(model=bedrock_model)
 
 # Ask a question that requires reasoning
 response = agent("If a train travels at 120 km/h and needs to cover 450 km, how long will the journey take?")
-
 ```
 
 > **Note**: Not all models support structured reasoning output. Check the [inference reasoning documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-reasoning.html) for details on supported models.
@@ -524,7 +532,6 @@ print(f"Category: {result.category}")
 print(f"Price: ${result.price}")
 print(f"Features: {result.features}")
 print(f"Rating: {result.rating}")
-
 ```
 
 ## Troubleshooting
@@ -549,15 +556,27 @@ Instead of:
 
 ```
 anthropic.claude-sonnet-4-20250514-v1:0
-
 ```
 
 Use:
 
 ```
 us.anthropic.claude-sonnet-4-20250514-v1:0
+```
+
+### Model identifier is invalid
+
+If you encounter the error:
+
+> ValidationException: An error occurred (ValidationException) when calling the ConverseStream operation: The provided model identifier is invalid
+
+This is very likely due to calling Bedrock with an inference model id, such as: `us.anthropic.claude-sonnet-4-20250514-v1:0` from a region that does not [support inference profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html). If so, pass in a valid model id, as follows:
 
 ```
+agent = Agent(model="anthropic.claude-3-5-sonnet-20241022-v2:0")
+```
+
+Strands uses a default Claude 4 Sonnet inference model from the region of your credentials when no model is provided. So if you did not pass in any model id and are getting the above error, it's very likely due to the `region` from the credentials not supporting inference profiles.
 
 ## Related Resources
 

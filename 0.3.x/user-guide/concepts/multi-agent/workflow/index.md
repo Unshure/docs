@@ -77,7 +77,6 @@ def process_workflow(topic):
     final_report = writer(f"Create a report based on this analysis: {analysis}")
 
     return final_report
-
 ```
 
 This sequential workflow creates a pipeline where each agent's output becomes the input for the next agent, allowing for specialized processing at each stage. For a functional example of sequential workflow implementation, see the [agents_workflows.md](https://github.com/strands-agents/docs/blob/main/docs/examples/python/agents_workflows.md) example in the Strands Agents SDK documentation.
@@ -128,7 +127,6 @@ agent.tool.workflow(action="start", workflow_id="data_analysis")
 
 # Check results
 status = agent.tool.workflow(action="status", workflow_id="data_analysis")
-
 ```
 
 The full implementation of the workflow tool can be found in the [Strands Tools repository](https://github.com/strands-agents/tools/blob/main/src/strands_tools/workflow.py).
@@ -155,7 +153,6 @@ The full implementation of the workflow tool can be found in the [Strands Tools 
      # Pause and resume example
      agent.tool.workflow(action="pause", workflow_id="data_analysis")
      agent.tool.workflow(action="resume", workflow_id="data_analysis")
-
      ```
 
 1. **Dynamic Resource Management**
@@ -176,7 +173,6 @@ The full implementation of the workflow tool can be found in the [Strands Tools 
      # Get detailed status
      status = agent.tool.workflow(action="status", workflow_id="data_analysis")
      print(status["content"])
-
      ```
 
 ### Enhancing Workflow Architectures
@@ -213,7 +209,6 @@ def get_ready_tasks(tasks, completed_tasks):
             if all(dep in completed_tasks for dep in deps):
                 ready_tasks.append(task_id)
     return ready_tasks
-
 ```
 
 **Benefits of Task Management:**
@@ -240,7 +235,6 @@ def build_task_context(task_id, tasks, results):
         prompt = "Previous task results:\n" + "\n\n".join(context) + "\n\nTask:\n" + prompt
 
     return prompt
-
 ```
 
 **Benefits of Context Passing:**

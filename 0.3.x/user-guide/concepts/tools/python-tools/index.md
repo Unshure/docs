@@ -26,7 +26,6 @@ def weather_forecast(city: str, days: int = 3) -> str:
         days: Number of days for the forecast
     """
     return f"Weather forecast for {city} for the next {days} days..."
-
 ```
 
 The decorator extracts information from your function's docstring to create the tool specification. The first paragraph becomes the tool's description, and the "Args" section provides parameter descriptions. These are combined with the function's type hints to create a complete tool specification.
@@ -39,12 +38,11 @@ To use function-based tool, simply pass the function to the agent:
 agent = Agent(
     tools=[weather_forecast]
 )
-
 ```
 
-### Overriding Tool Name and Description
+### Overriding Tool Name, Description, and Schema
 
-You can also optionally override the tool name or description by providing them as arguments to the decorator:
+You can override the tool name, description, and input schema by providing them as arguments to the decorator:
 
 ```
 @tool(name="get_weather", description="Retrieves weather forecast for a specified location")
@@ -55,9 +53,39 @@ def weather_forecast(city: str, days: int = 3) -> str:
         city: The name of the city
         days: Number of days for the forecast
     """
-    # Implementation
     return f"Weather forecast for {city} for the next {days} days..."
+```
 
+#### Overriding Input Schema
+
+You can provide a custom JSON schema to override the automatically generated one:
+
+```
+@tool(
+    inputSchema={
+        "json": {
+            "type": "object",
+            "properties": {
+                "shape": {
+                    "type": "string",
+                    "enum": ["circle", "rectangle"],
+                    "description": "The shape type"
+                },
+                "radius": {"type": "number", "description": "Radius for circle"},
+                "width": {"type": "number", "description": "Width for rectangle"},
+                "height": {"type": "number", "description": "Height for rectangle"}
+            },
+            "required": ["shape"]
+        }
+    }
+)
+def calculate_area(shape: str, radius: float = None, width: float = None, height: float = None) -> float:
+    """Calculate area of a shape."""
+    if shape == "circle":
+        return 3.14159 * radius ** 2
+    elif shape == "rectangle":
+        return width * height
+    return 0.0
 ```
 
 ### Dictionary Return Type
@@ -87,7 +115,6 @@ def fetch_data(source_id: str) -> dict:
                 {"text": f"Error:{e}"}
             ]
         }
-
 ```
 
 For more details, see the [Tool Response Format](#tool-response-format) section below.
@@ -115,7 +142,69 @@ async def async_example():
 
 
 asyncio.run(async_example())
+```
 
+### ToolContext
+
+Tools can access their execution context by setting `context=True` and including a `tool_context` parameter. The [`ToolContext`](../../../../api-reference/types/#strands.types.tools.ToolContext) provides access to the invoking agent, current tool use data, and invocation state:
+
+```
+from strands import tool, Agent, ToolContext
+
+@tool(context=True)
+def get_self_name(tool_context: ToolContext) -> str:
+    return f"The agent name is {tool_context.agent.name}"
+
+@tool(context=True)
+def get_tool_use_id(tool_context: ToolContext) -> str:
+    return f"Tool use is {tool_context.tool_use["toolUseId"]}"
+
+@tool(context=True)
+def get_invocation_state(tool_context: ToolContext) -> str:
+    return f"Invocation state: {tool_context.invocation_state["custom_data"]}"
+
+agent = Agent(tools=[get_self_name, get_tool_use_id, get_invocation_state], name="Best agent")
+
+agent("What is your name?")
+agent("What is the tool use id?")
+agent("What is the invocation state?", custom_data="You're the best agent ;)")
+```
+
+### Tool Streaming
+
+Async tools can yield intermediate results to provide real-time progress updates. Each yielded value becomes a [streaming event](../../streaming/overview/), with the final value serving as the tool's return result:
+
+```
+from datetime import datetime
+import asyncio
+from strands import tool
+
+@tool
+async def process_dataset(records: int) -> str:
+    """Process records with progress updates."""
+    start = datetime.now()
+
+    for i in range(records):
+        await asyncio.sleep(0.1)
+        if i % 10 == 0:
+            elapsed = datetime.now() - start
+            yield f"Processed {i}/{records} records in {elapsed.total_seconds():.1f}s"
+
+    yield f"Completed {records} records in {(datetime.now() - start).total_seconds():.1f}s"
+```
+
+Stream events contain a `tool_stream_event` dictionary with `tool_use` (invocation info) and `data` (yielded value) fields:
+
+```
+async def tool_stream_example():
+    agent = Agent(tools=[process_dataset])
+
+    async for event in agent.stream_async("Process 50 records"):
+        if tool_stream := event.get("tool_stream_event"):
+            if update := tool_stream.get("data"):
+                print(f"Progress: {update}")
+
+asyncio.run(tool_stream_example())
 ```
 
 ## Class-Based Tools
@@ -163,7 +252,6 @@ db_tools = DatabaseTools("example_connection_string")
 agent = Agent(
     tools=[db_tools.query_database, db_tools.insert_record]
 )
-
 ```
 
 When you use the [`@tool`](../../../../api-reference/tools/#strands.tools.decorator.tool) decorator on a class method, the method becomes bound to the class instance when instantiated. This means the tool function has access to the instance's attributes and can maintain state between invocations.
@@ -226,7 +314,6 @@ def weather_forecast(tool, **kwargs: Any):
         "status": "success",
         "content": [{"text": result}]
     }
-
 ```
 
 ### Loading Module Tools
@@ -240,7 +327,6 @@ import weather_forecast
 agent = Agent(
     tools=[weather_forecast]
 )
-
 ```
 
 Alternatively, you can load a tool by passing in a path:
@@ -251,7 +337,6 @@ from strands import Agent
 agent = Agent(
     tools=["./weather_forecast.py"]
 )
-
 ```
 
 ### Async Invocation
@@ -280,7 +365,6 @@ async def call_api(tool, **kwargs):
         "status": "success",
         "content": [{"text": result}],
     }
-
 ```
 
 ### Tool Response Format
@@ -297,7 +381,6 @@ The [`ToolResult`](../../../../api-reference/types/#strands.types.tools.ToolResu
     "status": str,          # Either "success" or "error"
     "content": List[dict]   # A list of content items with different possible formats
 }
-
 ```
 
 #### Content Types
@@ -320,7 +403,6 @@ The `content` field is a list of dictionaries, where each dictionary can contain
         {"json": {"results": [1, 2, 3], "total": 3}}
     ]
 }
-
 ```
 
 #### Error Response Example
@@ -333,7 +415,6 @@ The `content` field is a list of dictionaries, where each dictionary can contain
         {"text": "Error: Unable to process request due to invalid parameters"}
     ]
 }
-
 ```
 
 #### Automatic Conversion

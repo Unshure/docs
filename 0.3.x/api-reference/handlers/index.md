@@ -34,7 +34,6 @@ class CompositeCallbackHandler:
         """Invoke all handlers in the chain."""
         for handler in self.handlers:
             handler(**kwargs)
-
 ```
 
 #### `__call__(**kwargs)`
@@ -48,7 +47,6 @@ def __call__(self, **kwargs: Any) -> None:
     """Invoke all handlers in the chain."""
     for handler in self.handlers:
         handler(**kwargs)
-
 ```
 
 #### `__init__(*handlers)`
@@ -61,7 +59,6 @@ Source code in `strands/handlers/callback_handler.py`
 def __init__(self, *handlers: Callable) -> None:
     """Initialize handler."""
     self.handlers = handlers
-
 ```
 
 ### `PrintingCallbackHandler`
@@ -109,7 +106,6 @@ class PrintingCallbackHandler:
 
         if complete and data:
             print("\n")
-
 ```
 
 #### `__call__(**kwargs)`
@@ -153,7 +149,6 @@ def __call__(self, **kwargs: Any) -> None:
 
     if complete and data:
         print("\n")
-
 ```
 
 #### `__init__()`
@@ -167,7 +162,6 @@ def __init__(self) -> None:
     """Initialize handler."""
     self.tool_count = 0
     self.previous_tool_use = None
-
 ```
 
 ### `null_callback_handler(**_kwargs)`
@@ -188,5 +182,4 @@ def null_callback_handler(**_kwargs: Any) -> None:
         **_kwargs: Event data (ignored).
     """
     return None
-
 ```

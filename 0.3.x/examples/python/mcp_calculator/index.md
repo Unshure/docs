@@ -27,7 +27,6 @@ def add(x: int, y: int) -> int:
     return x + y
 
 mcp.run(transport="streamable-http")
-
 ```
 
 ### Now, connect the server to the Strands Agent
@@ -51,7 +50,6 @@ with streamable_http_mcp_client:
 
     # Create an agent with the MCP tools
     agent = Agent(tools=tools)
-
 ```
 
 At this point, the agent has successfully connected to the MCP server and retrieved the calculator tools. These MCP tools have been converted into standard AgentTools that the agent can use just like any other tools provided to it. The agent now has full access to the calculator functionality without needing to know the implementation details of the MCP server.
@@ -65,7 +63,6 @@ Users can interact with the calculator tools through conversational queries:
 response = agent("What is 125 plus 375?")
 response = agent("If I have 1000 and spend 246, how much do I have left?")
 response = agent("What is 24 multiplied by 7 divided by 3?")
-
 ```
 
 ### Direct Method Access
@@ -82,7 +79,6 @@ with streamable_http_mcp_client:
 
     # Process the result
     print(f"Calculation result: {result['content'][0]['text']}")
-
 ```
 
 ### Explicit Tool Call through Agent
@@ -97,7 +93,6 @@ with streamable_http_mcp_client:
 
    # Process the result
    print(f"Calculation result: {result['content'][0]['text']}")
-
 ```
 
 ### Sample Queries and Responses
@@ -114,7 +109,6 @@ Using the add tool:
 - Second number (y): 375
 
 The result of 125 + 375 = 500
-
 ```
 
 **Query 2**: If I have 1000 and spend 246, how much do I have left?
@@ -132,7 +126,6 @@ Using the subtract tool:
 1000 - 246 = 754
 
 You have $754 left after spending $246 from your $1000.
-
 ```
 
 ## Extending the Example

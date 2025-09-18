@@ -14,15 +14,28 @@ Bases: `RepositorySessionManager`, `SessionRepository`
 
 File-based session manager for local filesystem storage.
 
-Creates the following filesystem structure for the session storage: // └── session\_/ ├── session.json # Session metadata └── agents/ └── agent\_/ ├── agent.json # Agent metadata └── messages/ ├── message\_.json └── message\_.json
+Creates the following filesystem structure for the session storage:
+
+```
+/<sessions_dir>/
+└── session_<session_id>/
+    ├── session.json                # Session metadata
+    └── agents/
+        └── agent_<agent_id>/
+            ├── agent.json          # Agent metadata
+            └── messages/
+                ├── message_<id1>.json
+                └── message_<id2>.json
+```
 
 Source code in `strands/session/file_session_manager.py`
 
-```
+````
 class FileSessionManager(RepositorySessionManager, SessionRepository):
     """File-based session manager for local filesystem storage.
 
     Creates the following filesystem structure for the session storage:
+    ```bash
     /<sessions_dir>/
     └── session_<session_id>/
         ├── session.json                # Session metadata
@@ -32,15 +45,16 @@ class FileSessionManager(RepositorySessionManager, SessionRepository):
                 └── messages/
                     ├── message_<id1>.json
                     └── message_<id2>.json
-
+    ```
     """
 
     def __init__(self, session_id: str, storage_dir: Optional[str] = None, **kwargs: Any):
         """Initialize FileSession with filesystem storage.
 
         Args:
-            session_id: ID for the session
-            storage_dir: Directory for local filesystem storage (defaults to temp dir)
+            session_id: ID for the session.
+                ID is not allowed to contain path separators (e.g., a/b).
+            storage_dir: Directory for local filesystem storage (defaults to temp dir).
             **kwargs: Additional keyword arguments for future extensibility.
         """
         self.storage_dir = storage_dir or os.path.join(tempfile.gettempdir(), "strands/sessions")
@@ -49,12 +63,29 @@ class FileSessionManager(RepositorySessionManager, SessionRepository):
         super().__init__(session_id=session_id, session_repository=self)
 
     def _get_session_path(self, session_id: str) -> str:
-        """Get session directory path."""
+        """Get session directory path.
+
+        Args:
+            session_id: ID for the session.
+
+        Raises:
+            ValueError: If session id contains a path separator.
+        """
+        session_id = _identifier.validate(session_id, _identifier.Identifier.SESSION)
         return os.path.join(self.storage_dir, f"{SESSION_PREFIX}{session_id}")
 
     def _get_agent_path(self, session_id: str, agent_id: str) -> str:
-        """Get agent directory path."""
+        """Get agent directory path.
+
+        Args:
+            session_id: ID for the session.
+            agent_id: ID for the agent.
+
+        Raises:
+            ValueError: If session id or agent id contains a path separator.
+        """
         session_path = self._get_session_path(session_id)
+        agent_id = _identifier.validate(agent_id, _identifier.Identifier.AGENT)
         return os.path.join(session_path, "agents", f"{AGENT_PREFIX}{agent_id}")
 
     def _get_message_path(self, session_id: str, agent_id: str, message_id: int) -> str:
@@ -66,7 +97,13 @@ class FileSessionManager(RepositorySessionManager, SessionRepository):
             message_id: Index of the message
         Returns:
             The filename for the message
+
+        Raises:
+            ValueError: If message_id is not an integer.
         """
+        if not isinstance(message_id, int):
+            raise ValueError(f"message_id=<{message_id}> | message id must be an integer")
+
         agent_path = self._get_agent_path(session_id, agent_id)
         return os.path.join(agent_path, "messages", f"{MESSAGE_PREFIX}{message_id}.json")
 
@@ -213,8 +250,7 @@ class FileSessionManager(RepositorySessionManager, SessionRepository):
             messages.append(SessionMessage.from_dict(message_data))
 
         return messages
-
-```
+````
 
 #### `__init__(session_id, storage_dir=None, **kwargs)`
 
@@ -222,7 +258,7 @@ Initialize FileSession with filesystem storage.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `session_id` | `str` | ID for the session | *required* | | `storage_dir` | `Optional[str]` | Directory for local filesystem storage (defaults to temp dir) | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `session_id` | `str` | ID for the session. ID is not allowed to contain path separators (e.g., a/b). | *required* | | `storage_dir` | `Optional[str]` | Directory for local filesystem storage (defaults to temp dir). | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/session/file_session_manager.py`
 
@@ -231,15 +267,15 @@ def __init__(self, session_id: str, storage_dir: Optional[str] = None, **kwargs:
     """Initialize FileSession with filesystem storage.
 
     Args:
-        session_id: ID for the session
-        storage_dir: Directory for local filesystem storage (defaults to temp dir)
+        session_id: ID for the session.
+            ID is not allowed to contain path separators (e.g., a/b).
+        storage_dir: Directory for local filesystem storage (defaults to temp dir).
         **kwargs: Additional keyword arguments for future extensibility.
     """
     self.storage_dir = storage_dir or os.path.join(tempfile.gettempdir(), "strands/sessions")
     os.makedirs(self.storage_dir, exist_ok=True)
 
     super().__init__(session_id=session_id, session_repository=self)
-
 ```
 
 #### `create_agent(session_id, session_agent, **kwargs)`
@@ -260,7 +296,6 @@ def create_agent(self, session_id: str, session_agent: SessionAgent, **kwargs: A
     agent_file = os.path.join(agent_dir, "agent.json")
     session_data = session_agent.to_dict()
     self._write_file(agent_file, session_data)
-
 ```
 
 #### `create_message(session_id, agent_id, session_message, **kwargs)`
@@ -279,7 +314,6 @@ def create_message(self, session_id: str, agent_id: str, session_message: Sessio
     )
     session_dict = session_message.to_dict()
     self._write_file(message_file, session_dict)
-
 ```
 
 #### `create_session(session, **kwargs)`
@@ -305,7 +339,6 @@ def create_session(self, session: Session, **kwargs: Any) -> Session:
     self._write_file(session_file, session_dict)
 
     return session
-
 ```
 
 #### `delete_session(session_id, **kwargs)`
@@ -322,7 +355,6 @@ def delete_session(self, session_id: str, **kwargs: Any) -> None:
         raise SessionException(f"Session {session_id} does not exist")
 
     shutil.rmtree(session_dir)
-
 ```
 
 #### `list_messages(session_id, agent_id, limit=None, offset=0, **kwargs)`
@@ -365,7 +397,6 @@ def list_messages(
         messages.append(SessionMessage.from_dict(message_data))
 
     return messages
-
 ```
 
 #### `read_agent(session_id, agent_id, **kwargs)`
@@ -383,7 +414,6 @@ def read_agent(self, session_id: str, agent_id: str, **kwargs: Any) -> Optional[
 
     agent_data = self._read_file(agent_file)
     return SessionAgent.from_dict(agent_data)
-
 ```
 
 #### `read_message(session_id, agent_id, message_id, **kwargs)`
@@ -400,7 +430,6 @@ def read_message(self, session_id: str, agent_id: str, message_id: int, **kwargs
         return None
     message_data = self._read_file(message_path)
     return SessionMessage.from_dict(message_data)
-
 ```
 
 #### `read_session(session_id, **kwargs)`
@@ -418,7 +447,6 @@ def read_session(self, session_id: str, **kwargs: Any) -> Optional[Session]:
 
     session_data = self._read_file(session_file)
     return Session.from_dict(session_data)
-
 ```
 
 #### `update_agent(session_id, session_agent, **kwargs)`
@@ -438,7 +466,6 @@ def update_agent(self, session_id: str, session_agent: SessionAgent, **kwargs: A
     session_agent.created_at = previous_agent.created_at
     agent_file = os.path.join(self._get_agent_path(session_id, agent_id), "agent.json")
     self._write_file(agent_file, session_agent.to_dict())
-
 ```
 
 #### `update_message(session_id, agent_id, session_message, **kwargs)`
@@ -459,7 +486,6 @@ def update_message(self, session_id: str, agent_id: str, session_message: Sessio
     session_message.created_at = previous_message.created_at
     message_file = self._get_message_path(session_id, agent_id, message_id)
     self._write_file(message_file, session_message.to_dict())
-
 ```
 
 ## `strands.session.repository_session_manager`
@@ -604,7 +630,6 @@ class RepositorySessionManager(SessionManager):
 
             # Restore the agents messages array including the optional prepend messages
             agent.messages = prepend_messages + [session_message.to_message() for session_message in session_messages]
-
 ```
 
 #### `__init__(session_id, session_repository, **kwargs)`
@@ -646,7 +671,6 @@ def __init__(self, session_id: str, session_repository: SessionRepository, **kwa
 
     # Keep track of the latest message of each agent in case we need to redact it.
     self._latest_agent_message: dict[str, Optional[SessionMessage]] = {}
-
 ```
 
 #### `append_message(message, agent, **kwargs)`
@@ -678,7 +702,6 @@ def append_message(self, message: Message, agent: "Agent", **kwargs: Any) -> Non
     session_message = SessionMessage.from_message(message, next_index)
     self._latest_agent_message[agent.agent_id] = session_message
     self.session_repository.create_message(self.session_id, agent.agent_id, session_message)
-
 ```
 
 #### `initialize(agent, **kwargs)`
@@ -746,7 +769,6 @@ def initialize(self, agent: "Agent", **kwargs: Any) -> None:
 
         # Restore the agents messages array including the optional prepend messages
         agent.messages = prepend_messages + [session_message.to_message() for session_message in session_messages]
-
 ```
 
 #### `redact_latest_message(redact_message, agent, **kwargs)`
@@ -773,7 +795,6 @@ def redact_latest_message(self, redact_message: Message, agent: "Agent", **kwarg
         raise SessionException("No message to redact.")
     latest_agent_message.redact_message = redact_message
     return self.session_repository.update_message(self.session_id, agent.agent_id, latest_agent_message)
-
 ```
 
 #### `sync_agent(agent, **kwargs)`
@@ -798,7 +819,6 @@ def sync_agent(self, agent: "Agent", **kwargs: Any) -> None:
         self.session_id,
         SessionAgent.from_agent(agent),
     )
-
 ```
 
 ## `strands.session.s3_session_manager`
@@ -811,15 +831,28 @@ Bases: `RepositorySessionManager`, `SessionRepository`
 
 S3-based session manager for cloud storage.
 
-Creates the following filesystem structure for the session storage: // └── session\_/ ├── session.json # Session metadata └── agents/ └── agent\_/ ├── agent.json # Agent metadata └── messages/ ├── message\_.json └── message\_.json
+Creates the following filesystem structure for the session storage:
+
+```
+/<sessions_dir>/
+└── session_<session_id>/
+    ├── session.json                # Session metadata
+    └── agents/
+        └── agent_<agent_id>/
+            ├── agent.json          # Agent metadata
+            └── messages/
+                ├── message_<id1>.json
+                └── message_<id2>.json
+```
 
 Source code in `strands/session/s3_session_manager.py`
 
-```
+````
 class S3SessionManager(RepositorySessionManager, SessionRepository):
     """S3-based session manager for cloud storage.
 
     Creates the following filesystem structure for the session storage:
+    ```bash
     /<sessions_dir>/
     └── session_<session_id>/
         ├── session.json                # Session metadata
@@ -829,7 +862,7 @@ class S3SessionManager(RepositorySessionManager, SessionRepository):
                 └── messages/
                     ├── message_<id1>.json
                     └── message_<id2>.json
-
+    ```
     """
 
     def __init__(
@@ -846,6 +879,7 @@ class S3SessionManager(RepositorySessionManager, SessionRepository):
 
         Args:
             session_id: ID for the session
+                ID is not allowed to contain path separators (e.g., a/b).
             bucket: S3 bucket name (required)
             prefix: S3 key prefix for storage organization
             boto_session: Optional boto3 session
@@ -874,12 +908,29 @@ class S3SessionManager(RepositorySessionManager, SessionRepository):
         super().__init__(session_id=session_id, session_repository=self)
 
     def _get_session_path(self, session_id: str) -> str:
-        """Get session S3 prefix."""
+        """Get session S3 prefix.
+
+        Args:
+            session_id: ID for the session.
+
+        Raises:
+            ValueError: If session id contains a path separator.
+        """
+        session_id = _identifier.validate(session_id, _identifier.Identifier.SESSION)
         return f"{self.prefix}/{SESSION_PREFIX}{session_id}/"
 
     def _get_agent_path(self, session_id: str, agent_id: str) -> str:
-        """Get agent S3 prefix."""
+        """Get agent S3 prefix.
+
+        Args:
+            session_id: ID for the session.
+            agent_id: ID for the agent.
+
+        Raises:
+            ValueError: If session id or agent id contains a path separator.
+        """
         session_path = self._get_session_path(session_id)
+        agent_id = _identifier.validate(agent_id, _identifier.Identifier.AGENT)
         return f"{session_path}agents/{AGENT_PREFIX}{agent_id}/"
 
     def _get_message_path(self, session_id: str, agent_id: str, message_id: int) -> str:
@@ -889,11 +940,16 @@ class S3SessionManager(RepositorySessionManager, SessionRepository):
             session_id: ID of the session
             agent_id: ID of the agent
             message_id: Index of the message
-            **kwargs: Additional keyword arguments for future extensibility.
 
         Returns:
             The key for the message
+
+        Raises:
+            ValueError: If message_id is not an integer.
         """
+        if not isinstance(message_id, int):
+            raise ValueError(f"message_id=<{message_id}> | message id must be an integer")
+
         agent_path = self._get_agent_path(session_id, agent_id)
         return f"{agent_path}messages/{MESSAGE_PREFIX}{message_id}.json"
 
@@ -1065,8 +1121,7 @@ class S3SessionManager(RepositorySessionManager, SessionRepository):
 
         except ClientError as e:
             raise SessionException(f"S3 error reading messages: {e}") from e
-
-```
+````
 
 #### `__init__(session_id, bucket, prefix='', boto_session=None, boto_client_config=None, region_name=None, **kwargs)`
 
@@ -1074,7 +1129,7 @@ Initialize S3SessionManager with S3 storage.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `session_id` | `str` | ID for the session | *required* | | `bucket` | `str` | S3 bucket name (required) | *required* | | `prefix` | `str` | S3 key prefix for storage organization | `''` | | `boto_session` | `Optional[Session]` | Optional boto3 session | `None` | | `boto_client_config` | `Optional[Config]` | Optional boto3 client configuration | `None` | | `region_name` | `Optional[str]` | AWS region for S3 storage | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `session_id` | `str` | ID for the session ID is not allowed to contain path separators (e.g., a/b). | *required* | | `bucket` | `str` | S3 bucket name (required) | *required* | | `prefix` | `str` | S3 key prefix for storage organization | `''` | | `boto_session` | `Optional[Session]` | Optional boto3 session | `None` | | `boto_client_config` | `Optional[Config]` | Optional boto3 client configuration | `None` | | `region_name` | `Optional[str]` | AWS region for S3 storage | `None` | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Source code in `strands/session/s3_session_manager.py`
 
@@ -1093,6 +1148,7 @@ def __init__(
 
     Args:
         session_id: ID for the session
+            ID is not allowed to contain path separators (e.g., a/b).
         bucket: S3 bucket name (required)
         prefix: S3 key prefix for storage organization
         boto_session: Optional boto3 session
@@ -1119,7 +1175,6 @@ def __init__(
 
     self.client = session.client(service_name="s3", config=client_config)
     super().__init__(session_id=session_id, session_repository=self)
-
 ```
 
 #### `create_agent(session_id, session_agent, **kwargs)`
@@ -1135,7 +1190,6 @@ def create_agent(self, session_id: str, session_agent: SessionAgent, **kwargs: A
     agent_dict = session_agent.to_dict()
     agent_key = f"{self._get_agent_path(session_id, agent_id)}agent.json"
     self._write_s3_object(agent_key, agent_dict)
-
 ```
 
 #### `create_message(session_id, agent_id, session_message, **kwargs)`
@@ -1151,7 +1205,6 @@ def create_message(self, session_id: str, agent_id: str, session_message: Sessio
     message_dict = session_message.to_dict()
     message_key = self._get_message_path(session_id, agent_id, message_id)
     self._write_s3_object(message_key, message_dict)
-
 ```
 
 #### `create_session(session, **kwargs)`
@@ -1177,7 +1230,6 @@ def create_session(self, session: Session, **kwargs: Any) -> Session:
     session_dict = session.to_dict()
     self._write_s3_object(session_key, session_dict)
     return session
-
 ```
 
 #### `delete_session(session_id, **kwargs)`
@@ -1209,7 +1261,6 @@ def delete_session(self, session_id: str, **kwargs: Any) -> None:
 
     except ClientError as e:
         raise SessionException(f"S3 error deleting session {session_id}: {e}") from e
-
 ```
 
 #### `list_messages(session_id, agent_id, limit=None, offset=0, **kwargs)`
@@ -1261,7 +1312,6 @@ def list_messages(
 
     except ClientError as e:
         raise SessionException(f"S3 error reading messages: {e}") from e
-
 ```
 
 #### `read_agent(session_id, agent_id, **kwargs)`
@@ -1278,7 +1328,6 @@ def read_agent(self, session_id: str, agent_id: str, **kwargs: Any) -> Optional[
     if agent_data is None:
         return None
     return SessionAgent.from_dict(agent_data)
-
 ```
 
 #### `read_message(session_id, agent_id, message_id, **kwargs)`
@@ -1295,7 +1344,6 @@ def read_message(self, session_id: str, agent_id: str, message_id: int, **kwargs
     if message_data is None:
         return None
     return SessionMessage.from_dict(message_data)
-
 ```
 
 #### `read_session(session_id, **kwargs)`
@@ -1312,7 +1360,6 @@ def read_session(self, session_id: str, **kwargs: Any) -> Optional[Session]:
     if session_data is None:
         return None
     return Session.from_dict(session_data)
-
 ```
 
 #### `update_agent(session_id, session_agent, **kwargs)`
@@ -1333,7 +1380,6 @@ def update_agent(self, session_id: str, session_agent: SessionAgent, **kwargs: A
     session_agent.created_at = previous_agent.created_at
     agent_key = f"{self._get_agent_path(session_id, agent_id)}agent.json"
     self._write_s3_object(agent_key, session_agent.to_dict())
-
 ```
 
 #### `update_message(session_id, agent_id, session_message, **kwargs)`
@@ -1354,7 +1400,6 @@ def update_message(self, session_id: str, agent_id: str, session_message: Sessio
     session_message.created_at = previous_message.created_at
     message_key = self._get_message_path(session_id, agent_id, message_id)
     self._write_s3_object(message_key, session_message.to_dict())
-
 ```
 
 ## `strands.session.session_manager`
@@ -1417,7 +1462,6 @@ class SessionRepository(ABC):
         self, session_id: str, agent_id: str, limit: Optional[int] = None, offset: int = 0, **kwargs: Any
     ) -> list[SessionMessage]:
         """List Messages from an Agent with pagination."""
-
 ```
 
 #### `create_agent(session_id, session_agent, **kwargs)`
@@ -1430,7 +1474,6 @@ Source code in `strands/session/session_repository.py`
 @abstractmethod
 def create_agent(self, session_id: str, session_agent: SessionAgent, **kwargs: Any) -> None:
     """Create a new Agent in a Session."""
-
 ```
 
 #### `create_message(session_id, agent_id, session_message, **kwargs)`
@@ -1443,7 +1486,6 @@ Source code in `strands/session/session_repository.py`
 @abstractmethod
 def create_message(self, session_id: str, agent_id: str, session_message: SessionMessage, **kwargs: Any) -> None:
     """Create a new Message for the Agent."""
-
 ```
 
 #### `create_session(session, **kwargs)`
@@ -1456,7 +1498,6 @@ Source code in `strands/session/session_repository.py`
 @abstractmethod
 def create_session(self, session: Session, **kwargs: Any) -> Session:
     """Create a new Session."""
-
 ```
 
 #### `list_messages(session_id, agent_id, limit=None, offset=0, **kwargs)`
@@ -1471,7 +1512,6 @@ def list_messages(
     self, session_id: str, agent_id: str, limit: Optional[int] = None, offset: int = 0, **kwargs: Any
 ) -> list[SessionMessage]:
     """List Messages from an Agent with pagination."""
-
 ```
 
 #### `read_agent(session_id, agent_id, **kwargs)`
@@ -1484,7 +1524,6 @@ Source code in `strands/session/session_repository.py`
 @abstractmethod
 def read_agent(self, session_id: str, agent_id: str, **kwargs: Any) -> Optional[SessionAgent]:
     """Read an Agent."""
-
 ```
 
 #### `read_message(session_id, agent_id, message_id, **kwargs)`
@@ -1497,7 +1536,6 @@ Source code in `strands/session/session_repository.py`
 @abstractmethod
 def read_message(self, session_id: str, agent_id: str, message_id: int, **kwargs: Any) -> Optional[SessionMessage]:
     """Read a Message."""
-
 ```
 
 #### `read_session(session_id, **kwargs)`
@@ -1510,7 +1548,6 @@ Source code in `strands/session/session_repository.py`
 @abstractmethod
 def read_session(self, session_id: str, **kwargs: Any) -> Optional[Session]:
     """Read a Session."""
-
 ```
 
 #### `update_agent(session_id, session_agent, **kwargs)`
@@ -1523,7 +1560,6 @@ Source code in `strands/session/session_repository.py`
 @abstractmethod
 def update_agent(self, session_id: str, session_agent: SessionAgent, **kwargs: Any) -> None:
     """Update an Agent."""
-
 ```
 
 #### `update_message(session_id, agent_id, session_message, **kwargs)`
@@ -1541,5 +1577,4 @@ def update_message(self, session_id: str, agent_id: str, session_message: Sessio
 
     A message is usually only updated when some content is redacted due to a guardrail.
     """
-
 ```

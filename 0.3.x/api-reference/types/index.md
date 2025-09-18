@@ -42,7 +42,6 @@ class CachePoint(TypedDict):
     """
 
     type: str
-
 ```
 
 ### `ContentBlock`
@@ -53,7 +52,7 @@ A block of content for a message that you pass to, or receive from, a model.
 
 Attributes:
 
-| Name | Type | Description | | --- | --- | --- | | `cachePoint` | `CachePoint` | A cache point configuration to optimize conversation history. | | `document` | `DocumentContent` | A document to include in the message. | | `guardContent` | `GuardContent` | Contains the content to assess with the guardrail. | | `image` | `ImageContent` | Image to include in the message. | | `reasoningContent` | `ReasoningContentBlock` | Contains content regarding the reasoning that is carried out by the model. | | `text` | `str` | Text to include in the message. | | `toolResult` | `ToolResult` | The result for a tool request that a model makes. | | `toolUse` | `ToolUse` | Information about a tool use request from a model. | | `video` | `VideoContent` | Video to include in the message. |
+| Name | Type | Description | | --- | --- | --- | | `cachePoint` | `CachePoint` | A cache point configuration to optimize conversation history. | | `document` | `DocumentContent` | A document to include in the message. | | `guardContent` | `GuardContent` | Contains the content to assess with the guardrail. | | `image` | `ImageContent` | Image to include in the message. | | `reasoningContent` | `ReasoningContentBlock` | Contains content regarding the reasoning that is carried out by the model. | | `text` | `str` | Text to include in the message. | | `toolResult` | `ToolResult` | The result for a tool request that a model makes. | | `toolUse` | `ToolUse` | Information about a tool use request from a model. | | `video` | `VideoContent` | Video to include in the message. | | `citationsContent` | `CitationsContentBlock` | Contains the citations for a document. |
 
 Source code in `strands/types/content.py`
 
@@ -71,6 +70,7 @@ class ContentBlock(TypedDict, total=False):
         toolResult: The result for a tool request that a model makes.
         toolUse: Information about a tool use request from a model.
         video: Video to include in the message.
+        citationsContent: Contains the citations for a document.
     """
 
     cachePoint: CachePoint
@@ -82,7 +82,7 @@ class ContentBlock(TypedDict, total=False):
     toolResult: ToolResult
     toolUse: ToolUse
     video: VideoContent
-
+    citationsContent: CitationsContentBlock
 ```
 
 ### `ContentBlockDelta`
@@ -108,7 +108,6 @@ class ContentBlockDelta(TypedDict):
 
     contentBlockIndex: int
     delta: DeltaContent
-
 ```
 
 ### `ContentBlockStart`
@@ -132,7 +131,6 @@ class ContentBlockStart(TypedDict, total=False):
     """
 
     toolUse: Optional[ContentBlockStartToolUse]
-
 ```
 
 ### `ContentBlockStartToolUse`
@@ -158,7 +156,6 @@ class ContentBlockStartToolUse(TypedDict):
 
     name: str
     toolUseId: str
-
 ```
 
 ### `ContentBlockStop`
@@ -182,7 +179,6 @@ class ContentBlockStop(TypedDict):
     """
 
     contentBlockIndex: int
-
 ```
 
 ### `DeltaContent`
@@ -208,7 +204,6 @@ class DeltaContent(TypedDict, total=False):
 
     text: str
     toolUse: Dict[Literal["input"], str]
-
 ```
 
 ### `GuardContent`
@@ -232,7 +227,6 @@ class GuardContent(TypedDict):
     """
 
     text: GuardContentText
-
 ```
 
 ### `GuardContentText`
@@ -258,7 +252,6 @@ class GuardContentText(TypedDict):
 
     qualifiers: List[Literal["grounding_source", "query", "guard_content"]]
     text: str
-
 ```
 
 ### `Message`
@@ -284,7 +277,6 @@ class Message(TypedDict):
 
     content: List[ContentBlock]
     role: Role
-
 ```
 
 ### `ReasoningContentBlock`
@@ -310,7 +302,6 @@ class ReasoningContentBlock(TypedDict, total=False):
 
     reasoningText: ReasoningTextBlock
     redactedContent: bytes
-
 ```
 
 ### `ReasoningTextBlock`
@@ -336,7 +327,6 @@ class ReasoningTextBlock(TypedDict, total=False):
 
     signature: Optional[str]
     text: str
-
 ```
 
 ### `SystemContentBlock`
@@ -362,7 +352,6 @@ class SystemContentBlock(TypedDict, total=False):
 
     guardContent: GuardContent
     text: str
-
 ```
 
 ## `strands.types.event_loop`
@@ -401,7 +390,6 @@ class Metrics(TypedDict):
     """
 
     latencyMs: int
-
 ```
 
 ### `Usage`
@@ -412,24 +400,27 @@ Token usage information for model interactions.
 
 Attributes:
 
-| Name | Type | Description | | --- | --- | --- | | `inputTokens` | `int` | Number of tokens sent in the request to the model.. | | `outputTokens` | `int` | Number of tokens that the model generated for the request. | | `totalTokens` | `int` | Total number of tokens (input + output). |
+| Name | Type | Description | | --- | --- | --- | | `inputTokens` | `Required[int]` | Number of tokens sent in the request to the model. | | `outputTokens` | `Required[int]` | Number of tokens that the model generated for the request. | | `totalTokens` | `Required[int]` | Total number of tokens (input + output). | | `cacheReadInputTokens` | `int` | Number of tokens read from cache (optional). | | `cacheWriteInputTokens` | `int` | Number of tokens written to cache (optional). |
 
 Source code in `strands/types/event_loop.py`
 
 ```
-class Usage(TypedDict):
+class Usage(TypedDict, total=False):
     """Token usage information for model interactions.
 
     Attributes:
-        inputTokens: Number of tokens sent in the request to the model..
+        inputTokens: Number of tokens sent in the request to the model.
         outputTokens: Number of tokens that the model generated for the request.
         totalTokens: Total number of tokens (input + output).
+        cacheReadInputTokens: Number of tokens read from cache (optional).
+        cacheWriteInputTokens: Number of tokens written to cache (optional).
     """
 
-    inputTokens: int
-    outputTokens: int
-    totalTokens: int
-
+    inputTokens: Required[int]
+    outputTokens: Required[int]
+    totalTokens: Required[int]
+    cacheReadInputTokens: int
+    cacheWriteInputTokens: int
 ```
 
 ## `strands.types.exceptions`
@@ -456,7 +447,6 @@ class ContextWindowOverflowException(Exception):
     """
 
     pass
-
 ```
 
 ### `EventLoopException`
@@ -481,7 +471,6 @@ class EventLoopException(Exception):
         self.original_exception = original_exception
         self.request_state = request_state if request_state is not None else {}
         super().__init__(str(original_exception))
-
 ```
 
 #### `__init__(original_exception, request_state=None)`
@@ -505,7 +494,6 @@ def __init__(self, original_exception: Exception, request_state: Any = None) -> 
     self.original_exception = original_exception
     self.request_state = request_state if request_state is not None else {}
     super().__init__(str(original_exception))
-
 ```
 
 ### `MCPClientInitializationError`
@@ -521,7 +509,54 @@ class MCPClientInitializationError(Exception):
     """Raised when the MCP server fails to initialize properly."""
 
     pass
+```
 
+### `MaxTokensReachedException`
+
+Bases: `Exception`
+
+Exception raised when the model reaches its maximum token generation limit.
+
+This exception is raised when the model stops generating tokens because it has reached the maximum number of tokens allowed for output generation. This can occur when the model's max_tokens parameter is set too low for the complexity of the response, or when the model naturally reaches its configured output limit during generation.
+
+Source code in `strands/types/exceptions.py`
+
+```
+class MaxTokensReachedException(Exception):
+    """Exception raised when the model reaches its maximum token generation limit.
+
+    This exception is raised when the model stops generating tokens because it has reached the maximum number of
+    tokens allowed for output generation. This can occur when the model's max_tokens parameter is set too low for
+    the complexity of the response, or when the model naturally reaches its configured output limit during generation.
+    """
+
+    def __init__(self, message: str):
+        """Initialize the exception with an error message and the incomplete message object.
+
+        Args:
+            message: The error message describing the token limit issue
+        """
+        super().__init__(message)
+```
+
+#### `__init__(message)`
+
+Initialize the exception with an error message and the incomplete message object.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `message` | `str` | The error message describing the token limit issue | *required* |
+
+Source code in `strands/types/exceptions.py`
+
+```
+def __init__(self, message: str):
+    """Initialize the exception with an error message and the incomplete message object.
+
+    Args:
+        message: The error message describing the token limit issue
+    """
+    super().__init__(message)
 ```
 
 ### `ModelThrottledException`
@@ -552,7 +587,6 @@ class ModelThrottledException(Exception):
         super().__init__(message)
 
     pass
-
 ```
 
 #### `__init__(message)`
@@ -574,7 +608,6 @@ def __init__(self, message: str) -> None:
     """
     self.message = message
     super().__init__(message)
-
 ```
 
 ### `SessionException`
@@ -590,7 +623,6 @@ class SessionException(Exception):
     """Exception raised when session operations fail."""
 
     pass
-
 ```
 
 ## `strands.types.guardrails`
@@ -626,7 +658,6 @@ class ContentFilter(TypedDict):
     action: Literal["BLOCKED"]
     confidence: Literal["NONE", "LOW", "MEDIUM", "HIGH"]
     type: Literal["INSULTS", "HATE", "SEXUAL", "VIOLENCE", "MISCONDUCT", "PROMPT_ATTACK"]
-
 ```
 
 ### `ContentPolicy`
@@ -650,7 +681,6 @@ class ContentPolicy(TypedDict):
     """
 
     filters: List[ContentFilter]
-
 ```
 
 ### `ContextualGroundingFilter`
@@ -680,7 +710,6 @@ class ContextualGroundingFilter(TypedDict):
     score: float
     threshold: float
     type: Literal["GROUNDING", "RELEVANCE"]
-
 ```
 
 ### `ContextualGroundingPolicy`
@@ -704,7 +733,6 @@ class ContextualGroundingPolicy(TypedDict):
     """
 
     filters: List[ContextualGroundingFilter]
-
 ```
 
 ### `CustomWord`
@@ -730,7 +758,6 @@ class CustomWord(TypedDict):
 
     action: Literal["BLOCKED"]
     match: str
-
 ```
 
 ### `GuardrailAssessment`
@@ -762,7 +789,6 @@ class GuardrailAssessment(TypedDict):
     sensitiveInformationPolicy: SensitiveInformationPolicy
     topicPolicy: TopicPolicy
     wordPolicy: WordPolicy
-
 ```
 
 ### `GuardrailConfig`
@@ -792,7 +818,6 @@ class GuardrailConfig(TypedDict, total=False):
     guardrailVersion: str
     streamProcessingMode: Optional[Literal["sync", "async"]]
     trace: Literal["enabled", "disabled"]
-
 ```
 
 ### `GuardrailTrace`
@@ -820,7 +845,6 @@ class GuardrailTrace(TypedDict):
     inputAssessment: Dict[str, GuardrailAssessment]
     modelOutput: List[str]
     outputAssessments: Dict[str, List[GuardrailAssessment]]
-
 ```
 
 ### `ManagedWord`
@@ -848,7 +872,6 @@ class ManagedWord(TypedDict):
     action: Literal["BLOCKED"]
     match: str
     type: Literal["PROFANITY"]
-
 ```
 
 ### `PIIEntity`
@@ -908,7 +931,6 @@ class PIIEntity(TypedDict):
         "US_SOCIAL_SECURITY_NUMBER",
         "VEHICLE_IDENTIFICATION_NUMBER",
     ]
-
 ```
 
 ### `Regex`
@@ -938,7 +960,6 @@ class Regex(TypedDict):
     match: str
     name: str
     regex: str
-
 ```
 
 ### `SensitiveInformationPolicy`
@@ -964,7 +985,6 @@ class SensitiveInformationPolicy(TypedDict):
 
     piiEntities: List[PIIEntity]
     regexes: List[Regex]
-
 ```
 
 ### `Topic`
@@ -992,7 +1012,6 @@ class Topic(TypedDict):
     action: Literal["BLOCKED"]
     name: str
     type: Literal["DENY"]
-
 ```
 
 ### `TopicPolicy`
@@ -1016,7 +1035,6 @@ class TopicPolicy(TypedDict):
     """
 
     topics: List[Topic]
-
 ```
 
 ### `Trace`
@@ -1040,7 +1058,6 @@ class Trace(TypedDict):
     """
 
     guardrail: GuardrailTrace
-
 ```
 
 ### `WordPolicy`
@@ -1066,7 +1083,6 @@ class WordPolicy(TypedDict):
 
     customWords: List[CustomWord]
     managedWordLists: List[ManagedWord]
-
 ```
 
 ## `strands.types.media`
@@ -1102,7 +1118,7 @@ Attributes:
 Source code in `strands/types/media.py`
 
 ```
-class DocumentContent(TypedDict):
+class DocumentContent(TypedDict, total=False):
     """A document to include in a message.
 
     Attributes:
@@ -1114,7 +1130,8 @@ class DocumentContent(TypedDict):
     format: Literal["pdf", "csv", "doc", "docx", "xls", "xlsx", "html", "txt", "md"]
     name: str
     source: DocumentSource
-
+    citations: Optional[CitationsConfig]
+    context: Optional[str]
 ```
 
 ### `DocumentSource`
@@ -1138,7 +1155,6 @@ class DocumentSource(TypedDict):
     """
 
     bytes: bytes
-
 ```
 
 ### `ImageContent`
@@ -1164,7 +1180,6 @@ class ImageContent(TypedDict):
 
     format: ImageFormat
     source: ImageSource
-
 ```
 
 ### `ImageSource`
@@ -1188,7 +1203,6 @@ class ImageSource(TypedDict):
     """
 
     bytes: bytes
-
 ```
 
 ### `VideoContent`
@@ -1214,7 +1228,6 @@ class VideoContent(TypedDict):
 
     format: VideoFormat
     source: VideoSource
-
 ```
 
 ### `VideoSource`
@@ -1238,7 +1251,6 @@ class VideoSource(TypedDict):
     """
 
     bytes: bytes
-
 ```
 
 ## `strands.types.session`
@@ -1269,7 +1281,6 @@ class Session:
     def to_dict(self) -> dict[str, Any]:
         """Convert the Session to a dictionary representation."""
         return asdict(self)
-
 ```
 
 #### `from_dict(env)`
@@ -1283,7 +1294,6 @@ Source code in `strands/types/session.py`
 def from_dict(cls, env: dict[str, Any]) -> "Session":
     """Initialize a Session from a dictionary, ignoring keys that are not class parameters."""
     return cls(**{k: v for k, v in env.items() if k in inspect.signature(cls).parameters})
-
 ```
 
 #### `to_dict()`
@@ -1296,7 +1306,6 @@ Source code in `strands/types/session.py`
 def to_dict(self) -> dict[str, Any]:
     """Convert the Session to a dictionary representation."""
     return asdict(self)
-
 ```
 
 ### `SessionAgent`
@@ -1335,7 +1344,6 @@ class SessionAgent:
     def to_dict(self) -> dict[str, Any]:
         """Convert the SessionAgent to a dictionary representation."""
         return asdict(self)
-
 ```
 
 #### `from_agent(agent)`
@@ -1355,7 +1363,6 @@ def from_agent(cls, agent: "Agent") -> "SessionAgent":
         conversation_manager_state=agent.conversation_manager.get_state(),
         state=agent.state.get(),
     )
-
 ```
 
 #### `from_dict(env)`
@@ -1369,7 +1376,6 @@ Source code in `strands/types/session.py`
 def from_dict(cls, env: dict[str, Any]) -> "SessionAgent":
     """Initialize a SessionAgent from a dictionary, ignoring keys that are not class parameters."""
     return cls(**{k: v for k, v in env.items() if k in inspect.signature(cls).parameters})
-
 ```
 
 #### `to_dict()`
@@ -1382,7 +1388,6 @@ Source code in `strands/types/session.py`
 def to_dict(self) -> dict[str, Any]:
     """Convert the SessionAgent to a dictionary representation."""
     return asdict(self)
-
 ```
 
 ### `SessionMessage`
@@ -1443,7 +1448,6 @@ class SessionMessage:
     def to_dict(self) -> dict[str, Any]:
         """Convert the SessionMessage to a dictionary representation."""
         return encode_bytes_values(asdict(self))  # type: ignore
-
 ```
 
 #### `from_dict(env)`
@@ -1458,7 +1462,6 @@ def from_dict(cls, env: dict[str, Any]) -> "SessionMessage":
     """Initialize a SessionMessage from a dictionary, ignoring keys that are not class parameters."""
     extracted_relevant_parameters = {k: v for k, v in env.items() if k in inspect.signature(cls).parameters}
     return cls(**decode_bytes_values(extracted_relevant_parameters))
-
 ```
 
 #### `from_message(message, index)`
@@ -1477,7 +1480,6 @@ def from_message(cls, message: Message, index: int) -> "SessionMessage":
         created_at=datetime.now(timezone.utc).isoformat(),
         updated_at=datetime.now(timezone.utc).isoformat(),
     )
-
 ```
 
 #### `to_dict()`
@@ -1490,7 +1492,6 @@ Source code in `strands/types/session.py`
 def to_dict(self) -> dict[str, Any]:
     """Convert the SessionMessage to a dictionary representation."""
     return encode_bytes_values(asdict(self))  # type: ignore
-
 ```
 
 #### `to_message()`
@@ -1511,7 +1512,6 @@ def to_message(self) -> Message:
         return self.redact_message
     else:
         return self.message
-
 ```
 
 ### `SessionType`
@@ -1533,7 +1533,6 @@ class SessionType(str, Enum):
     """
 
     AGENT = "AGENT"
-
 ```
 
 ### `decode_bytes_values(obj)`
@@ -1558,7 +1557,6 @@ def decode_bytes_values(obj: Any) -> Any:
         return [decode_bytes_values(item) for item in obj]
     else:
         return obj
-
 ```
 
 ### `encode_bytes_values(obj)`
@@ -1583,7 +1581,6 @@ def encode_bytes_values(obj: Any) -> Any:
         return [encode_bytes_values(item) for item in obj]
     else:
         return obj
-
 ```
 
 ## `strands.types.streaming`
@@ -1593,6 +1590,71 @@ Streaming-related type definitions for the SDK.
 These types are modeled after the Bedrock API.
 
 - Bedrock docs: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_Types_Amazon_Bedrock_Runtime.html
+
+### `CitationSourceContentDelta`
+
+Bases: `TypedDict`
+
+Contains incremental updates to source content text during streaming.
+
+Allows clients to build up the cited content progressively during streaming responses.
+
+Attributes:
+
+| Name | Type | Description | | --- | --- | --- | | `text` | `str` | An incremental update to the text content from the source document that is being cited. |
+
+Source code in `strands/types/streaming.py`
+
+```
+class CitationSourceContentDelta(TypedDict, total=False):
+    """Contains incremental updates to source content text during streaming.
+
+    Allows clients to build up the cited content progressively during
+    streaming responses.
+
+    Attributes:
+        text: An incremental update to the text content from the source
+            document that is being cited.
+    """
+
+    text: str
+```
+
+### `CitationsDelta`
+
+Bases: `TypedDict`
+
+Contains incremental updates to citation information during streaming.
+
+This allows clients to build up citation data progressively as the response is generated.
+
+Attributes:
+
+| Name | Type | Description | | --- | --- | --- | | `location` | `CitationLocation` | Specifies the precise location within a source document where cited content can be found. This can include character-level positions, page numbers, or document chunks depending on the document type and indexing method. | | `sourceContent` | `list[CitationSourceContentDelta]` | The specific content from the source document that was referenced or cited in the generated response. | | `title` | `str` | The title or identifier of the source document being cited. |
+
+Source code in `strands/types/streaming.py`
+
+```
+class CitationsDelta(TypedDict, total=False):
+    """Contains incremental updates to citation information during streaming.
+
+    This allows clients to build up citation data progressively as the
+    response is generated.
+
+    Attributes:
+        location: Specifies the precise location within a source document
+            where cited content can be found. This can include character-level
+            positions, page numbers, or document chunks depending on the
+            document type and indexing method.
+        sourceContent: The specific content from the source document that was
+            referenced or cited in the generated response.
+        title: The title or identifier of the source document being cited.
+    """
+
+    location: CitationLocation
+    sourceContent: list[CitationSourceContentDelta]
+    title: str
+```
 
 ### `ContentBlockDelta`
 
@@ -1619,7 +1681,7 @@ class ContentBlockDelta(TypedDict, total=False):
     reasoningContent: ReasoningContentBlockDelta
     text: str
     toolUse: ContentBlockDeltaToolUse
-
+    citation: CitationsDelta
 ```
 
 ### `ContentBlockDeltaEvent`
@@ -1646,7 +1708,6 @@ class ContentBlockDeltaEvent(TypedDict, total=False):
 
     contentBlockIndex: Optional[int]
     delta: ContentBlockDelta
-
 ```
 
 ### `ContentBlockDeltaText`
@@ -1670,7 +1731,6 @@ class ContentBlockDeltaText(TypedDict):
     """
 
     text: str
-
 ```
 
 ### `ContentBlockDeltaToolUse`
@@ -1694,7 +1754,6 @@ class ContentBlockDeltaToolUse(TypedDict):
     """
 
     input: str
-
 ```
 
 ### `ContentBlockStartEvent`
@@ -1721,7 +1780,6 @@ class ContentBlockStartEvent(TypedDict, total=False):
 
     contentBlockIndex: Optional[int]
     start: ContentBlockStart
-
 ```
 
 ### `ContentBlockStopEvent`
@@ -1746,7 +1804,6 @@ class ContentBlockStopEvent(TypedDict, total=False):
     """
 
     contentBlockIndex: Optional[int]
-
 ```
 
 ### `ExceptionEvent`
@@ -1770,7 +1827,6 @@ class ExceptionEvent(TypedDict):
     """
 
     message: str
-
 ```
 
 ### `MessageStartEvent`
@@ -1794,7 +1850,6 @@ class MessageStartEvent(TypedDict):
     """
 
     role: Role
-
 ```
 
 ### `MessageStopEvent`
@@ -1820,7 +1875,6 @@ class MessageStopEvent(TypedDict, total=False):
 
     additionalModelResponseFields: Optional[Union[dict, list, int, float, str, bool, None]]
     stopReason: StopReason
-
 ```
 
 ### `MetadataEvent`
@@ -1848,7 +1902,6 @@ class MetadataEvent(TypedDict, total=False):
     metrics: Metrics
     trace: Optional[Trace]
     usage: Usage
-
 ```
 
 ### `ModelStreamErrorEvent`
@@ -1874,7 +1927,6 @@ class ModelStreamErrorEvent(ExceptionEvent):
 
     originalMessage: str
     originalStatusCode: int
-
 ```
 
 ### `ReasoningContentBlockDelta`
@@ -1902,7 +1954,6 @@ class ReasoningContentBlockDelta(TypedDict, total=False):
     redactedContent: Optional[bytes]
     signature: Optional[str]
     text: Optional[str]
-
 ```
 
 ### `RedactContentEvent`
@@ -1929,7 +1980,6 @@ class RedactContentEvent(TypedDict, total=False):
 
     redactUserContentMessage: Optional[str]
     redactAssistantContentMessage: Optional[str]
-
 ```
 
 ### `StreamEvent`
@@ -1974,7 +2024,6 @@ class StreamEvent(TypedDict, total=False):
     serviceUnavailableException: ExceptionEvent
     throttlingException: ExceptionEvent
     validationException: ExceptionEvent
-
 ```
 
 ## `strands.types.tools`
@@ -1993,7 +2042,7 @@ Type alias for JSON Schema dictionaries.
 
 Callback that runs a single tool and streams back results.
 
-### `ToolChoice = Union[dict[Literal['auto'], ToolChoiceAuto], dict[Literal['any'], ToolChoiceAny], dict[Literal['tool'], ToolChoiceTool]]`
+### `ToolChoice = Union[ToolChoiceAutoDict, ToolChoiceAnyDict, ToolChoiceToolDict]`
 
 Configuration for how the model should choose tools.
 
@@ -2073,7 +2122,8 @@ class AgentTool(ABC):
 
         Args:
             tool_use: The tool use request containing tool ID and parameters.
-            invocation_state: Context for the tool invocation, including agent state.
+            invocation_state: Caller-provided kwargs that were passed to the agent when it was invoked (agent(),
+                              agent.invoke_async(), etc.).
             **kwargs: Additional keyword arguments for future extensibility.
 
         Yields:
@@ -2108,7 +2158,6 @@ class AgentTool(ABC):
             "Name": self.tool_name,
             "Type": self.tool_type,
         }
-
 ```
 
 #### `is_dynamic`
@@ -2153,7 +2202,6 @@ Source code in `strands/types/tools.py`
 def __init__(self) -> None:
     """Initialize the base agent tool with default dynamic state."""
     self._is_dynamic = False
-
 ```
 
 #### `get_display_properties()`
@@ -2181,7 +2229,6 @@ def get_display_properties(self) -> dict[str, str]:
         "Name": self.tool_name,
         "Type": self.tool_type,
     }
-
 ```
 
 #### `mark_dynamic()`
@@ -2194,7 +2241,6 @@ Source code in `strands/types/tools.py`
 def mark_dynamic(self) -> None:
     """Mark this tool as dynamically loaded."""
     self._is_dynamic = True
-
 ```
 
 #### `stream(tool_use, invocation_state, **kwargs)`
@@ -2203,7 +2249,7 @@ Stream tool events and return the final result.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_use` | `ToolUse` | The tool use request containing tool ID and parameters. | *required* | | `invocation_state` | `dict[str, Any]` | Context for the tool invocation, including agent state. | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `tool_use` | `ToolUse` | The tool use request containing tool ID and parameters. | *required* | | `invocation_state` | `dict[str, Any]` | Caller-provided kwargs that were passed to the agent when it was invoked (agent(), agent.invoke_async(), etc.). | *required* | | `**kwargs` | `Any` | Additional keyword arguments for future extensibility. | `{}` |
 
 Yields:
 
@@ -2219,14 +2265,14 @@ def stream(self, tool_use: ToolUse, invocation_state: dict[str, Any], **kwargs: 
 
     Args:
         tool_use: The tool use request containing tool ID and parameters.
-        invocation_state: Context for the tool invocation, including agent state.
+        invocation_state: Caller-provided kwargs that were passed to the agent when it was invoked (agent(),
+                          agent.invoke_async(), etc.).
         **kwargs: Additional keyword arguments for future extensibility.
 
     Yields:
         Tool events with the last being the tool result.
     """
     ...
-
 ```
 
 ### `Tool`
@@ -2254,7 +2300,6 @@ class Tool(TypedDict):
     """
 
     toolSpec: ToolSpec
-
 ```
 
 ### `ToolChoiceAny`
@@ -2270,7 +2315,6 @@ class ToolChoiceAny(TypedDict):
     """Configuration indicating that the model must request at least one tool."""
 
     pass
-
 ```
 
 ### `ToolChoiceAuto`
@@ -2292,7 +2336,6 @@ class ToolChoiceAuto(TypedDict):
     """
 
     pass
-
 ```
 
 ### `ToolChoiceTool`
@@ -2316,7 +2359,6 @@ class ToolChoiceTool(TypedDict):
     """
 
     name: str
-
 ```
 
 ### `ToolConfig`
@@ -2342,7 +2384,47 @@ class ToolConfig(TypedDict):
 
     tools: list[Tool]
     toolChoice: ToolChoice
+```
 
+### `ToolContext`
+
+Context object containing framework-provided data for decorated tools.
+
+This object provides access to framework-level information that may be useful for tool implementations.
+
+Attributes:
+
+| Name | Type | Description | | --- | --- | --- | | `tool_use` | `ToolUse` | The complete ToolUse object containing tool invocation details. | | `agent` | `Agent` | The Agent instance executing this tool, providing access to conversation history, model configuration, and other agent state. | | `invocation_state` | `dict[str, Any]` | Caller-provided kwargs that were passed to the agent when it was invoked (agent(), agent.invoke_async(), etc.). |
+
+Note
+
+This class is intended to be instantiated by the SDK. Direct construction by users is not supported and may break in future versions as new fields are added.
+
+Source code in `strands/types/tools.py`
+
+```
+@dataclass
+class ToolContext:
+    """Context object containing framework-provided data for decorated tools.
+
+    This object provides access to framework-level information that may be useful
+    for tool implementations.
+
+    Attributes:
+        tool_use: The complete ToolUse object containing tool invocation details.
+        agent: The Agent instance executing this tool, providing access to conversation history,
+               model configuration, and other agent state.
+        invocation_state: Caller-provided kwargs that were passed to the agent when it was invoked (agent(),
+                          agent.invoke_async(), etc.).
+
+    Note:
+        This class is intended to be instantiated by the SDK. Direct construction by users
+        is not supported and may break in future versions as new fields are added.
+    """
+
+    tool_use: ToolUse
+    agent: "Agent"
+    invocation_state: dict[str, Any]
 ```
 
 ### `ToolFunc`
@@ -2371,7 +2453,6 @@ class ToolFunc(Protocol):
             Tool result or awaitable tool result.
         """
         ...
-
 ```
 
 #### `__call__(*args, **kwargs)`
@@ -2397,7 +2478,6 @@ def __call__(
         Tool result or awaitable tool result.
     """
     ...
-
 ```
 
 ### `ToolResult`
@@ -2425,7 +2505,6 @@ class ToolResult(TypedDict):
     content: list[ToolResultContent]
     status: ToolResultStatus
     toolUseId: str
-
 ```
 
 ### `ToolResultContent`
@@ -2455,7 +2534,6 @@ class ToolResultContent(TypedDict, total=False):
     image: ImageContent
     json: Any
     text: str
-
 ```
 
 ### `ToolSpec`
@@ -2483,7 +2561,6 @@ class ToolSpec(TypedDict):
     description: str
     inputSchema: JSONSchema
     name: str
-
 ```
 
 ### `ToolUse`
@@ -2512,7 +2589,6 @@ class ToolUse(TypedDict):
     input: Any
     name: str
     toolUseId: str
-
 ```
 
 ## `strands.types.traces`

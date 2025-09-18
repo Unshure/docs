@@ -33,14 +33,12 @@ Quick setup with method chaining:
 
 ```
 >>> StrandsTelemetry().setup_console_exporter().setup_otlp_exporter()
-
 ```
 
 Using a custom tracer provider:
 
 ```
 >>> StrandsTelemetry(tracer_provider=my_provider).setup_console_exporter()
-
 ```
 
 Step-by-step configuration:
@@ -49,14 +47,12 @@ Step-by-step configuration:
 >>> telemetry = StrandsTelemetry()
 >>> telemetry.setup_console_exporter()
 >>> telemetry.setup_otlp_exporter()
-
 ```
 
 To setup global meter provider
 
 ```
 >>> telemetry.setup_meter(enable_console_exporter=True, enable_otlp_exporter=True) # default are False
-
 ```
 
 Note
@@ -221,7 +217,6 @@ class StrandsTelemetry:
         metrics_api.set_meter_provider(self.meter_provider)
         logger.info("Strands Meter configured")
         return self
-
 ```
 
 #### `__init__(tracer_provider=None)`
@@ -255,7 +250,6 @@ def __init__(
         self.tracer_provider = tracer_provider
     else:
         self._initialize_tracer()
-
 ```
 
 #### `setup_console_exporter(**kwargs)`
@@ -296,7 +290,6 @@ def setup_console_exporter(self, **kwargs: Any) -> "StrandsTelemetry":
     except Exception as e:
         logger.exception("error=<%s> | Failed to configure console exporter", e)
     return self
-
 ```
 
 #### `setup_meter(enable_console_exporter=False, enable_otlp_exporter=False)`
@@ -332,7 +325,6 @@ def setup_meter(
     metrics_api.set_meter_provider(self.meter_provider)
     logger.info("Strands Meter configured")
     return self
-
 ```
 
 #### `setup_otlp_exporter(**kwargs)`
@@ -376,7 +368,6 @@ def setup_otlp_exporter(self, **kwargs: Any) -> "StrandsTelemetry":
     except Exception as e:
         logger.exception("error=<%s> | Failed to configure OTLP exporter", e)
     return self
-
 ```
 
 ### `get_otel_resource()`
@@ -406,7 +397,6 @@ def get_otel_resource() -> Resource:
     )
 
     return resource
-
 ```
 
 ## `strands.telemetry.metrics`
@@ -537,6 +527,21 @@ class EventLoopMetrics:
         self.accumulated_usage["outputTokens"] += usage["outputTokens"]
         self.accumulated_usage["totalTokens"] += usage["totalTokens"]
 
+        # Handle optional cached token metrics
+        if "cacheReadInputTokens" in usage:
+            cache_read_tokens = usage["cacheReadInputTokens"]
+            self._metrics_client.event_loop_cache_read_input_tokens.record(cache_read_tokens)
+            self.accumulated_usage["cacheReadInputTokens"] = (
+                self.accumulated_usage.get("cacheReadInputTokens", 0) + cache_read_tokens
+            )
+
+        if "cacheWriteInputTokens" in usage:
+            cache_write_tokens = usage["cacheWriteInputTokens"]
+            self._metrics_client.event_loop_cache_write_input_tokens.record(cache_write_tokens)
+            self.accumulated_usage["cacheWriteInputTokens"] = (
+                self.accumulated_usage.get("cacheWriteInputTokens", 0) + cache_write_tokens
+            )
+
     def update_metrics(self, metrics: Metrics) -> None:
         """Update the accumulated performance metrics with new metrics data.
 
@@ -580,7 +585,6 @@ class EventLoopMetrics:
             "accumulated_metrics": self.accumulated_metrics,
         }
         return summary
-
 ```
 
 #### `add_tool_usage(tool, duration, tool_trace, success, message)`
@@ -634,7 +638,6 @@ def add_tool_usage(
         },
     )
     tool_trace.end()
-
 ```
 
 #### `end_cycle(start_time, cycle_trace, attributes=None)`
@@ -662,7 +665,6 @@ def end_cycle(self, start_time: float, cycle_trace: Trace, attributes: Optional[
     self._metrics_client.event_loop_cycle_duration.record(duration, attributes)
     self.cycle_durations.append(duration)
     cycle_trace.end(end_time)
-
 ```
 
 #### `get_summary()`
@@ -710,7 +712,6 @@ def get_summary(self) -> Dict[str, Any]:
         "accumulated_metrics": self.accumulated_metrics,
     }
     return summary
-
 ```
 
 #### `start_cycle(attributes=None)`
@@ -747,7 +748,6 @@ def start_cycle(
     cycle_trace = Trace(f"Cycle {self.cycle_count}", start_time=start_time)
     self.traces.append(cycle_trace)
     return start_time, cycle_trace
-
 ```
 
 #### `update_metrics(metrics)`
@@ -769,7 +769,6 @@ def update_metrics(self, metrics: Metrics) -> None:
     """
     self._metrics_client.event_loop_latency.record(metrics["latencyMs"])
     self.accumulated_metrics["latencyMs"] += metrics["latencyMs"]
-
 ```
 
 #### `update_usage(usage)`
@@ -795,6 +794,20 @@ def update_usage(self, usage: Usage) -> None:
     self.accumulated_usage["outputTokens"] += usage["outputTokens"]
     self.accumulated_usage["totalTokens"] += usage["totalTokens"]
 
+    # Handle optional cached token metrics
+    if "cacheReadInputTokens" in usage:
+        cache_read_tokens = usage["cacheReadInputTokens"]
+        self._metrics_client.event_loop_cache_read_input_tokens.record(cache_read_tokens)
+        self.accumulated_usage["cacheReadInputTokens"] = (
+            self.accumulated_usage.get("cacheReadInputTokens", 0) + cache_read_tokens
+        )
+
+    if "cacheWriteInputTokens" in usage:
+        cache_write_tokens = usage["cacheWriteInputTokens"]
+        self._metrics_client.event_loop_cache_write_input_tokens.record(cache_write_tokens)
+        self.accumulated_usage["cacheWriteInputTokens"] = (
+            self.accumulated_usage.get("cacheWriteInputTokens", 0) + cache_write_tokens
+        )
 ```
 
 ### `MetricsClient`
@@ -822,6 +835,8 @@ class MetricsClient:
     event_loop_latency: Histogram
     event_loop_input_tokens: Histogram
     event_loop_output_tokens: Histogram
+    event_loop_cache_read_input_tokens: Histogram
+    event_loop_cache_write_input_tokens: Histogram
 
     tool_call_count: Counter
     tool_success_count: Counter
@@ -875,7 +890,12 @@ class MetricsClient:
         self.event_loop_output_tokens = self.meter.create_histogram(
             name=constants.STRANDS_EVENT_LOOP_OUTPUT_TOKENS, unit="token"
         )
-
+        self.event_loop_cache_read_input_tokens = self.meter.create_histogram(
+            name=constants.STRANDS_EVENT_LOOP_CACHE_READ_INPUT_TOKENS, unit="token"
+        )
+        self.event_loop_cache_write_input_tokens = self.meter.create_histogram(
+            name=constants.STRANDS_EVENT_LOOP_CACHE_WRITE_INPUT_TOKENS, unit="token"
+        )
 ```
 
 #### `__init__()`
@@ -900,7 +920,6 @@ def __init__(self) -> None:
     meter_provider: metrics_api.MeterProvider = metrics_api.get_meter_provider()
     self.meter = meter_provider.get_meter(__name__)
     self.create_instruments()
-
 ```
 
 #### `__new__()`
@@ -923,7 +942,6 @@ def __new__(cls) -> "MetricsClient":
     if cls._instance is None:
         cls._instance = super().__new__(cls)
     return cls._instance
-
 ```
 
 #### `create_instruments()`
@@ -956,7 +974,12 @@ def create_instruments(self) -> None:
     self.event_loop_output_tokens = self.meter.create_histogram(
         name=constants.STRANDS_EVENT_LOOP_OUTPUT_TOKENS, unit="token"
     )
-
+    self.event_loop_cache_read_input_tokens = self.meter.create_histogram(
+        name=constants.STRANDS_EVENT_LOOP_CACHE_READ_INPUT_TOKENS, unit="token"
+    )
+    self.event_loop_cache_write_input_tokens = self.meter.create_histogram(
+        name=constants.STRANDS_EVENT_LOOP_CACHE_WRITE_INPUT_TOKENS, unit="token"
+    )
 ```
 
 ### `ToolMetrics`
@@ -1016,7 +1039,6 @@ class ToolMetrics:
         else:
             self.error_count += 1
             metrics_client.tool_error_count.add(1, attributes=attributes)
-
 ```
 
 #### `add_call(tool, duration, success, metrics_client, attributes=None)`
@@ -1058,7 +1080,6 @@ def add_call(
     else:
         self.error_count += 1
         metrics_client.tool_error_count.add(1, attributes=attributes)
-
 ```
 
 ### `Trace`
@@ -1152,7 +1173,6 @@ class Trace:
             "metadata": self.metadata,
             "message": self.message,
         }
-
 ```
 
 #### `__init__(name, parent_id=None, start_time=None, raw_name=None, metadata=None, message=None)`
@@ -1195,7 +1215,6 @@ def __init__(
     self.children: List["Trace"] = []
     self.metadata: Dict[str, Any] = metadata or {}
     self.message: Optional[Message] = message
-
 ```
 
 #### `add_child(child)`
@@ -1216,7 +1235,6 @@ def add_child(self, child: "Trace") -> None:
         child: The child trace to add.
     """
     self.children.append(child)
-
 ```
 
 #### `add_message(message)`
@@ -1237,7 +1255,6 @@ def add_message(self, message: Message) -> None:
         message: The message to add.
     """
     self.message = message
-
 ```
 
 #### `duration()`
@@ -1258,7 +1275,6 @@ def duration(self) -> Optional[float]:
         The duration in seconds, or None if the trace hasn't ended yet.
     """
     return None if self.end_time is None else self.end_time - self.start_time
-
 ```
 
 #### `end(end_time=None)`
@@ -1280,7 +1296,6 @@ def end(self, end_time: Optional[float] = None) -> None:
             If not provided, the current time will be used.
     """
     self.end_time = end_time if end_time is not None else time.time()
-
 ```
 
 #### `to_dict()`
@@ -1312,7 +1327,6 @@ def to_dict(self) -> Dict[str, Any]:
         "metadata": self.metadata,
         "message": self.message,
     }
-
 ```
 
 ### `metrics_to_string(event_loop_metrics, allowed_names=None)`
@@ -1341,7 +1355,6 @@ def metrics_to_string(event_loop_metrics: EventLoopMetrics, allowed_names: Optio
         A formatted string representation of the metrics.
     """
     return "\n".join(_metrics_summary_to_lines(event_loop_metrics, allowed_names or set()))
-
 ```
 
 ## `strands.telemetry.metrics_constants`
@@ -1409,7 +1422,6 @@ class JSONEncoder(json.JSONEncoder):
                 return value
             except (TypeError, OverflowError, ValueError):
                 return "<replaced>"
-
 ```
 
 #### `encode(obj)`
@@ -1440,7 +1452,6 @@ def encode(self, obj: Any) -> str:
     processed_obj = self._process_value(obj)
     # Use the parent class to encode the processed object
     return super().encode(processed_obj)
-
 ```
 
 ### `Tracer`
@@ -1591,6 +1602,30 @@ class Tracer:
 
         span.add_event(event_name, attributes=event_attributes)
 
+    def _get_event_name_for_message(self, message: Message) -> str:
+        """Determine the appropriate OpenTelemetry event name for a message.
+
+        According to OpenTelemetry semantic conventions v1.36.0, messages containing tool results
+        should be labeled as 'gen_ai.tool.message' regardless of their role field.
+        This ensures proper categorization of tool responses in traces.
+
+        Note: The GenAI namespace is experimental and may change in future versions.
+
+        Reference: https://github.com/open-telemetry/semantic-conventions/blob/v1.36.0/docs/gen-ai/gen-ai-events.md#event-gen_aitoolmessage
+
+        Args:
+            message: The message to determine the event name for
+
+        Returns:
+            The OpenTelemetry event name (e.g., 'gen_ai.user.message', 'gen_ai.tool.message')
+        """
+        # Check if the message contains a tool result
+        for content_block in message.get("content", []):
+            if "toolResult" in content_block:
+                return "gen_ai.tool.message"
+
+        return f"gen_ai.{message['role']}.message"
+
     def start_model_invoke_span(
         self,
         messages: Messages,
@@ -1624,7 +1659,7 @@ class Tracer:
         for message in messages:
             self._add_event(
                 span,
-                f"gen_ai.{message['role']}.message",
+                self._get_event_name_for_message(message),
                 {"content": serialize(message["content"])},
             )
         return span
@@ -1647,6 +1682,8 @@ class Tracer:
             "gen_ai.usage.completion_tokens": usage["outputTokens"],
             "gen_ai.usage.output_tokens": usage["outputTokens"],
             "gen_ai.usage.total_tokens": usage["totalTokens"],
+            "gen_ai.usage.cache_read_input_tokens": usage.get("cacheReadInputTokens", 0),
+            "gen_ai.usage.cache_write_input_tokens": usage.get("cacheWriteInputTokens", 0),
         }
 
         self._add_event(
@@ -1761,7 +1798,7 @@ class Tracer:
         for message in messages or []:
             self._add_event(
                 span,
-                f"gen_ai.{message['role']}.message",
+                self._get_event_name_for_message(message),
                 {"content": serialize(message["content"])},
             )
 
@@ -1792,7 +1829,7 @@ class Tracer:
 
     def start_agent_span(
         self,
-        message: Message,
+        messages: Messages,
         agent_name: str,
         model_id: Optional[str] = None,
         tools: Optional[list] = None,
@@ -1802,7 +1839,7 @@ class Tracer:
         """Start a new span for an agent invocation.
 
         Args:
-            message: The user message being sent to the agent.
+            messages: List of messages being sent to the agent.
             agent_name: Name of the agent.
             model_id: Optional model identifier.
             tools: Optional list of tools being used.
@@ -1835,13 +1872,12 @@ class Tracer:
         span = self._start_span(
             f"invoke_agent {agent_name}", attributes=attributes, span_kind=trace_api.SpanKind.CLIENT
         )
-        self._add_event(
-            span,
-            "gen_ai.user.message",
-            event_attributes={
-                "content": serialize(message["content"]),
-            },
-        )
+        for message in messages:
+            self._add_event(
+                span,
+                self._get_event_name_for_message(message),
+                {"content": serialize(message["content"])},
+            )
 
         return span
 
@@ -1876,6 +1912,8 @@ class Tracer:
                         "gen_ai.usage.input_tokens": accumulated_usage["inputTokens"],
                         "gen_ai.usage.output_tokens": accumulated_usage["outputTokens"],
                         "gen_ai.usage.total_tokens": accumulated_usage["totalTokens"],
+                        "gen_ai.usage.cache_read_input_tokens": accumulated_usage.get("cacheReadInputTokens", 0),
+                        "gen_ai.usage.cache_write_input_tokens": accumulated_usage.get("cacheWriteInputTokens", 0),
                     }
                 )
 
@@ -1915,7 +1953,6 @@ class Tracer:
                 "gen_ai.choice",
                 event_attributes={"message": result},
             )
-
 ```
 
 #### `__init__()`
@@ -1934,7 +1971,6 @@ def __init__(
     self.tracer_provider = trace_api.get_tracer_provider()
     self.tracer = self.tracer_provider.get_tracer(self.service_name)
     ThreadingInstrumentor().instrument()
-
 ```
 
 #### `end_agent_span(span, response=None, error=None)`
@@ -1979,11 +2015,12 @@ def end_agent_span(
                     "gen_ai.usage.input_tokens": accumulated_usage["inputTokens"],
                     "gen_ai.usage.output_tokens": accumulated_usage["outputTokens"],
                     "gen_ai.usage.total_tokens": accumulated_usage["totalTokens"],
+                    "gen_ai.usage.cache_read_input_tokens": accumulated_usage.get("cacheReadInputTokens", 0),
+                    "gen_ai.usage.cache_write_input_tokens": accumulated_usage.get("cacheWriteInputTokens", 0),
                 }
             )
 
     self._end_span(span, attributes, error)
-
 ```
 
 #### `end_event_loop_cycle_span(span, message, tool_result_message=None, error=None)`
@@ -2019,7 +2056,6 @@ def end_event_loop_cycle_span(
         event_attributes["tool.result"] = serialize(tool_result_message["content"])
     self._add_event(span, "gen_ai.choice", event_attributes=event_attributes)
     self._end_span(span, attributes, error)
-
 ```
 
 #### `end_model_invoke_span(span, message, usage, stop_reason, error=None)`
@@ -2051,6 +2087,8 @@ def end_model_invoke_span(
         "gen_ai.usage.completion_tokens": usage["outputTokens"],
         "gen_ai.usage.output_tokens": usage["outputTokens"],
         "gen_ai.usage.total_tokens": usage["totalTokens"],
+        "gen_ai.usage.cache_read_input_tokens": usage.get("cacheReadInputTokens", 0),
+        "gen_ai.usage.cache_write_input_tokens": usage.get("cacheWriteInputTokens", 0),
     }
 
     self._add_event(
@@ -2060,7 +2098,6 @@ def end_model_invoke_span(
     )
 
     self._end_span(span, attributes, error)
-
 ```
 
 #### `end_span_with_error(span, error_message, exception=None)`
@@ -2087,7 +2124,6 @@ def end_span_with_error(self, span: Span, error_message: str, exception: Optiona
 
     error = exception or Exception(error_message)
     self._end_span(span, error=error)
-
 ```
 
 #### `end_swarm_span(span, result=None)`
@@ -2109,7 +2145,6 @@ def end_swarm_span(
             "gen_ai.choice",
             event_attributes={"message": result},
         )
-
 ```
 
 #### `end_tool_call_span(span, tool_result, error=None)`
@@ -2154,16 +2189,15 @@ def end_tool_call_span(
         )
 
     self._end_span(span, attributes, error)
-
 ```
 
-#### `start_agent_span(message, agent_name, model_id=None, tools=None, custom_trace_attributes=None, **kwargs)`
+#### `start_agent_span(messages, agent_name, model_id=None, tools=None, custom_trace_attributes=None, **kwargs)`
 
 Start a new span for an agent invocation.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `message` | `Message` | The user message being sent to the agent. | *required* | | `agent_name` | `str` | Name of the agent. | *required* | | `model_id` | `Optional[str]` | Optional model identifier. | `None` | | `tools` | `Optional[list]` | Optional list of tools being used. | `None` | | `custom_trace_attributes` | `Optional[Mapping[str, AttributeValue]]` | Optional mapping of custom trace attributes to include in the span. | `None` | | `**kwargs` | `Any` | Additional attributes to add to the span. | `{}` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `messages` | `Messages` | List of messages being sent to the agent. | *required* | | `agent_name` | `str` | Name of the agent. | *required* | | `model_id` | `Optional[str]` | Optional model identifier. | `None` | | `tools` | `Optional[list]` | Optional list of tools being used. | `None` | | `custom_trace_attributes` | `Optional[Mapping[str, AttributeValue]]` | Optional mapping of custom trace attributes to include in the span. | `None` | | `**kwargs` | `Any` | Additional attributes to add to the span. | `{}` |
 
 Returns:
 
@@ -2174,7 +2208,7 @@ Source code in `strands/telemetry/tracer.py`
 ```
 def start_agent_span(
     self,
-    message: Message,
+    messages: Messages,
     agent_name: str,
     model_id: Optional[str] = None,
     tools: Optional[list] = None,
@@ -2184,7 +2218,7 @@ def start_agent_span(
     """Start a new span for an agent invocation.
 
     Args:
-        message: The user message being sent to the agent.
+        messages: List of messages being sent to the agent.
         agent_name: Name of the agent.
         model_id: Optional model identifier.
         tools: Optional list of tools being used.
@@ -2217,16 +2251,14 @@ def start_agent_span(
     span = self._start_span(
         f"invoke_agent {agent_name}", attributes=attributes, span_kind=trace_api.SpanKind.CLIENT
     )
-    self._add_event(
-        span,
-        "gen_ai.user.message",
-        event_attributes={
-            "content": serialize(message["content"]),
-        },
-    )
+    for message in messages:
+        self._add_event(
+            span,
+            self._get_event_name_for_message(message),
+            {"content": serialize(message["content"])},
+        )
 
     return span
-
 ```
 
 #### `start_event_loop_cycle_span(invocation_state, messages, parent_span=None, **kwargs)`
@@ -2280,12 +2312,11 @@ def start_event_loop_cycle_span(
     for message in messages or []:
         self._add_event(
             span,
-            f"gen_ai.{message['role']}.message",
+            self._get_event_name_for_message(message),
             {"content": serialize(message["content"])},
         )
 
     return span
-
 ```
 
 #### `start_model_invoke_span(messages, parent_span=None, model_id=None, **kwargs)`
@@ -2336,11 +2367,10 @@ def start_model_invoke_span(
     for message in messages:
         self._add_event(
             span,
-            f"gen_ai.{message['role']}.message",
+            self._get_event_name_for_message(message),
             {"content": serialize(message["content"])},
         )
     return span
-
 ```
 
 #### `start_multiagent_span(task, instance)`
@@ -2371,7 +2401,6 @@ def start_multiagent_span(
     )
 
     return span
-
 ```
 
 #### `start_tool_call_span(tool, parent_span=None, **kwargs)`
@@ -2424,7 +2453,6 @@ def start_tool_call_span(self, tool: ToolUse, parent_span: Optional[Span] = None
     )
 
     return span
-
 ```
 
 ### `get_tracer()`
@@ -2450,7 +2478,6 @@ def get_tracer() -> Tracer:
         _tracer_instance = Tracer()
 
     return _tracer_instance
-
 ```
 
 ### `serialize(obj)`
@@ -2478,5 +2505,4 @@ def serialize(obj: Any) -> str:
         JSON string representation of the object
     """
     return json.dumps(obj, ensure_ascii=False, cls=JSONEncoder)
-
 ```

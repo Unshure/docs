@@ -58,7 +58,6 @@ teacher_agent = Agent(
     tools=[math_assistant, language_assistant, english_assistant, 
            computer_science_assistant, general_assistant],
 )
-
 ```
 
 - The orchestrator suppresses its intermediate output by setting `callback_handler` to `None`. Without this suppression, the default [`PrintingStreamHandler`](../../../../api-reference/handlers/#strands.handlers.callback_handler.PrintingCallbackHandler) would print all outputs to stdout, creating a cluttered experience with duplicate information from each agent's thinking process and tool calls.
@@ -96,7 +95,6 @@ def math_assistant(query: str) -> str:
 
     except Exception as e:
         return f"Error processing your mathematical query: {str(e)}"
-
 ```
 
 Each specialized agent has a distinct system prompt, and tools in its inventory, and follows this general pattern.
@@ -143,7 +141,6 @@ Therefore, the solutions to the equation x² + 5x + 6 = 0 are x = -2 and x = -3.
 You can verify these solutions by substituting them back into the original equation:
 For x = -2: (-2)² + 5(-2) + 6 = 4 - 10 + 6 = 0 ✓
 For x = -3: (-3)² + 5(-3) + 6 = 9 - 15 + 6 = 0 ✓
-
 ```
 
 **Example 2: Computer Science Question**
@@ -185,7 +182,6 @@ test_strings = [
 for string in test_strings:
     result = is_palindrome(string)
     print(f"'{string}' is a palindrome: {result}")
-
 ```
 
 **Example 3: Language Translation Request**
@@ -206,7 +202,6 @@ Some notes on this translation:
 3. This translation uses the informal "tú" form (estás). If you need to be formal or are speaking to someone you don't know well, you would say "¿cómo está usted?"
 
 If you're speaking to multiple people, you would say "¿cómo están ustedes?" (or "¿cómo estáis?" in Spain).
-
 ```
 
 ## Extending the Example

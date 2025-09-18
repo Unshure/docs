@@ -7,8 +7,7 @@
 Writer is configured as an optional dependency in Strands Agents. To install, run:
 
 ```
-pip install 'strands-agents[writer]'
-
+pip install 'strands-agents[writer]' strands-agents-tools
 ```
 
 ## Usage
@@ -29,7 +28,6 @@ model = WriterModel(
 agent = Agent(model=model, tools=[calculator])
 response = agent("What is 2+2")
 print(response)
-
 ```
 
 > **Note**: By default, Strands Agents use a `PrintingCallbackHandler` that streams responses to stdout as they're generated. When you call `agent("What is 2+2")`, you'll see the response appear in real-time as it's being generated. The `print(response)` above also shows the final collected result after the response is complete. See [Callback Handlers](../../streaming/callback-handlers/) for more details.
@@ -50,7 +48,6 @@ model = WriterModel(
     },
     model_id="palmyra-x5"
 )
-
 ```
 
 ### Model Configuration
@@ -73,14 +70,12 @@ You can set your Writer API key as an environment variable instead of passing it
 
 ```
 export WRITER_API_KEY="your_api_key_here"
-
 ```
 
 Then initialize the model without the `client_args["api_key"]` parameter:
 
 ```
 model = WriterModel(model_id="palmyra-x5")
-
 ```
 
 ## Examples
@@ -105,10 +100,9 @@ agent = Agent(
 )
 
 response = agent("Research our competitor's latest product launch and draft a summary email for the leadership team")
-
 ```
 
-> **Note**: The `web_search` and `email_sender` tools in this example are custom tools that you would need to define. See [Python Tools](../../tools/python-tools/) for guidance on creating custom tools, or use existing tools from the [strands_tools package](../../tools/example-tools-package/).
+> **Note**: The `web_search` and `email_sender` tools in this example are custom tools that you would need to define. See [Python Tools](../../tools/python-tools/) for guidance on creating custom tools, or use existing tools from the [strands_tools package](../../tools/community-tools-package/).
 
 ### Financial analysis with Palmyra Fin
 
@@ -139,7 +133,6 @@ actual_report = """
 """
 
 response = agent(f"Analyze the key financial risks in this quarterly earnings report: {actual_report}")
-
 ```
 
 ### Long-context document processing
@@ -168,7 +161,6 @@ from meeting recordings, documents, or other long-form content that you want to 
 """
 
 response = agent(f"Summarize the key decisions and action items from these meeting transcripts: {actual_transcripts}")
-
 ```
 
 ### Structured Output Generation
@@ -211,7 +203,6 @@ response = agent.structured_output(
 )
 
 print(f"Campaign Name: {response.campaign_name}\nTarget Audience: {response.target_audience}\nKey Messages: {response.key_messages}\nCall to Action: {response.call_to_action}\nTone: {response.tone}\nEstimated Engagement: {response.estimated_engagement}")
-
 ```
 
 ### Vision and Image Analysis
@@ -263,7 +254,6 @@ vision_agent = Agent(model=model, messages=messages)
 response = vision_agent("What are the main features of this image and what might it be used for?")
 
 print(response)
-
 ```
 
 ## Troubleshooting

@@ -7,8 +7,7 @@
 Anthropic is configured as an optional dependency in Strands. To install, run:
 
 ```
-pip install 'strands-agents[anthropic]'
-
+pip install 'strands-agents[anthropic]' strands-agents-tools
 ```
 
 ## Usage
@@ -35,7 +34,6 @@ model = AnthropicModel(
 agent = Agent(model=model, tools=[calculator])
 response = agent("What is 2+2")
 print(response)
-
 ```
 
 ## Configuration
@@ -101,7 +99,6 @@ print(f"Title: {result.title}")
 print(f"Author: {result.author}")
 print(f"Genre: {result.genre}")
 print(f"Rating: {result.rating}")
-
 ```
 
 ## References

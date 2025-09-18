@@ -43,7 +43,6 @@ file_agent = Agent(
     system_prompt=FILE_SYSTEM_PROMPT,
     tools=[file_read, file_write, editor],
 )
-
 ```
 
 ### Using the File Operations Tools
@@ -59,7 +58,6 @@ For intuitive, conversational interactions:
 response = file_agent("Read the first 10 lines of /etc/hosts")
 response = file_agent("Create a new file called notes.txt with content 'Meeting notes'")
 response = file_agent("Find all functions in my_script.py that contain 'data'")
-
 ```
 
 Behind the scenes, the agent interprets the natural language query and selects the appropriate tool to execute.
@@ -87,7 +85,6 @@ edit_result = file_agent.tool.editor(
     old_str="function_name",
     new_str="new_function_name"
 )
-
 ```
 
 ## Key Features and Capabilities
@@ -100,28 +97,24 @@ The agent can read files in various ways:
 
   ```
   Read the file ~/strands_test_file.txt
-
   ```
 
 - **Line Range Reading**:
 
   ```
   Show me lines 2-4 of ~/strands_test_file.txt
-
   ```
 
 - **Pattern Searching**:
 
   ```
   Find all lines containing "commands" in the test file
-
   ```
 
 - **File Statistics**:
 
   ```
   How many lines are in ~/strands_test_file.txt?
-
   ```
 
 ### 2. Writing Files
@@ -132,14 +125,12 @@ The agent can create and modify files:
 
   ```
   Add the line "This is an appended line" to ~/strands_test_file.txt
-
   ```
 
 - **Overwriting Files**:
 
   ```
   Overwrite ~/new_file.txt with "This is new content"
-
   ```
 
 ### 3. Advanced Editing
@@ -150,21 +141,18 @@ The agent can perform more complex editing operations:
 
   ```
   In ~/strands_test_file.txt, replace "test" with "sample"
-
   ```
 
 - **Line Insertion**:
 
   ```
   Insert "New line here" after line 3 in ~/strands_test_file.txt
-
   ```
 
 - **Finding Line Numbers**:
 
   ```
   What line contains the word "commands" in the test file?
-
   ```
 
 ### Example Commands and Responses
@@ -184,7 +172,6 @@ Try commands like:
 3. Replace 'test' with 'sample' in this file
 
 The file contains 5 lines and 207 characters.
-
 ```
 
 **Command 2**: Add a new line saying "This is a new line I added"
@@ -204,7 +191,6 @@ Try commands like:
 This is a new line I added
 
 The file now has 6 lines.
-
 ```
 
 **Command 3**: Replace all instances of "test" with "sample" in the file
@@ -219,7 +205,6 @@ Changes made:
 - Line 3: "Try commands like:"
 
 2 occurrences were replaced in total.
-
 ```
 
 ## Extending the Example

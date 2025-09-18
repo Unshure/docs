@@ -24,7 +24,6 @@ pipx install strands-agents-builder
 
 # Run Strands CLI
 strands
-
 ```
 
 ## Manual Installation
@@ -47,7 +46,6 @@ pip install -e .
 
 # Create symlink
 sudo ln -sf /path/to/custom/location/venv/bin/strands /usr/local/bin/strands
-
 ```
 
 ## CLI Verification
@@ -57,7 +55,6 @@ To verify your CLI installation:
 ```
 # Run Strands CLI with a simple query
 strands "Hello, Strands!"
-
 ```
 
 ## Command Line Arguments
@@ -82,7 +79,6 @@ Execute shell commands directly by prefixing with `!`:
 > !ls -la
 > !git status
 > !docker ps
-
 ```
 
 ### Natural Language Shell Commands
@@ -93,7 +89,6 @@ Ask Strands to run shell commands using natural language:
 > Show me all running processes
 > Create a new directory called "project" and initialize a git repository there
 > Find all Python files modified in the last week
-
 ```
 
 ## Environment Variables
@@ -107,7 +102,6 @@ Example:
 ```
 export STRANDS_KNOWLEDGE_BASE_ID="YOUR_KB_ID"
 strands "What were our key decisions last week?"
-
 ```
 
 ## Command Line Arguments
@@ -117,7 +111,6 @@ Command line arguments override any configuration from files or environment vari
 ```
 # Enable memory with knowledge base
 strands --kb your-kb-id
-
 ```
 
 ## Custom Model Provider
@@ -126,14 +119,12 @@ You can configure strands to use a different model provider with specific settin
 
 ```
 strands --model-provider <NAME> --model-config <JSON|FILE>
-
 ```
 
 As an example, if you wanted to use the packaged Ollama provider with a specific model id, you would run:
 
 ```
 strands --model-provider ollama --model-config '{"model_id": "llama3.3"}'
-
 ```
 
 Strands is packaged with `bedrock` and `ollama` as providers.

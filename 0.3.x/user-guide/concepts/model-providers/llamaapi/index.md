@@ -11,8 +11,7 @@ With Llama API, you get access to state-of-the-art AI capabilities through a dev
 Llama API is configured as an optional dependency in Strands Agents. To install, run:
 
 ```
-pip install 'strands-agents[llamaapi]'
-
+pip install 'strands-agents[llamaapi]' strands-agents-tools
 ```
 
 ## Usage
@@ -35,7 +34,6 @@ model = LlamaAPIModel(
 agent = Agent(model=model, tools=[calculator])
 response = agent("What is 2+2")
 print(response)
-
 ```
 
 ## Configuration
@@ -95,7 +93,6 @@ print(f"Title: {result.title}")
 print(f"Author: {result.author}")
 print(f"Genre: {result.genre}")
 print(f"Rating: {result.rating}")
-
 ```
 
 ## References

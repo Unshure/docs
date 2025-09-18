@@ -64,7 +64,6 @@ def get_weather():
         return content, {"Content-Type": "plain/text"}
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 ```
 
 ### Streaming responses
@@ -112,7 +111,6 @@ def get_weather_streaming():
         return run_weather_agent_and_stream_response(prompt), {"Content-Type": "plain/text"}
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 ```
 
 The implementation above employs a [custom tool](../../concepts/tools/python-tools/#python-tool-decorators) to mark the boundary between information gathering and summary generation phases. This approach ensures that only the final, user-facing content is streamed to the client, maintaining consistency with the non-streaming endpoint while providing the benefits of incremental response delivery.
@@ -154,7 +152,6 @@ To deploy the agent to EC2 using the TypeScript CDK, you need to define the infr
    role: instanceRole,
    associatePublicIpAddress: true, // Assign a public IP address
  });
-
 ```
 
 For EC2 deployment, the application code and dependencies are packaged separately and uploaded to S3 as assets. During instance initialization, both packages are downloaded and extracted to the appropriate locations and then configured to run as a Linux service:
@@ -201,7 +198,6 @@ For EC2 deployment, the application code and dependencies are packaged separatel
    "systemctl enable agent-app.service",
    "systemctl start agent-app.service",
  );
-
 ```
 
 The full example ([agent-ec2-stack.ts](https://github.com/strands-agents/docs/tree/main/docs/examples/cdk/deploy_to_ec2/lib/agent-ec2-stack.ts)):
@@ -229,7 +225,6 @@ pip install -r requirements.txt --target ./packaging/_dependencies --python-vers
 
 # Deploy the stack
 npx cdk deploy
-
 ```
 
 Once deployed, you can test your agent using the public IP address and port:
@@ -249,7 +244,6 @@ curl -X POST \
   http://$SERVICE_URL/weather-streaming \
   -H 'Content-Type: application/json' \
   -d '{"prompt": "What is the weather in New York in Celsius?"}'
-
 ```
 
 ## Summary

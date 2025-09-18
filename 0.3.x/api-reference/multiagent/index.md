@@ -33,43 +33,98 @@ class MultiAgentBase(ABC):
     """
 
     @abstractmethod
-    async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> MultiAgentResult:
-        """Invoke asynchronously."""
+    async def invoke_async(
+        self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+    ) -> MultiAgentResult:
+        """Invoke asynchronously.
+
+        Args:
+            task: The task to execute
+            invocation_state: Additional state/context passed to underlying agents.
+                Defaults to None to avoid mutable default argument issues.
+            **kwargs: Additional keyword arguments passed to underlying agents.
+        """
         raise NotImplementedError("invoke_async not implemented")
 
-    @abstractmethod
-    def __call__(self, task: str | list[ContentBlock], **kwargs: Any) -> MultiAgentResult:
-        """Invoke synchronously."""
-        raise NotImplementedError("__call__ not implemented")
+    def __call__(
+        self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+    ) -> MultiAgentResult:
+        """Invoke synchronously.
 
+        Args:
+            task: The task to execute
+            invocation_state: Additional state/context passed to underlying agents.
+                Defaults to None to avoid mutable default argument issues.
+            **kwargs: Additional keyword arguments passed to underlying agents.
+        """
+        if invocation_state is None:
+            invocation_state = {}
+
+        def execute() -> MultiAgentResult:
+            return asyncio.run(self.invoke_async(task, invocation_state, **kwargs))
+
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(execute)
+            return future.result()
 ```
 
-#### `__call__(task, **kwargs)`
+#### `__call__(task, invocation_state=None, **kwargs)`
 
 Invoke synchronously.
 
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `task` | `str | list[ContentBlock]` | The task to execute | *required* | | `invocation_state` | `dict[str, Any] | None` | Additional state/context passed to underlying agents. Defaults to None to avoid mutable default argument issues. | `None` | | `**kwargs` | `Any` | Additional keyword arguments passed to underlying agents. | `{}` |
+
 Source code in `strands/multiagent/base.py`
 
 ```
-@abstractmethod
-def __call__(self, task: str | list[ContentBlock], **kwargs: Any) -> MultiAgentResult:
-    """Invoke synchronously."""
-    raise NotImplementedError("__call__ not implemented")
+def __call__(
+    self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+) -> MultiAgentResult:
+    """Invoke synchronously.
 
+    Args:
+        task: The task to execute
+        invocation_state: Additional state/context passed to underlying agents.
+            Defaults to None to avoid mutable default argument issues.
+        **kwargs: Additional keyword arguments passed to underlying agents.
+    """
+    if invocation_state is None:
+        invocation_state = {}
+
+    def execute() -> MultiAgentResult:
+        return asyncio.run(self.invoke_async(task, invocation_state, **kwargs))
+
+    with ThreadPoolExecutor() as executor:
+        future = executor.submit(execute)
+        return future.result()
 ```
 
-#### `invoke_async(task, **kwargs)`
+#### `invoke_async(task, invocation_state=None, **kwargs)`
 
 Invoke asynchronously.
 
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `task` | `str | list[ContentBlock]` | The task to execute | *required* | | `invocation_state` | `dict[str, Any] | None` | Additional state/context passed to underlying agents. Defaults to None to avoid mutable default argument issues. | `None` | | `**kwargs` | `Any` | Additional keyword arguments passed to underlying agents. | `{}` |
+
 Source code in `strands/multiagent/base.py`
 
 ```
 @abstractmethod
-async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> MultiAgentResult:
-    """Invoke asynchronously."""
-    raise NotImplementedError("invoke_async not implemented")
+async def invoke_async(
+    self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+) -> MultiAgentResult:
+    """Invoke asynchronously.
 
+    Args:
+        task: The task to execute
+        invocation_state: Additional state/context passed to underlying agents.
+            Defaults to None to avoid mutable default argument issues.
+        **kwargs: Additional keyword arguments passed to underlying agents.
+    """
+    raise NotImplementedError("invoke_async not implemented")
 ```
 
 ### `MultiAgentResult`
@@ -99,7 +154,6 @@ class MultiAgentResult:
     accumulated_metrics: Metrics = field(default_factory=lambda: Metrics(latencyMs=0))
     execution_count: int = 0
     execution_time: int = 0
-
 ```
 
 ### `NodeResult`
@@ -147,7 +201,6 @@ class NodeResult:
             for nested_node_result in self.result.results.values():
                 flattened.extend(nested_node_result.get_agent_results())
             return flattened
-
 ```
 
 #### `get_agent_results()`
@@ -169,7 +222,6 @@ def get_agent_results(self) -> list[AgentResult]:
         for nested_node_result in self.result.results.values():
             flattened.extend(nested_node_result.get_agent_results())
         return flattened
-
 ```
 
 ### `Status`
@@ -188,21 +240,20 @@ class Status(Enum):
     EXECUTING = "executing"
     COMPLETED = "completed"
     FAILED = "failed"
-
 ```
 
 ## `strands.multiagent.graph`
 
-Directed Acyclic Graph (DAG) Multi-Agent Pattern Implementation.
+Directed Graph Multi-Agent Pattern Implementation.
 
-This module provides a deterministic DAG-based agent orchestration system where agents or MultiAgentBase instances (like Swarm or Graph) are nodes in a graph, executed according to edge dependencies, with output from one node passed as input to connected nodes.
+This module provides a deterministic graph-based agent orchestration system where agents or MultiAgentBase instances (like Swarm or Graph) are nodes in a graph, executed according to edge dependencies, with output from one node passed as input to connected nodes.
 
 Key Features:
 
 - Agents and MultiAgentBase instances (Swarm, Graph, etc.) as graph nodes
-- Deterministic execution order based on DAG structure
+- Deterministic execution based on dependency resolution
 - Output propagation along edges
-- Topological sort for execution ordering
+- Support for cyclic graphs (feedback loops)
 - Clear dependency management
 - Supports nested graphs (Graph as a node in another Graph)
 
@@ -210,16 +261,35 @@ Key Features:
 
 Bases: `MultiAgentBase`
 
-Directed Acyclic Graph multi-agent orchestration.
+Directed Graph multi-agent orchestration with configurable revisit behavior.
 
 Source code in `strands/multiagent/graph.py`
 
 ````
 class Graph(MultiAgentBase):
-    """Directed Acyclic Graph multi-agent orchestration."""
+    """Directed Graph multi-agent orchestration with configurable revisit behavior."""
 
-    def __init__(self, nodes: dict[str, GraphNode], edges: set[GraphEdge], entry_points: set[GraphNode]) -> None:
-        """Initialize Graph."""
+    def __init__(
+        self,
+        nodes: dict[str, GraphNode],
+        edges: set[GraphEdge],
+        entry_points: set[GraphNode],
+        max_node_executions: Optional[int] = None,
+        execution_timeout: Optional[float] = None,
+        node_timeout: Optional[float] = None,
+        reset_on_revisit: bool = False,
+    ) -> None:
+        """Initialize Graph with execution limits and reset behavior.
+
+        Args:
+            nodes: Dictionary of node_id to GraphNode
+            edges: Set of GraphEdge objects
+            entry_points: Set of GraphNode objects that are entry points
+            max_node_executions: Maximum total node executions (default: None - no limit)
+            execution_timeout: Total execution timeout in seconds (default: None - no limit)
+            node_timeout: Individual node timeout in seconds (default: None - no limit)
+            reset_on_revisit: Whether to reset node state when revisited (default: False)
+        """
         super().__init__()
 
         # Validate nodes for duplicate instances
@@ -228,38 +298,80 @@ class Graph(MultiAgentBase):
         self.nodes = nodes
         self.edges = edges
         self.entry_points = entry_points
+        self.max_node_executions = max_node_executions
+        self.execution_timeout = execution_timeout
+        self.node_timeout = node_timeout
+        self.reset_on_revisit = reset_on_revisit
         self.state = GraphState()
         self.tracer = get_tracer()
 
-    def __call__(self, task: str | list[ContentBlock], **kwargs: Any) -> GraphResult:
-        """Invoke the graph synchronously."""
+    def __call__(
+        self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+    ) -> GraphResult:
+        """Invoke the graph synchronously.
+
+        Args:
+            task: The task to execute
+            invocation_state: Additional state/context passed to underlying agents.
+                Defaults to None to avoid mutable default argument issues.
+            **kwargs: Keyword arguments allowing backward compatible future changes.
+        """
+        if invocation_state is None:
+            invocation_state = {}
 
         def execute() -> GraphResult:
-            return asyncio.run(self.invoke_async(task))
+            return asyncio.run(self.invoke_async(task, invocation_state))
 
         with ThreadPoolExecutor() as executor:
             future = executor.submit(execute)
             return future.result()
 
-    async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> GraphResult:
-        """Invoke the graph asynchronously."""
+    async def invoke_async(
+        self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+    ) -> GraphResult:
+        """Invoke the graph asynchronously.
+
+        Args:
+            task: The task to execute
+            invocation_state: Additional state/context passed to underlying agents.
+                Defaults to None to avoid mutable default argument issues - a new empty dict
+                is created if None is provided.
+            **kwargs: Keyword arguments allowing backward compatible future changes.
+        """
+        if invocation_state is None:
+            invocation_state = {}
+
         logger.debug("task=<%s> | starting graph execution", task)
 
         # Initialize state
+        start_time = time.time()
         self.state = GraphState(
             status=Status.EXECUTING,
             task=task,
             total_nodes=len(self.nodes),
             edges=[(edge.from_node, edge.to_node) for edge in self.edges],
             entry_points=list(self.entry_points),
+            start_time=start_time,
         )
 
-        start_time = time.time()
         span = self.tracer.start_multiagent_span(task, "graph")
         with trace_api.use_span(span, end_on_exit=True):
             try:
-                await self._execute_graph()
-                self.state.status = Status.COMPLETED
+                logger.debug(
+                    "max_node_executions=<%s>, execution_timeout=<%s>s, node_timeout=<%s>s | graph execution config",
+                    self.max_node_executions or "None",
+                    self.execution_timeout or "None",
+                    self.node_timeout or "None",
+                )
+
+                await self._execute_graph(invocation_state)
+
+                # Set final status based on execution results
+                if self.state.failed_nodes:
+                    self.state.status = Status.FAILED
+                elif self.state.status == Status.EXECUTING:  # Only set to COMPLETED if still executing and no failures
+                    self.state.status = Status.COMPLETED
+
                 logger.debug("status=<%s> | graph execution completed", self.state.status)
 
             except Exception:
@@ -282,50 +394,51 @@ class Graph(MultiAgentBase):
             # Validate Agent-specific constraints for each node
             _validate_node_executor(node.executor)
 
-    async def _execute_graph(self) -> None:
+    async def _execute_graph(self, invocation_state: dict[str, Any]) -> None:
         """Unified execution flow with conditional routing."""
         ready_nodes = list(self.entry_points)
 
         while ready_nodes:
+            # Check execution limits before continuing
+            should_continue, reason = self.state.should_continue(
+                max_node_executions=self.max_node_executions,
+                execution_timeout=self.execution_timeout,
+            )
+            if not should_continue:
+                self.state.status = Status.FAILED
+                logger.debug("reason=<%s> | stopping execution", reason)
+                return  # Let the top-level exception handler deal with it
+
             current_batch = ready_nodes.copy()
             ready_nodes.clear()
 
             # Execute current batch of ready nodes concurrently
-            tasks = [
-                asyncio.create_task(self._execute_node(node))
-                for node in current_batch
-                if node not in self.state.completed_nodes
-            ]
+            tasks = [asyncio.create_task(self._execute_node(node, invocation_state)) for node in current_batch]
 
             for task in tasks:
                 await task
 
             # Find newly ready nodes after batch execution
-            ready_nodes.extend(self._find_newly_ready_nodes())
+            # We add all nodes in current batch as completed batch,
+            # because a failure would throw exception and code would not make it here
+            ready_nodes.extend(self._find_newly_ready_nodes(current_batch))
 
-    def _find_newly_ready_nodes(self) -> list["GraphNode"]:
+    def _find_newly_ready_nodes(self, completed_batch: list["GraphNode"]) -> list["GraphNode"]:
         """Find nodes that became ready after the last execution."""
         newly_ready = []
         for _node_id, node in self.nodes.items():
-            if (
-                node not in self.state.completed_nodes
-                and node not in self.state.failed_nodes
-                and self._is_node_ready_with_conditions(node)
-            ):
+            if self._is_node_ready_with_conditions(node, completed_batch):
                 newly_ready.append(node)
         return newly_ready
 
-    def _is_node_ready_with_conditions(self, node: GraphNode) -> bool:
+    def _is_node_ready_with_conditions(self, node: GraphNode, completed_batch: list["GraphNode"]) -> bool:
         """Check if a node is ready considering conditional edges."""
         # Get incoming edges to this node
         incoming_edges = [edge for edge in self.edges if edge.to_node == node]
 
-        if not incoming_edges:
-            return node in self.entry_points
-
         # Check if at least one incoming edge condition is satisfied
         for edge in incoming_edges:
-            if edge.from_node in self.state.completed_nodes:
+            if edge.from_node in completed_batch:
                 if edge.should_traverse(self.state):
                     logger.debug(
                         "from=<%s>, to=<%s> | edge ready via satisfied condition", edge.from_node.node_id, node.node_id
@@ -337,8 +450,15 @@ class Graph(MultiAgentBase):
                     )
         return False
 
-    async def _execute_node(self, node: GraphNode) -> None:
-        """Execute a single node with error handling."""
+    async def _execute_node(self, node: GraphNode, invocation_state: dict[str, Any]) -> None:
+        """Execute a single node with error handling and timeout protection."""
+        # Reset the node's state if reset_on_revisit is enabled and it's being revisited
+        if self.reset_on_revisit and node in self.state.completed_nodes:
+            logger.debug("node_id=<%s> | resetting node state for revisit", node.node_id)
+            node.reset_executor_state()
+            # Remove from completed nodes since we're re-executing it
+            self.state.completed_nodes.remove(node)
+
         node.execution_status = Status.EXECUTING
         logger.debug("node_id=<%s> | executing node", node.node_id)
 
@@ -347,42 +467,65 @@ class Graph(MultiAgentBase):
             # Build node input from satisfied dependencies
             node_input = self._build_node_input(node)
 
-            # Execute based on node type and create unified NodeResult
-            if isinstance(node.executor, MultiAgentBase):
-                multi_agent_result = await node.executor.invoke_async(node_input)
+            # Execute with timeout protection (only if node_timeout is set)
+            try:
+                # Execute based on node type and create unified NodeResult
+                if isinstance(node.executor, MultiAgentBase):
+                    if self.node_timeout is not None:
+                        multi_agent_result = await asyncio.wait_for(
+                            node.executor.invoke_async(node_input, invocation_state),
+                            timeout=self.node_timeout,
+                        )
+                    else:
+                        multi_agent_result = await node.executor.invoke_async(node_input, invocation_state)
 
-                # Create NodeResult with MultiAgentResult directly
-                node_result = NodeResult(
-                    result=multi_agent_result,  # type is MultiAgentResult
-                    execution_time=multi_agent_result.execution_time,
-                    status=Status.COMPLETED,
-                    accumulated_usage=multi_agent_result.accumulated_usage,
-                    accumulated_metrics=multi_agent_result.accumulated_metrics,
-                    execution_count=multi_agent_result.execution_count,
+                    # Create NodeResult with MultiAgentResult directly
+                    node_result = NodeResult(
+                        result=multi_agent_result,  # type is MultiAgentResult
+                        execution_time=multi_agent_result.execution_time,
+                        status=Status.COMPLETED,
+                        accumulated_usage=multi_agent_result.accumulated_usage,
+                        accumulated_metrics=multi_agent_result.accumulated_metrics,
+                        execution_count=multi_agent_result.execution_count,
+                    )
+
+                elif isinstance(node.executor, Agent):
+                    if self.node_timeout is not None:
+                        agent_response = await asyncio.wait_for(
+                            node.executor.invoke_async(node_input, **invocation_state),
+                            timeout=self.node_timeout,
+                        )
+                    else:
+                        agent_response = await node.executor.invoke_async(node_input, **invocation_state)
+
+                    # Extract metrics from agent response
+                    usage = Usage(inputTokens=0, outputTokens=0, totalTokens=0)
+                    metrics = Metrics(latencyMs=0)
+                    if hasattr(agent_response, "metrics") and agent_response.metrics:
+                        if hasattr(agent_response.metrics, "accumulated_usage"):
+                            usage = agent_response.metrics.accumulated_usage
+                        if hasattr(agent_response.metrics, "accumulated_metrics"):
+                            metrics = agent_response.metrics.accumulated_metrics
+
+                    node_result = NodeResult(
+                        result=agent_response,  # type is AgentResult
+                        execution_time=round((time.time() - start_time) * 1000),
+                        status=Status.COMPLETED,
+                        accumulated_usage=usage,
+                        accumulated_metrics=metrics,
+                        execution_count=1,
+                    )
+                else:
+                    raise ValueError(f"Node '{node.node_id}' of type '{type(node.executor)}' is not supported")
+
+            except asyncio.TimeoutError:
+                timeout_msg = f"Node '{node.node_id}' execution timed out after {self.node_timeout}s"
+                logger.exception(
+                    "node=<%s>, timeout=<%s>s | node execution timed out after timeout",
+                    node.node_id,
+                    self.node_timeout,
                 )
-
-            elif isinstance(node.executor, Agent):
-                agent_response = await node.executor.invoke_async(node_input)
-
-                # Extract metrics from agent response
-                usage = Usage(inputTokens=0, outputTokens=0, totalTokens=0)
-                metrics = Metrics(latencyMs=0)
-                if hasattr(agent_response, "metrics") and agent_response.metrics:
-                    if hasattr(agent_response.metrics, "accumulated_usage"):
-                        usage = agent_response.metrics.accumulated_usage
-                    if hasattr(agent_response.metrics, "accumulated_metrics"):
-                        metrics = agent_response.metrics.accumulated_metrics
-
-                node_result = NodeResult(
-                    result=agent_response,  # type is AgentResult
-                    execution_time=round((time.time() - start_time) * 1000),
-                    status=Status.COMPLETED,
-                    accumulated_usage=usage,
-                    accumulated_metrics=metrics,
-                    execution_count=1,
-                )
-            else:
-                raise ValueError(f"Node '{node.node_id}' of type '{type(node.executor)}' is not supported")
+                raise Exception(timeout_msg) from None
 
             # Mark as completed
             node.execution_status = Status.COMPLETED
@@ -505,37 +648,73 @@ class Graph(MultiAgentBase):
             edges=self.state.edges,
             entry_points=self.state.entry_points,
         )
-
 ````
 
-#### `__call__(task, **kwargs)`
+#### `__call__(task, invocation_state=None, **kwargs)`
 
 Invoke the graph synchronously.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `task` | `str | list[ContentBlock]` | The task to execute | *required* | | `invocation_state` | `dict[str, Any] | None` | Additional state/context passed to underlying agents. Defaults to None to avoid mutable default argument issues. | `None` | | `**kwargs` | `Any` | Keyword arguments allowing backward compatible future changes. | `{}` |
 
 Source code in `strands/multiagent/graph.py`
 
 ```
-def __call__(self, task: str | list[ContentBlock], **kwargs: Any) -> GraphResult:
-    """Invoke the graph synchronously."""
+def __call__(
+    self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+) -> GraphResult:
+    """Invoke the graph synchronously.
+
+    Args:
+        task: The task to execute
+        invocation_state: Additional state/context passed to underlying agents.
+            Defaults to None to avoid mutable default argument issues.
+        **kwargs: Keyword arguments allowing backward compatible future changes.
+    """
+    if invocation_state is None:
+        invocation_state = {}
 
     def execute() -> GraphResult:
-        return asyncio.run(self.invoke_async(task))
+        return asyncio.run(self.invoke_async(task, invocation_state))
 
     with ThreadPoolExecutor() as executor:
         future = executor.submit(execute)
         return future.result()
-
 ```
 
-#### `__init__(nodes, edges, entry_points)`
+#### `__init__(nodes, edges, entry_points, max_node_executions=None, execution_timeout=None, node_timeout=None, reset_on_revisit=False)`
 
-Initialize Graph.
+Initialize Graph with execution limits and reset behavior.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `nodes` | `dict[str, GraphNode]` | Dictionary of node_id to GraphNode | *required* | | `edges` | `set[GraphEdge]` | Set of GraphEdge objects | *required* | | `entry_points` | `set[GraphNode]` | Set of GraphNode objects that are entry points | *required* | | `max_node_executions` | `Optional[int]` | Maximum total node executions (default: None - no limit) | `None` | | `execution_timeout` | `Optional[float]` | Total execution timeout in seconds (default: None - no limit) | `None` | | `node_timeout` | `Optional[float]` | Individual node timeout in seconds (default: None - no limit) | `None` | | `reset_on_revisit` | `bool` | Whether to reset node state when revisited (default: False) | `False` |
 
 Source code in `strands/multiagent/graph.py`
 
 ```
-def __init__(self, nodes: dict[str, GraphNode], edges: set[GraphEdge], entry_points: set[GraphNode]) -> None:
-    """Initialize Graph."""
+def __init__(
+    self,
+    nodes: dict[str, GraphNode],
+    edges: set[GraphEdge],
+    entry_points: set[GraphNode],
+    max_node_executions: Optional[int] = None,
+    execution_timeout: Optional[float] = None,
+    node_timeout: Optional[float] = None,
+    reset_on_revisit: bool = False,
+) -> None:
+    """Initialize Graph with execution limits and reset behavior.
+
+    Args:
+        nodes: Dictionary of node_id to GraphNode
+        edges: Set of GraphEdge objects
+        entry_points: Set of GraphNode objects that are entry points
+        max_node_executions: Maximum total node executions (default: None - no limit)
+        execution_timeout: Total execution timeout in seconds (default: None - no limit)
+        node_timeout: Individual node timeout in seconds (default: None - no limit)
+        reset_on_revisit: Whether to reset node state when revisited (default: False)
+    """
     super().__init__()
 
     # Validate nodes for duplicate instances
@@ -544,37 +723,71 @@ def __init__(self, nodes: dict[str, GraphNode], edges: set[GraphEdge], entry_poi
     self.nodes = nodes
     self.edges = edges
     self.entry_points = entry_points
+    self.max_node_executions = max_node_executions
+    self.execution_timeout = execution_timeout
+    self.node_timeout = node_timeout
+    self.reset_on_revisit = reset_on_revisit
     self.state = GraphState()
     self.tracer = get_tracer()
-
 ```
 
-#### `invoke_async(task, **kwargs)`
+#### `invoke_async(task, invocation_state=None, **kwargs)`
 
 Invoke the graph asynchronously.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `task` | `str | list[ContentBlock]` | The task to execute | *required* | | `invocation_state` | `dict[str, Any] | None` | Additional state/context passed to underlying agents. Defaults to None to avoid mutable default argument issues - a new empty dict is created if None is provided. | `None` | | `**kwargs` | `Any` | Keyword arguments allowing backward compatible future changes. | `{}` |
 
 Source code in `strands/multiagent/graph.py`
 
 ```
-async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> GraphResult:
-    """Invoke the graph asynchronously."""
+async def invoke_async(
+    self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+) -> GraphResult:
+    """Invoke the graph asynchronously.
+
+    Args:
+        task: The task to execute
+        invocation_state: Additional state/context passed to underlying agents.
+            Defaults to None to avoid mutable default argument issues - a new empty dict
+            is created if None is provided.
+        **kwargs: Keyword arguments allowing backward compatible future changes.
+    """
+    if invocation_state is None:
+        invocation_state = {}
+
     logger.debug("task=<%s> | starting graph execution", task)
 
     # Initialize state
+    start_time = time.time()
     self.state = GraphState(
         status=Status.EXECUTING,
         task=task,
         total_nodes=len(self.nodes),
         edges=[(edge.from_node, edge.to_node) for edge in self.edges],
         entry_points=list(self.entry_points),
+        start_time=start_time,
     )
 
-    start_time = time.time()
     span = self.tracer.start_multiagent_span(task, "graph")
     with trace_api.use_span(span, end_on_exit=True):
         try:
-            await self._execute_graph()
-            self.state.status = Status.COMPLETED
+            logger.debug(
+                "max_node_executions=<%s>, execution_timeout=<%s>s, node_timeout=<%s>s | graph execution config",
+                self.max_node_executions or "None",
+                self.execution_timeout or "None",
+                self.node_timeout or "None",
+            )
+
+            await self._execute_graph(invocation_state)
+
+            # Set final status based on execution results
+            if self.state.failed_nodes:
+                self.state.status = Status.FAILED
+            elif self.state.status == Status.EXECUTING:  # Only set to COMPLETED if still executing and no failures
+                self.state.status = Status.COMPLETED
+
             logger.debug("status=<%s> | graph execution completed", self.state.status)
 
         except Exception:
@@ -584,7 +797,6 @@ async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> G
         finally:
             self.state.execution_time = round((time.time() - start_time) * 1000)
         return self._build_result()
-
 ```
 
 ### `GraphBuilder`
@@ -602,6 +814,12 @@ class GraphBuilder:
         self.nodes: dict[str, GraphNode] = {}
         self.edges: set[GraphEdge] = set()
         self.entry_points: set[GraphNode] = set()
+
+        # Configuration options
+        self._max_node_executions: Optional[int] = None
+        self._execution_timeout: Optional[float] = None
+        self._node_timeout: Optional[float] = None
+        self._reset_on_revisit: bool = False
 
     def add_node(self, executor: Agent | MultiAgentBase, node_id: str | None = None) -> GraphNode:
         """Add an Agent or MultiAgentBase instance as a node to the graph."""
@@ -652,8 +870,48 @@ class GraphBuilder:
         self.entry_points.add(self.nodes[node_id])
         return self
 
+    def reset_on_revisit(self, enabled: bool = True) -> "GraphBuilder":
+        """Control whether nodes reset their state when revisited.
+
+        When enabled, nodes will reset their messages and state to initial values
+        each time they are revisited (re-executed). This is useful for stateless
+        behavior where nodes should start fresh on each revisit.
+
+        Args:
+            enabled: Whether to reset node state when revisited (default: True)
+        """
+        self._reset_on_revisit = enabled
+        return self
+
+    def set_max_node_executions(self, max_executions: int) -> "GraphBuilder":
+        """Set maximum number of node executions allowed.
+
+        Args:
+            max_executions: Maximum total node executions (None for no limit)
+        """
+        self._max_node_executions = max_executions
+        return self
+
+    def set_execution_timeout(self, timeout: float) -> "GraphBuilder":
+        """Set total execution timeout.
+
+        Args:
+            timeout: Total execution timeout in seconds (None for no limit)
+        """
+        self._execution_timeout = timeout
+        return self
+
+    def set_node_timeout(self, timeout: float) -> "GraphBuilder":
+        """Set individual node execution timeout.
+
+        Args:
+            timeout: Individual node timeout in seconds (None for no limit)
+        """
+        self._node_timeout = timeout
+        return self
+
     def build(self) -> "Graph":
-        """Build and validate the graph."""
+        """Build and validate the graph with configured settings."""
         if not self.nodes:
             raise ValueError("Graph must contain at least one node")
 
@@ -669,38 +927,27 @@ class GraphBuilder:
         # Validate entry points and check for cycles
         self._validate_graph()
 
-        return Graph(nodes=self.nodes.copy(), edges=self.edges.copy(), entry_points=self.entry_points.copy())
+        return Graph(
+            nodes=self.nodes.copy(),
+            edges=self.edges.copy(),
+            entry_points=self.entry_points.copy(),
+            max_node_executions=self._max_node_executions,
+            execution_timeout=self._execution_timeout,
+            node_timeout=self._node_timeout,
+            reset_on_revisit=self._reset_on_revisit,
+        )
 
     def _validate_graph(self) -> None:
-        """Validate graph structure and detect cycles."""
+        """Validate graph structure."""
         # Validate entry points exist
         entry_point_ids = {node.node_id for node in self.entry_points}
         invalid_entries = entry_point_ids - set(self.nodes.keys())
         if invalid_entries:
             raise ValueError(f"Entry points not found in nodes: {invalid_entries}")
 
-        # Check for cycles using DFS with color coding
-        WHITE, GRAY, BLACK = 0, 1, 2
-        colors = {node_id: WHITE for node_id in self.nodes}
-
-        def has_cycle_from(node_id: str) -> bool:
-            if colors[node_id] == GRAY:
-                return True  # Back edge found - cycle detected
-            if colors[node_id] == BLACK:
-                return False
-
-            colors[node_id] = GRAY
-            # Check all outgoing edges for cycles
-            for edge in self.edges:
-                if edge.from_node.node_id == node_id and has_cycle_from(edge.to_node.node_id):
-                    return True
-            colors[node_id] = BLACK
-            return False
-
-        # Check for cycles from each unvisited node
-        if any(colors[node_id] == WHITE and has_cycle_from(node_id) for node_id in self.nodes):
-            raise ValueError("Graph contains cycles - must be a directed acyclic graph")
-
+        # Warn about potential infinite loops if no execution limits are set
+        if self._max_node_executions is None and self._execution_timeout is None:
+            logger.warning("Graph without execution limits may run indefinitely if cycles exist")
 ```
 
 #### `__init__()`
@@ -716,6 +963,11 @@ def __init__(self) -> None:
     self.edges: set[GraphEdge] = set()
     self.entry_points: set[GraphNode] = set()
 
+    # Configuration options
+    self._max_node_executions: Optional[int] = None
+    self._execution_timeout: Optional[float] = None
+    self._node_timeout: Optional[float] = None
+    self._reset_on_revisit: bool = False
 ```
 
 #### `add_edge(from_node, to_node, condition=None)`
@@ -751,7 +1003,6 @@ def add_edge(
     self.edges.add(edge)
     to_node_obj.dependencies.add(from_node_obj)
     return edge
-
 ```
 
 #### `add_node(executor, node_id=None)`
@@ -775,18 +1026,17 @@ def add_node(self, executor: Agent | MultiAgentBase, node_id: str | None = None)
     node = GraphNode(node_id=node_id, executor=executor)
     self.nodes[node_id] = node
     return node
-
 ```
 
 #### `build()`
 
-Build and validate the graph.
+Build and validate the graph with configured settings.
 
 Source code in `strands/multiagent/graph.py`
 
 ```
 def build(self) -> "Graph":
-    """Build and validate the graph."""
+    """Build and validate the graph with configured settings."""
     if not self.nodes:
         raise ValueError("Graph must contain at least one node")
 
@@ -802,8 +1052,42 @@ def build(self) -> "Graph":
     # Validate entry points and check for cycles
     self._validate_graph()
 
-    return Graph(nodes=self.nodes.copy(), edges=self.edges.copy(), entry_points=self.entry_points.copy())
+    return Graph(
+        nodes=self.nodes.copy(),
+        edges=self.edges.copy(),
+        entry_points=self.entry_points.copy(),
+        max_node_executions=self._max_node_executions,
+        execution_timeout=self._execution_timeout,
+        node_timeout=self._node_timeout,
+        reset_on_revisit=self._reset_on_revisit,
+    )
+```
 
+#### `reset_on_revisit(enabled=True)`
+
+Control whether nodes reset their state when revisited.
+
+When enabled, nodes will reset their messages and state to initial values each time they are revisited (re-executed). This is useful for stateless behavior where nodes should start fresh on each revisit.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `enabled` | `bool` | Whether to reset node state when revisited (default: True) | `True` |
+
+Source code in `strands/multiagent/graph.py`
+
+```
+def reset_on_revisit(self, enabled: bool = True) -> "GraphBuilder":
+    """Control whether nodes reset their state when revisited.
+
+    When enabled, nodes will reset their messages and state to initial values
+    each time they are revisited (re-executed). This is useful for stateless
+    behavior where nodes should start fresh on each revisit.
+
+    Args:
+        enabled: Whether to reset node state when revisited (default: True)
+    """
+    self._reset_on_revisit = enabled
+    return self
 ```
 
 #### `set_entry_point(node_id)`
@@ -819,7 +1103,69 @@ def set_entry_point(self, node_id: str) -> "GraphBuilder":
         raise ValueError(f"Node '{node_id}' not found")
     self.entry_points.add(self.nodes[node_id])
     return self
+```
 
+#### `set_execution_timeout(timeout)`
+
+Set total execution timeout.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `timeout` | `float` | Total execution timeout in seconds (None for no limit) | *required* |
+
+Source code in `strands/multiagent/graph.py`
+
+```
+def set_execution_timeout(self, timeout: float) -> "GraphBuilder":
+    """Set total execution timeout.
+
+    Args:
+        timeout: Total execution timeout in seconds (None for no limit)
+    """
+    self._execution_timeout = timeout
+    return self
+```
+
+#### `set_max_node_executions(max_executions)`
+
+Set maximum number of node executions allowed.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `max_executions` | `int` | Maximum total node executions (None for no limit) | *required* |
+
+Source code in `strands/multiagent/graph.py`
+
+```
+def set_max_node_executions(self, max_executions: int) -> "GraphBuilder":
+    """Set maximum number of node executions allowed.
+
+    Args:
+        max_executions: Maximum total node executions (None for no limit)
+    """
+    self._max_node_executions = max_executions
+    return self
+```
+
+#### `set_node_timeout(timeout)`
+
+Set individual node execution timeout.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `timeout` | `float` | Individual node timeout in seconds (None for no limit) | *required* |
+
+Source code in `strands/multiagent/graph.py`
+
+```
+def set_node_timeout(self, timeout: float) -> "GraphBuilder":
+    """Set individual node execution timeout.
+
+    Args:
+        timeout: Individual node timeout in seconds (None for no limit)
+    """
+    self._node_timeout = timeout
+    return self
 ```
 
 ### `GraphEdge`
@@ -846,7 +1192,6 @@ class GraphEdge:
         if self.condition is None:
             return True
         return self.condition(state)
-
 ```
 
 #### `__hash__()`
@@ -859,7 +1204,6 @@ Source code in `strands/multiagent/graph.py`
 def __hash__(self) -> int:
     """Return hash for GraphEdge based on from_node and to_node."""
     return hash((self.from_node.node_id, self.to_node.node_id))
-
 ```
 
 #### `should_traverse(state)`
@@ -874,7 +1218,6 @@ def should_traverse(self, state: GraphState) -> bool:
     if self.condition is None:
         return True
     return self.condition(state)
-
 ```
 
 ### `GraphNode`
@@ -906,6 +1249,33 @@ class GraphNode:
     execution_status: Status = Status.PENDING
     result: NodeResult | None = None
     execution_time: int = 0
+    _initial_messages: Messages = field(default_factory=list, init=False)
+    _initial_state: AgentState = field(default_factory=AgentState, init=False)
+
+    def __post_init__(self) -> None:
+        """Capture initial executor state after initialization."""
+        # Deep copy the initial messages and state to preserve them
+        if hasattr(self.executor, "messages"):
+            self._initial_messages = copy.deepcopy(self.executor.messages)
+
+        if hasattr(self.executor, "state") and hasattr(self.executor.state, "get"):
+            self._initial_state = AgentState(self.executor.state.get())
+
+    def reset_executor_state(self) -> None:
+        """Reset GraphNode executor state to initial state when graph was created.
+
+        This is useful when nodes are executed multiple times and need to start
+        fresh on each execution, providing stateless behavior.
+        """
+        if hasattr(self.executor, "messages"):
+            self.executor.messages = copy.deepcopy(self._initial_messages)
+
+        if hasattr(self.executor, "state"):
+            self.executor.state = AgentState(self._initial_state.get())
+
+        # Reset execution status
+        self.execution_status = Status.PENDING
+        self.result = None
 
     def __hash__(self) -> int:
         """Return hash for GraphNode based on node_id."""
@@ -916,7 +1286,6 @@ class GraphNode:
         if not isinstance(other, GraphNode):
             return False
         return self.node_id == other.node_id
-
 ```
 
 #### `__eq__(other)`
@@ -931,7 +1300,6 @@ def __eq__(self, other: Any) -> bool:
     if not isinstance(other, GraphNode):
         return False
     return self.node_id == other.node_id
-
 ```
 
 #### `__hash__()`
@@ -944,7 +1312,49 @@ Source code in `strands/multiagent/graph.py`
 def __hash__(self) -> int:
     """Return hash for GraphNode based on node_id."""
     return hash(self.node_id)
+```
 
+#### `__post_init__()`
+
+Capture initial executor state after initialization.
+
+Source code in `strands/multiagent/graph.py`
+
+```
+def __post_init__(self) -> None:
+    """Capture initial executor state after initialization."""
+    # Deep copy the initial messages and state to preserve them
+    if hasattr(self.executor, "messages"):
+        self._initial_messages = copy.deepcopy(self.executor.messages)
+
+    if hasattr(self.executor, "state") and hasattr(self.executor.state, "get"):
+        self._initial_state = AgentState(self.executor.state.get())
+```
+
+#### `reset_executor_state()`
+
+Reset GraphNode executor state to initial state when graph was created.
+
+This is useful when nodes are executed multiple times and need to start fresh on each execution, providing stateless behavior.
+
+Source code in `strands/multiagent/graph.py`
+
+```
+def reset_executor_state(self) -> None:
+    """Reset GraphNode executor state to initial state when graph was created.
+
+    This is useful when nodes are executed multiple times and need to start
+    fresh on each execution, providing stateless behavior.
+    """
+    if hasattr(self.executor, "messages"):
+        self.executor.messages = copy.deepcopy(self._initial_messages)
+
+    if hasattr(self.executor, "state"):
+        self.executor.state = AgentState(self._initial_state.get())
+
+    # Reset execution status
+    self.execution_status = Status.PENDING
+    self.result = None
 ```
 
 ### `GraphResult`
@@ -966,7 +1376,6 @@ class GraphResult(MultiAgentResult):
     execution_order: list["GraphNode"] = field(default_factory=list)
     edges: list[Tuple["GraphNode", "GraphNode"]] = field(default_factory=list)
     entry_points: list["GraphNode"] = field(default_factory=list)
-
 ```
 
 ### `GraphState`
@@ -1002,6 +1411,7 @@ class GraphState:
     completed_nodes: set["GraphNode"] = field(default_factory=set)
     failed_nodes: set["GraphNode"] = field(default_factory=set)
     execution_order: list["GraphNode"] = field(default_factory=list)
+    start_time: float = field(default_factory=time.time)
 
     # Results
     results: dict[str, NodeResult] = field(default_factory=dict)
@@ -1017,6 +1427,57 @@ class GraphState:
     edges: list[Tuple["GraphNode", "GraphNode"]] = field(default_factory=list)
     entry_points: list["GraphNode"] = field(default_factory=list)
 
+    def should_continue(
+        self,
+        max_node_executions: Optional[int],
+        execution_timeout: Optional[float],
+    ) -> Tuple[bool, str]:
+        """Check if the graph should continue execution.
+
+        Returns: (should_continue, reason)
+        """
+        # Check node execution limit (only if set)
+        if max_node_executions is not None and len(self.execution_order) >= max_node_executions:
+            return False, f"Max node executions reached: {max_node_executions}"
+
+        # Check timeout (only if set)
+        if execution_timeout is not None:
+            elapsed = time.time() - self.start_time
+            if elapsed > execution_timeout:
+                return False, f"Execution timed out: {execution_timeout}s"
+
+        return True, "Continuing"
+```
+
+#### `should_continue(max_node_executions, execution_timeout)`
+
+Check if the graph should continue execution.
+
+Returns: (should_continue, reason)
+
+Source code in `strands/multiagent/graph.py`
+
+```
+def should_continue(
+    self,
+    max_node_executions: Optional[int],
+    execution_timeout: Optional[float],
+) -> Tuple[bool, str]:
+    """Check if the graph should continue execution.
+
+    Returns: (should_continue, reason)
+    """
+    # Check node execution limit (only if set)
+    if max_node_executions is not None and len(self.execution_order) >= max_node_executions:
+        return False, f"Max node executions reached: {max_node_executions}"
+
+    # Check timeout (only if set)
+    if execution_timeout is not None:
+        elapsed = time.time() - self.start_time
+        if elapsed > execution_timeout:
+            return False, f"Execution timed out: {execution_timeout}s"
+
+    return True, "Continuing"
 ```
 
 ## `strands.multiagent.swarm`
@@ -1087,7 +1548,6 @@ class SharedContext:
                 f"Value is not JSON serializable: {type(value).__name__}. "
                 f"Only JSON-compatible types (str, int, float, bool, list, dict, None) are allowed."
             ) from e
-
 ```
 
 #### `add_context(node, key, value)`
@@ -1105,7 +1565,6 @@ def add_context(self, node: SwarmNode, key: str, value: Any) -> None:
     if node.node_id not in self.context:
         self.context[node.node_id] = {}
     self.context[node.node_id][key] = value
-
 ```
 
 ### `Swarm`
@@ -1124,6 +1583,7 @@ class Swarm(MultiAgentBase):
         self,
         nodes: list[Agent],
         *,
+        entry_point: Agent | None = None,
         max_handoffs: int = 20,
         max_iterations: int = 20,
         execution_timeout: float = 900.0,
@@ -1135,6 +1595,7 @@ class Swarm(MultiAgentBase):
 
         Args:
             nodes: List of nodes (e.g. Agent) to include in the swarm
+            entry_point: Agent to start with. If None, uses the first agent (default: None)
             max_handoffs: Maximum handoffs to agents and users (default: 20)
             max_iterations: Maximum node executions within the swarm (default: 20)
             execution_timeout: Total execution timeout in seconds (default: 900.0)
@@ -1146,6 +1607,7 @@ class Swarm(MultiAgentBase):
         """
         super().__init__()
 
+        self.entry_point = entry_point
         self.max_handoffs = max_handoffs
         self.max_iterations = max_iterations
         self.execution_timeout = execution_timeout
@@ -1165,22 +1627,50 @@ class Swarm(MultiAgentBase):
         self._setup_swarm(nodes)
         self._inject_swarm_tools()
 
-    def __call__(self, task: str | list[ContentBlock], **kwargs: Any) -> SwarmResult:
-        """Invoke the swarm synchronously."""
+    def __call__(
+        self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+    ) -> SwarmResult:
+        """Invoke the swarm synchronously.
+
+        Args:
+            task: The task to execute
+            invocation_state: Additional state/context passed to underlying agents.
+                Defaults to None to avoid mutable default argument issues.
+            **kwargs: Keyword arguments allowing backward compatible future changes.
+        """
+        if invocation_state is None:
+            invocation_state = {}
 
         def execute() -> SwarmResult:
-            return asyncio.run(self.invoke_async(task))
+            return asyncio.run(self.invoke_async(task, invocation_state))
 
         with ThreadPoolExecutor() as executor:
             future = executor.submit(execute)
             return future.result()
 
-    async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> SwarmResult:
-        """Invoke the swarm asynchronously."""
+    async def invoke_async(
+        self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+    ) -> SwarmResult:
+        """Invoke the swarm asynchronously.
+
+        Args:
+            task: The task to execute
+            invocation_state: Additional state/context passed to underlying agents.
+                Defaults to None to avoid mutable default argument issues - a new empty dict
+                is created if None is provided.
+            **kwargs: Keyword arguments allowing backward compatible future changes.
+        """
+        if invocation_state is None:
+            invocation_state = {}
+
         logger.debug("starting swarm execution")
 
         # Initialize swarm state with configuration
-        initial_node = next(iter(self.nodes.values()))  # First SwarmNode
+        if self.entry_point:
+            initial_node = self.nodes[str(self.entry_point.name)]
+        else:
+            initial_node = next(iter(self.nodes.values()))  # First SwarmNode
+
         self.state = SwarmState(
             current_node=initial_node,
             task=task,
@@ -1200,7 +1690,7 @@ class Swarm(MultiAgentBase):
                     self.execution_timeout,
                 )
 
-                await self._execute_swarm()
+                await self._execute_swarm(invocation_state)
             except Exception:
                 logger.exception("swarm execution failed")
                 self.state.completion_status = Status.FAILED
@@ -1230,8 +1720,27 @@ class Swarm(MultiAgentBase):
 
             self.nodes[node_id] = SwarmNode(node_id=node_id, executor=node)
 
+        # Validate entry point if specified
+        if self.entry_point is not None:
+            entry_point_node_id = str(self.entry_point.name)
+            if (
+                entry_point_node_id not in self.nodes
+                or self.nodes[entry_point_node_id].executor is not self.entry_point
+            ):
+                available_agents = [
+                    f"{node_id} ({type(node.executor).__name__})" for node_id, node in self.nodes.items()
+                ]
+                raise ValueError(f"Entry point agent not found in swarm nodes. Available agents: {available_agents}")
+
         swarm_nodes = list(self.nodes.values())
         logger.debug("nodes=<%s> | initialized swarm with nodes", [node.node_id for node in swarm_nodes])
+
+        if self.entry_point:
+            entry_point_name = getattr(self.entry_point, "name", "unnamed_agent")
+            logger.debug("entry_point=<%s> | configured entry point", entry_point_name)
+        else:
+            first_node = next(iter(self.nodes.keys()))
+            logger.debug("entry_point=<%s> | using first node as entry point", first_node)
 
     def _validate_swarm(self, nodes: list[Agent]) -> None:
         """Validate swarm structure and nodes."""
@@ -1245,10 +1754,6 @@ class Swarm(MultiAgentBase):
             # Check for session persistence
             if node._session_manager is not None:
                 raise ValueError("Session persistence is not supported for Swarm agents yet.")
-
-            # Check for callbacks
-            if node.hooks.has_callbacks():
-                raise ValueError("Agent callbacks are not supported for Swarm agents yet.")
 
     def _inject_swarm_tools(self) -> None:
         """Add swarm coordination tools to each agent."""
@@ -1415,7 +1920,7 @@ class Swarm(MultiAgentBase):
 
         return context_text
 
-    async def _execute_swarm(self) -> None:
+    async def _execute_swarm(self, invocation_state: dict[str, Any]) -> None:
         """Shared execution logic used by execute_async."""
         try:
             # Main execution loop
@@ -1454,7 +1959,7 @@ class Swarm(MultiAgentBase):
                 # TODO: Implement cancellation token to stop _execute_node from continuing
                 try:
                     await asyncio.wait_for(
-                        self._execute_node(current_node, self.state.task),
+                        self._execute_node(current_node, self.state.task, invocation_state),
                         timeout=self.node_timeout,
                     )
 
@@ -1495,7 +2000,9 @@ class Swarm(MultiAgentBase):
             f"{elapsed_time:.2f}",
         )
 
-    async def _execute_node(self, node: SwarmNode, task: str | list[ContentBlock]) -> AgentResult:
+    async def _execute_node(
+        self, node: SwarmNode, task: str | list[ContentBlock], invocation_state: dict[str, Any]
+    ) -> AgentResult:
         """Execute swarm node."""
         start_time = time.time()
         node_name = node.node_id
@@ -1515,7 +2022,8 @@ class Swarm(MultiAgentBase):
             # Execute node
             result = None
             node.reset_executor_state()
-            result = await node.executor.invoke_async(node_input)
+            # Unpacking since this is the agent class. Other executors should not unpack
+            result = await node.executor.invoke_async(node_input, **invocation_state)
 
             execution_time = round((time.time() - start_time) * 1000)
 
@@ -1582,35 +2090,48 @@ class Swarm(MultiAgentBase):
             execution_time=self.state.execution_time,
             node_history=self.state.node_history,
         )
-
 ````
 
-#### `__call__(task, **kwargs)`
+#### `__call__(task, invocation_state=None, **kwargs)`
 
 Invoke the swarm synchronously.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `task` | `str | list[ContentBlock]` | The task to execute | *required* | | `invocation_state` | `dict[str, Any] | None` | Additional state/context passed to underlying agents. Defaults to None to avoid mutable default argument issues. | `None` | | `**kwargs` | `Any` | Keyword arguments allowing backward compatible future changes. | `{}` |
 
 Source code in `strands/multiagent/swarm.py`
 
 ```
-def __call__(self, task: str | list[ContentBlock], **kwargs: Any) -> SwarmResult:
-    """Invoke the swarm synchronously."""
+def __call__(
+    self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+) -> SwarmResult:
+    """Invoke the swarm synchronously.
+
+    Args:
+        task: The task to execute
+        invocation_state: Additional state/context passed to underlying agents.
+            Defaults to None to avoid mutable default argument issues.
+        **kwargs: Keyword arguments allowing backward compatible future changes.
+    """
+    if invocation_state is None:
+        invocation_state = {}
 
     def execute() -> SwarmResult:
-        return asyncio.run(self.invoke_async(task))
+        return asyncio.run(self.invoke_async(task, invocation_state))
 
     with ThreadPoolExecutor() as executor:
         future = executor.submit(execute)
         return future.result()
-
 ```
 
-#### `__init__(nodes, *, max_handoffs=20, max_iterations=20, execution_timeout=900.0, node_timeout=300.0, repetitive_handoff_detection_window=0, repetitive_handoff_min_unique_agents=0)`
+#### `__init__(nodes, *, entry_point=None, max_handoffs=20, max_iterations=20, execution_timeout=900.0, node_timeout=300.0, repetitive_handoff_detection_window=0, repetitive_handoff_min_unique_agents=0)`
 
 Initialize Swarm with agents and configuration.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `nodes` | `list[Agent]` | List of nodes (e.g. Agent) to include in the swarm | *required* | | `max_handoffs` | `int` | Maximum handoffs to agents and users (default: 20) | `20` | | `max_iterations` | `int` | Maximum node executions within the swarm (default: 20) | `20` | | `execution_timeout` | `float` | Total execution timeout in seconds (default: 900.0) | `900.0` | | `node_timeout` | `float` | Individual node timeout in seconds (default: 300.0) | `300.0` | | `repetitive_handoff_detection_window` | `int` | Number of recent nodes to check for repetitive handoffs Disabled by default (default: 0) | `0` | | `repetitive_handoff_min_unique_agents` | `int` | Minimum unique agents required in recent sequence Disabled by default (default: 0) | `0` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `nodes` | `list[Agent]` | List of nodes (e.g. Agent) to include in the swarm | *required* | | `entry_point` | `Agent | None` | Agent to start with. If None, uses the first agent (default: None) | `None` | | `max_handoffs` | `int` | Maximum handoffs to agents and users (default: 20) | `20` | | `max_iterations` | `int` | Maximum node executions within the swarm (default: 20) | `20` | | `execution_timeout` | `float` | Total execution timeout in seconds (default: 900.0) | `900.0` | | `node_timeout` | `float` | Individual node timeout in seconds (default: 300.0) | `300.0` | | `repetitive_handoff_detection_window` | `int` | Number of recent nodes to check for repetitive handoffs Disabled by default (default: 0) | `0` | | `repetitive_handoff_min_unique_agents` | `int` | Minimum unique agents required in recent sequence Disabled by default (default: 0) | `0` |
 
 Source code in `strands/multiagent/swarm.py`
 
@@ -1619,6 +2140,7 @@ def __init__(
     self,
     nodes: list[Agent],
     *,
+    entry_point: Agent | None = None,
     max_handoffs: int = 20,
     max_iterations: int = 20,
     execution_timeout: float = 900.0,
@@ -1630,6 +2152,7 @@ def __init__(
 
     Args:
         nodes: List of nodes (e.g. Agent) to include in the swarm
+        entry_point: Agent to start with. If None, uses the first agent (default: None)
         max_handoffs: Maximum handoffs to agents and users (default: 20)
         max_iterations: Maximum node executions within the swarm (default: 20)
         execution_timeout: Total execution timeout in seconds (default: 900.0)
@@ -1641,6 +2164,7 @@ def __init__(
     """
     super().__init__()
 
+    self.entry_point = entry_point
     self.max_handoffs = max_handoffs
     self.max_iterations = max_iterations
     self.execution_timeout = execution_timeout
@@ -1659,22 +2183,42 @@ def __init__(
 
     self._setup_swarm(nodes)
     self._inject_swarm_tools()
-
 ```
 
-#### `invoke_async(task, **kwargs)`
+#### `invoke_async(task, invocation_state=None, **kwargs)`
 
 Invoke the swarm asynchronously.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `task` | `str | list[ContentBlock]` | The task to execute | *required* | | `invocation_state` | `dict[str, Any] | None` | Additional state/context passed to underlying agents. Defaults to None to avoid mutable default argument issues - a new empty dict is created if None is provided. | `None` | | `**kwargs` | `Any` | Keyword arguments allowing backward compatible future changes. | `{}` |
 
 Source code in `strands/multiagent/swarm.py`
 
 ```
-async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> SwarmResult:
-    """Invoke the swarm asynchronously."""
+async def invoke_async(
+    self, task: str | list[ContentBlock], invocation_state: dict[str, Any] | None = None, **kwargs: Any
+) -> SwarmResult:
+    """Invoke the swarm asynchronously.
+
+    Args:
+        task: The task to execute
+        invocation_state: Additional state/context passed to underlying agents.
+            Defaults to None to avoid mutable default argument issues - a new empty dict
+            is created if None is provided.
+        **kwargs: Keyword arguments allowing backward compatible future changes.
+    """
+    if invocation_state is None:
+        invocation_state = {}
+
     logger.debug("starting swarm execution")
 
     # Initialize swarm state with configuration
-    initial_node = next(iter(self.nodes.values()))  # First SwarmNode
+    if self.entry_point:
+        initial_node = self.nodes[str(self.entry_point.name)]
+    else:
+        initial_node = next(iter(self.nodes.values()))  # First SwarmNode
+
     self.state = SwarmState(
         current_node=initial_node,
         task=task,
@@ -1694,7 +2238,7 @@ async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> S
                 self.execution_timeout,
             )
 
-            await self._execute_swarm()
+            await self._execute_swarm(invocation_state)
         except Exception:
             logger.exception("swarm execution failed")
             self.state.completion_status = Status.FAILED
@@ -1703,7 +2247,6 @@ async def invoke_async(self, task: str | list[ContentBlock], **kwargs: Any) -> S
             self.state.execution_time = round((time.time() - start_time) * 1000)
 
         return self._build_result()
-
 ```
 
 ### `SwarmNode`
@@ -1750,7 +2293,6 @@ class SwarmNode:
         """Reset SwarmNode executor state to initial state when swarm was created."""
         self.executor.messages = copy.deepcopy(self._initial_messages)
         self.executor.state = AgentState(self._initial_state.get())
-
 ```
 
 #### `__eq__(other)`
@@ -1765,7 +2307,6 @@ def __eq__(self, other: Any) -> bool:
     if not isinstance(other, SwarmNode):
         return False
     return self.node_id == other.node_id
-
 ```
 
 #### `__hash__()`
@@ -1778,7 +2319,6 @@ Source code in `strands/multiagent/swarm.py`
 def __hash__(self) -> int:
     """Return hash for SwarmNode based on node_id."""
     return hash(self.node_id)
-
 ```
 
 #### `__post_init__()`
@@ -1793,7 +2333,6 @@ def __post_init__(self) -> None:
     # Deep copy the initial messages and state to preserve them
     self._initial_messages = copy.deepcopy(self.executor.messages)
     self._initial_state = AgentState(self.executor.state.get())
-
 ```
 
 #### `__repr__()`
@@ -1806,7 +2345,6 @@ Source code in `strands/multiagent/swarm.py`
 def __repr__(self) -> str:
     """Return detailed representation of SwarmNode."""
     return f"SwarmNode(node_id='{self.node_id}')"
-
 ```
 
 #### `__str__()`
@@ -1819,7 +2357,6 @@ Source code in `strands/multiagent/swarm.py`
 def __str__(self) -> str:
     """Return string representation of SwarmNode."""
     return self.node_id
-
 ```
 
 #### `reset_executor_state()`
@@ -1833,7 +2370,6 @@ def reset_executor_state(self) -> None:
     """Reset SwarmNode executor state to initial state when swarm was created."""
     self.executor.messages = copy.deepcopy(self._initial_messages)
     self.executor.state = AgentState(self._initial_state.get())
-
 ```
 
 ### `SwarmResult`
@@ -1850,7 +2386,6 @@ class SwarmResult(MultiAgentResult):
     """Result from swarm execution - extends MultiAgentResult with swarm-specific details."""
 
     node_history: list[SwarmNode] = field(default_factory=list)
-
 ```
 
 ### `SwarmState`
@@ -1918,7 +2453,6 @@ class SwarmState:
                 )
 
         return True, "Continuing"
-
 ```
 
 #### `should_continue(*, max_handoffs, max_iterations, execution_timeout, repetitive_handoff_detection_window, repetitive_handoff_min_unique_agents)`
@@ -1970,7 +2504,6 @@ def should_continue(
             )
 
     return True, "Continuing"
-
 ```
 
 ## `strands.multiagent.a2a`
@@ -2011,6 +2544,12 @@ class StrandsA2AExecutor(AgentExecutor):
     and converts Strands Agent responses to A2A protocol events.
     """
 
+    # Default formats for each file type when MIME type is unavailable or unrecognized
+    DEFAULT_FORMATS = {"document": "txt", "image": "png", "video": "mp4", "unknown": "txt"}
+
+    # Handle special cases where format differs from extension
+    FORMAT_MAPPINGS = {"jpg": "jpeg", "htm": "html", "3gp": "three_gp", "3gpp": "three_gp", "3g2": "three_gp"}
+
     def __init__(self, agent: SAAgent):
         """Initialize a StrandsA2AExecutor.
 
@@ -2041,7 +2580,7 @@ class StrandsA2AExecutor(AgentExecutor):
             task = new_task(context.message)  # type: ignore
             await event_queue.enqueue_event(task)
 
-        updater = TaskUpdater(event_queue, task.id, task.contextId)
+        updater = TaskUpdater(event_queue, task.id, task.context_id)
 
         try:
             await self._execute_streaming(context, updater)
@@ -2058,10 +2597,16 @@ class StrandsA2AExecutor(AgentExecutor):
             context: The A2A request context, containing the user's input and other metadata.
             updater: The task updater for managing task state and sending updates.
         """
-        logger.info("Executing request in streaming mode")
-        user_input = context.get_user_input()
+        # Convert A2A message parts to Strands ContentBlocks
+        if context.message and hasattr(context.message, "parts"):
+            content_blocks = self._convert_a2a_parts_to_content_blocks(context.message.parts)
+            if not content_blocks:
+                raise ValueError("No content blocks available")
+        else:
+            raise ValueError("No content blocks available")
+
         try:
-            async for event in self.agent.stream_async(user_input):
+            async for event in self.agent.stream_async(content_blocks):
                 await self._handle_streaming_event(event, updater)
         except Exception:
             logger.exception("Error in streaming execution")
@@ -2127,6 +2672,157 @@ class StrandsA2AExecutor(AgentExecutor):
         logger.warning("Cancellation requested but not supported")
         raise ServerError(error=UnsupportedOperationError())
 
+    def _get_file_type_from_mime_type(self, mime_type: str | None) -> Literal["document", "image", "video", "unknown"]:
+        """Classify file type based on MIME type.
+
+        Args:
+            mime_type: The MIME type of the file
+
+        Returns:
+            The classified file type
+        """
+        if not mime_type:
+            return "unknown"
+
+        mime_type = mime_type.lower()
+
+        if mime_type.startswith("image/"):
+            return "image"
+        elif mime_type.startswith("video/"):
+            return "video"
+        elif (
+            mime_type.startswith("text/")
+            or mime_type.startswith("application/")
+            or mime_type in ["application/pdf", "application/json", "application/xml"]
+        ):
+            return "document"
+        else:
+            return "unknown"
+
+    def _get_file_format_from_mime_type(self, mime_type: str | None, file_type: str) -> str:
+        """Extract file format from MIME type using Python's mimetypes library.
+
+        Args:
+            mime_type: The MIME type of the file
+            file_type: The classified file type (image, video, document, txt)
+
+        Returns:
+            The file format string
+        """
+        if not mime_type:
+            return self.DEFAULT_FORMATS.get(file_type, "txt")
+
+        mime_type = mime_type.lower()
+
+        # Extract subtype from MIME type and check existing format mappings
+        if "/" in mime_type:
+            subtype = mime_type.split("/")[-1]
+            if subtype in self.FORMAT_MAPPINGS:
+                return self.FORMAT_MAPPINGS[subtype]
+
+        # Use mimetypes library to find extensions for the MIME type
+        extensions = mimetypes.guess_all_extensions(mime_type)
+
+        if extensions:
+            extension = extensions[0][1:]  # Remove the leading dot
+            return self.FORMAT_MAPPINGS.get(extension, extension)
+
+        # Fallback to defaults for unknown MIME types
+        return self.DEFAULT_FORMATS.get(file_type, "txt")
+
+    def _strip_file_extension(self, file_name: str) -> str:
+        """Strip the file extension from a file name.
+
+        Args:
+            file_name: The original file name with extension
+
+        Returns:
+            The file name without extension
+        """
+        if "." in file_name:
+            return file_name.rsplit(".", 1)[0]
+        return file_name
+
+    def _convert_a2a_parts_to_content_blocks(self, parts: list[Part]) -> list[ContentBlock]:
+        """Convert A2A message parts to Strands ContentBlocks.
+
+        Args:
+            parts: List of A2A Part objects
+
+        Returns:
+            List of Strands ContentBlock objects
+        """
+        content_blocks: list[ContentBlock] = []
+
+        for part in parts:
+            try:
+                part_root = part.root
+
+                if isinstance(part_root, TextPart):
+                    # Handle TextPart
+                    content_blocks.append(ContentBlock(text=part_root.text))
+
+                elif isinstance(part_root, FilePart):
+                    # Handle FilePart
+                    file_obj = part_root.file
+                    mime_type = getattr(file_obj, "mime_type", None)
+                    raw_file_name = getattr(file_obj, "name", "FileNameNotProvided")
+                    file_name = self._strip_file_extension(raw_file_name)
+                    file_type = self._get_file_type_from_mime_type(mime_type)
+                    file_format = self._get_file_format_from_mime_type(mime_type, file_type)
+
+                    # Handle FileWithBytes vs FileWithUri
+                    bytes_data = getattr(file_obj, "bytes", None)
+                    uri_data = getattr(file_obj, "uri", None)
+
+                    if bytes_data:
+                        if file_type == "image":
+                            content_blocks.append(
+                                ContentBlock(
+                                    image=ImageContent(
+                                        format=file_format,  # type: ignore
+                                        source=ImageSource(bytes=bytes_data),
+                                    )
+                                )
+                            )
+                        elif file_type == "video":
+                            content_blocks.append(
+                                ContentBlock(
+                                    video=VideoContent(
+                                        format=file_format,  # type: ignore
+                                        source=VideoSource(bytes=bytes_data),
+                                    )
+                                )
+                            )
+                        else:  # document or unknown
+                            content_blocks.append(
+                                ContentBlock(
+                                    document=DocumentContent(
+                                        format=file_format,  # type: ignore
+                                        name=file_name,
+                                        source=DocumentSource(bytes=bytes_data),
+                                    )
+                                )
+                            )
+                    # Handle FileWithUri
+                    elif uri_data:
+                        # For URI files, create a text representation since Strands ContentBlocks expect bytes
+                        content_blocks.append(
+                            ContentBlock(
+                                text="[File: %s (%s)] - Referenced file at: %s" % (file_name, mime_type, uri_data)
+                            )
+                        )
+                elif isinstance(part_root, DataPart):
+                    # Handle DataPart - convert structured data to JSON text
+                    try:
+                        data_text = json.dumps(part_root.data, indent=2)
+                        content_blocks.append(ContentBlock(text="[Structured Data]\n%s" % data_text))
+                    except Exception:
+                        logger.exception("Failed to serialize data part")
+            except Exception:
+                logger.exception("Error processing part")
+
+        return content_blocks
 ```
 
 ##### `__init__(agent)`
@@ -2147,7 +2843,6 @@ def __init__(self, agent: SAAgent):
         agent: The Strands Agent instance to adapt to the A2A protocol.
     """
     self.agent = agent
-
 ```
 
 ##### `cancel(context, event_queue)`
@@ -2184,7 +2879,6 @@ async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None
     """
     logger.warning("Cancellation requested but not supported")
     raise ServerError(error=UnsupportedOperationError())
-
 ```
 
 ##### `execute(context, event_queue)`
@@ -2226,13 +2920,12 @@ async def execute(
         task = new_task(context.message)  # type: ignore
         await event_queue.enqueue_event(task)
 
-    updater = TaskUpdater(event_queue, task.id, task.contextId)
+    updater = TaskUpdater(event_queue, task.id, task.context_id)
 
     try:
         await self._execute_streaming(context, updater)
     except Exception as e:
         raise ServerError(error=InternalError()) from e
-
 ```
 
 ### `strands.multiagent.a2a.server`
@@ -2256,18 +2949,23 @@ class A2AServer:
         agent: SAAgent,
         *,
         # AgentCard
-        host: str = "0.0.0.0",
+        host: str = "127.0.0.1",
         port: int = 9000,
         http_url: str | None = None,
         serve_at_root: bool = False,
         version: str = "0.0.1",
         skills: list[AgentSkill] | None = None,
+        # RequestHandler
+        task_store: TaskStore | None = None,
+        queue_manager: QueueManager | None = None,
+        push_config_store: PushNotificationConfigStore | None = None,
+        push_sender: PushNotificationSender | None = None,
     ):
         """Initialize an A2A-compatible server from a Strands agent.
 
         Args:
             agent: The Strands Agent to wrap with A2A compatibility.
-            host: The hostname or IP address to bind the A2A server to. Defaults to "0.0.0.0".
+            host: The hostname or IP address to bind the A2A server to. Defaults to "127.0.0.1".
             port: The port to bind the A2A server to. Defaults to 9000.
             http_url: The public HTTP URL where this agent will be accessible. If provided,
                 this overrides the generated URL from host/port and enables automatic
@@ -2278,6 +2976,14 @@ class A2AServer:
                 Defaults to False.
             version: The version of the agent. Defaults to "0.0.1".
             skills: The list of capabilities or functions the agent can perform.
+            task_store: Custom task store implementation for managing agent tasks. If None,
+                uses InMemoryTaskStore.
+            queue_manager: Custom queue manager for handling message queues. If None,
+                no queue management is used.
+            push_config_store: Custom store for push notification configurations. If None,
+                no push notification configuration is used.
+            push_sender: Custom push notification sender implementation. If None,
+                no push notifications are sent.
         """
         self.host = host
         self.port = port
@@ -2303,7 +3009,10 @@ class A2AServer:
         self.capabilities = AgentCapabilities(streaming=True)
         self.request_handler = DefaultRequestHandler(
             agent_executor=StrandsA2AExecutor(self.strands_agent),
-            task_store=InMemoryTaskStore(),
+            task_store=task_store or InMemoryTaskStore(),
+            queue_manager=queue_manager,
+            push_config_store=push_config_store,
+            push_sender=push_sender,
         )
         self._agent_skills = skills
         logger.info("Strands' integration with A2A is experimental. Be aware of frequent breaking changes.")
@@ -2458,7 +3167,6 @@ class A2AServer:
             logger.exception("Strands A2A server encountered exception.")
         finally:
             logger.info("Strands A2A server has shutdown.")
-
 ```
 
 ##### `agent_skills`
@@ -2479,13 +3187,13 @@ Raises:
 
 | Type | Description | | --- | --- | | `ValueError` | If name or description is None or empty. |
 
-##### `__init__(agent, *, host='0.0.0.0', port=9000, http_url=None, serve_at_root=False, version='0.0.1', skills=None)`
+##### `__init__(agent, *, host='127.0.0.1', port=9000, http_url=None, serve_at_root=False, version='0.0.1', skills=None, task_store=None, queue_manager=None, push_config_store=None, push_sender=None)`
 
 Initialize an A2A-compatible server from a Strands agent.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The Strands Agent to wrap with A2A compatibility. | *required* | | `host` | `str` | The hostname or IP address to bind the A2A server to. Defaults to "0.0.0.0". | `'0.0.0.0'` | | `port` | `int` | The port to bind the A2A server to. Defaults to 9000. | `9000` | | `http_url` | `str | None` | The public HTTP URL where this agent will be accessible. If provided, this overrides the generated URL from host/port and enables automatic path-based mounting for load balancer scenarios. Example: "http://my-alb.amazonaws.com/agent1" | `None` | | `serve_at_root` | `bool` | If True, forces the server to serve at root path regardless of http_url path component. Use this when your load balancer strips path prefixes. Defaults to False. | `False` | | `version` | `str` | The version of the agent. Defaults to "0.0.1". | `'0.0.1'` | | `skills` | `list[AgentSkill] | None` | The list of capabilities or functions the agent can perform. | `None` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `agent` | `Agent` | The Strands Agent to wrap with A2A compatibility. | *required* | | `host` | `str` | The hostname or IP address to bind the A2A server to. Defaults to "127.0.0.1". | `'127.0.0.1'` | | `port` | `int` | The port to bind the A2A server to. Defaults to 9000. | `9000` | | `http_url` | `str | None` | The public HTTP URL where this agent will be accessible. If provided, this overrides the generated URL from host/port and enables automatic path-based mounting for load balancer scenarios. Example: "http://my-alb.amazonaws.com/agent1" | `None` | | `serve_at_root` | `bool` | If True, forces the server to serve at root path regardless of http_url path component. Use this when your load balancer strips path prefixes. Defaults to False. | `False` | | `version` | `str` | The version of the agent. Defaults to "0.0.1". | `'0.0.1'` | | `skills` | `list[AgentSkill] | None` | The list of capabilities or functions the agent can perform. | `None` | | `task_store` | `TaskStore | None` | Custom task store implementation for managing agent tasks. If None, uses InMemoryTaskStore. | `None` | | `queue_manager` | `QueueManager | None` | Custom queue manager for handling message queues. If None, no queue management is used. | `None` | | `push_config_store` | `PushNotificationConfigStore | None` | Custom store for push notification configurations. If None, no push notification configuration is used. | `None` | | `push_sender` | `PushNotificationSender | None` | Custom push notification sender implementation. If None, no push notifications are sent. | `None` |
 
 Source code in `strands/multiagent/a2a/server.py`
 
@@ -2495,18 +3203,23 @@ def __init__(
     agent: SAAgent,
     *,
     # AgentCard
-    host: str = "0.0.0.0",
+    host: str = "127.0.0.1",
     port: int = 9000,
     http_url: str | None = None,
     serve_at_root: bool = False,
     version: str = "0.0.1",
     skills: list[AgentSkill] | None = None,
+    # RequestHandler
+    task_store: TaskStore | None = None,
+    queue_manager: QueueManager | None = None,
+    push_config_store: PushNotificationConfigStore | None = None,
+    push_sender: PushNotificationSender | None = None,
 ):
     """Initialize an A2A-compatible server from a Strands agent.
 
     Args:
         agent: The Strands Agent to wrap with A2A compatibility.
-        host: The hostname or IP address to bind the A2A server to. Defaults to "0.0.0.0".
+        host: The hostname or IP address to bind the A2A server to. Defaults to "127.0.0.1".
         port: The port to bind the A2A server to. Defaults to 9000.
         http_url: The public HTTP URL where this agent will be accessible. If provided,
             this overrides the generated URL from host/port and enables automatic
@@ -2517,6 +3230,14 @@ def __init__(
             Defaults to False.
         version: The version of the agent. Defaults to "0.0.1".
         skills: The list of capabilities or functions the agent can perform.
+        task_store: Custom task store implementation for managing agent tasks. If None,
+            uses InMemoryTaskStore.
+        queue_manager: Custom queue manager for handling message queues. If None,
+            no queue management is used.
+        push_config_store: Custom store for push notification configurations. If None,
+            no push notification configuration is used.
+        push_sender: Custom push notification sender implementation. If None,
+            no push notifications are sent.
     """
     self.host = host
     self.port = port
@@ -2542,11 +3263,13 @@ def __init__(
     self.capabilities = AgentCapabilities(streaming=True)
     self.request_handler = DefaultRequestHandler(
         agent_executor=StrandsA2AExecutor(self.strands_agent),
-        task_store=InMemoryTaskStore(),
+        task_store=task_store or InMemoryTaskStore(),
+        queue_manager=queue_manager,
+        push_config_store=push_config_store,
+        push_sender=push_sender,
     )
     self._agent_skills = skills
     logger.info("Strands' integration with A2A is experimental. Be aware of frequent breaking changes.")
-
 ```
 
 ##### `serve(app_type='starlette', *, host=None, port=None, **kwargs)`
@@ -2595,7 +3318,6 @@ def serve(
         logger.exception("Strands A2A server encountered exception.")
     finally:
         logger.info("Strands A2A server has shutdown.")
-
 ```
 
 ##### `to_fastapi_app()`
@@ -2630,7 +3352,6 @@ def to_fastapi_app(self) -> FastAPI:
         return parent_app
 
     return a2a_app
-
 ```
 
 ##### `to_starlette_app()`
@@ -2665,5 +3386,4 @@ def to_starlette_app(self) -> Starlette:
         return parent_app
 
     return a2a_app
-
 ```

@@ -54,7 +54,6 @@ def event_loop_cycle(
     **kwargs: Any,
 ) -> Tuple[StopReason, Message, EventLoopMetrics, Any]:
     # ... implementation details ...
-
 ```
 
 The event loop cycle maintains a recursive structure, allowing for multiple iterations when tools are used, while preserving state across the conversation.
@@ -75,7 +74,7 @@ The agent loop includes a tool execution system that:
 
 1. Validates tool requests from the model
 1. Looks up tools in the registry
-1. Executes tools concurrently with proper error handling
+1. Executes tools with proper error handling
 1. Captures and formats results
 1. Feeds results back to the model
 
@@ -96,7 +95,6 @@ agent = Agent(
     tools=[calculator],
     system_prompt="You are a helpful assistant."
 )
-
 ```
 
 This initialization:
@@ -112,7 +110,6 @@ The agent is called with a user input:
 ```
 # Process user input
 result = agent("Calculate 25 * 48")
-
 ```
 
 Calling the agent adds the message to the conversation history and applies conversation management strategies before initializing a new event loop cycle.
@@ -146,7 +143,6 @@ If the model returns a tool use request:
     }
   ]
 }
-
 ```
 
 The event loop:
@@ -175,7 +171,6 @@ The tool result is formatted as:
     }
   ]
 }
-
 ```
 
 This result is added to the conversation history, and the model is invoked again for it to reason about the tool results.
@@ -194,3 +189,15 @@ This recursive nature allows for complex workflows like:
 ### 7. Completion
 
 The loop completes when the model generates a final text response or an exception occurs that cannot be handled. At completion, metrics and traces are collected, conversation state is updated, and the final response is returned to the caller.
+
+## Troubleshooting
+
+### MaxTokensReachedException
+
+This exception indicates that the agent has reached an unrecoverable state because the `max_tokens` stop reason was returned from the model provider. When this occurs, the agent cannot continue processing and the loop terminates.
+
+**Common causes and solutions:**
+
+1. **Increase token limits**: If you have explicitly set a `max_tokens` limit in your model configuration, consider raising it to allow for longer responses.
+1. **Audit your tool specifications**: A frequent cause of this exception is tool specifications that prompt the model to return excessively large `toolUse` responses. Review your tools for large JSON schemas, tool specs with many fields or deeply nested structures can consume significant tokens. Also, consider long string requirements which may bloat the output (e.g., "provide a string that is 101k characters long").
+1. **Optimize tool design**: Consider breaking down complex tools into smaller, more focused tools, or simplifying tool input/output schemas to reduce token consumption.

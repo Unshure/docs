@@ -1,12 +1,11 @@
-# Example Built-in Tools
+# Community Built Tools
 
-Strands offers an optional example tools package [`strands-agents-tools`](https://pypi.org/project/strands-agents-tools/) which includes pre-built tools to get started quickly experimenting with agents and tools during development. The package is also open source and available on [GitHub](https://github.com/strands-agents/tools).
+Strands offers an optional, community-supported tools package [`strands-agents-tools`](https://pypi.org/project/strands-agents-tools/) which includes pre-built tools to get started quickly experimenting with agents and tools during development. The package is also open source and available on [GitHub](https://github.com/strands-agents/tools).
 
 Install the `strands-agents-tools` package by running:
 
 ```
 pip install strands-agents-tools
-
 ```
 
 Some tools require additional dependencies. Install the additional required dependencies in order to use the following tools:
@@ -15,56 +14,48 @@ Some tools require additional dependencies. Install the additional required depe
 
   ```
   pip install 'strands-agents-tools[mem0_memory]'
-
   ```
 
 - local_chromium_browser
 
   ```
   pip install 'strands-agents-tools[local_chromium_browser]'
-
   ```
 
 - agent_core_browser
 
   ```
   pip install 'strands-agents-tools[agent_core_browser]'
-
   ```
 
 - agent_core_code_interpreter
 
   ```
   pip install 'strands-agents-tools[agent_core_code_interpreter]'
-
   ```
 
 - a2a_client
 
   ```
   pip install 'strands-agents-tools[a2a_client]'
-
   ```
 
 - diagram
 
   ```
   pip install 'strands-agents-tools[diagram]'
-
   ```
 
 - rss
 
   ```
   pip install 'strands-agents-tools[rss]'
-
   ```
 
 - use_computer
 
   ```
   pip install 'strands-agents-tools[use_computer]'
-
   ```
 
 ## Available Tools
@@ -92,13 +83,14 @@ Some tools require additional dependencies. Install the additional required depe
 #### Code Interpretation
 
 - [`python_repl`](https://github.com/strands-agents/tools/blob/main/src/strands_tools/python_repl.py): Run Python code
+  - Not supported on Windows due to the `fcntl` module not being available on Windows.
 - [`code_interpreter`](https://github.com/strands-agents/tools/blob/main/src/strands_tools/code_interpreter.py): Execute code in isolated sandboxes
 
 #### Web & Network
 
 - [`http_request`](https://github.com/strands-agents/tools/blob/main/src/strands_tools/http_request.py): Make API calls, fetch web data, and call local HTTP servers
 - [`slack`](https://github.com/strands-agents/tools/blob/main/src/strands_tools/slack.py): Slack integration with real-time events, API access, and message sending
-- [`browser`](https://github.com/strands-agents/tools/blob/main/src/strands_tools/browser.py): Automate web browser interactions
+- [`browser`](https://github.com/strands-agents/tools/blob/main/src/strands_tools/browser/browser.py): Automate web browser interactions
 - [`rss`](https://github.com/strands-agents/tools/blob/main/src/strands_tools/rss.py): Manage and process RSS feeds
 
 #### Multi-modal
@@ -145,7 +137,6 @@ To bypass these confirmation prompts, you can set the `BYPASS_TOOL_CONSENT` envi
 ```
 # Set this environment variable to bypass tool confirmation prompts
 export BYPASS_TOOL_CONSENT=true
-
 ```
 
 Setting the environment variable within Python:
@@ -154,7 +145,6 @@ Setting the environment variable within Python:
 import os
 
 os.environ["BYPASS_TOOL_CONSENT"] = "true"
-
 ```
 
 When this variable is set to `true`, tools will execute without asking for confirmation. This is particularly useful for:
@@ -187,7 +177,6 @@ agent.tool.handoff_to_user(
     message="Task completed. Please review the results.",
     breakout_of_loop=True
 )
-
 ```
 
 This tool is designed for terminal environments as an example implementation. For production applications, you may want to implement custom handoff mechanisms tailored to your specific UI/UX requirements, such as web interfaces or messaging platforms.

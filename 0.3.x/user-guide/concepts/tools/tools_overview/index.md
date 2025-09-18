@@ -2,7 +2,7 @@
 
 Tools are the primary mechanism for extending agent capabilities, enabling them to perform actions beyond simple text generation. Tools allow agents to interact with external systems, access data, and manipulate their environment.
 
-Strands offers built-in example tools to get started quickly experimenting with agents and tools during development. For more information, see [Example Built-in Tools](../example-tools-package/).
+Strands Agents Tools is a community-driven project that provides a powerful set of tools for your agents to use. For more information, see [Strands Agents Tools](../community-tools-package/).
 
 ## Adding Tools to Agents
 
@@ -24,7 +24,6 @@ print("\n\n")  # Print new lines
 
 # Agent will use the shell and file reader tool when appropriate
 agent("Show me the contents of a single file in this directory")
-
 ```
 
 We can see which tools are loaded in our agent in `agent.tool_names`, along with a JSON representation of the tools in `agent.tool_config` that also includes the tool descriptions and input parameters:
@@ -33,14 +32,12 @@ We can see which tools are loaded in our agent in `agent.tool_names`, along with
 print(agent.tool_names)
 
 print(agent.tool_config)
-
 ```
 
 Tools can also be loaded by passing a file path to our agents during initialization:
 
 ```
 agent = Agent(tools=["/path/to/my_tool.py"])
-
 ```
 
 ## Auto-loading and reloading tools
@@ -53,7 +50,6 @@ Automatic loading and reloading of tools in the `./tools/` directory is disabled
 from strands import Agent
 
 agent = Agent(load_tools_from_directory=True)
-
 ```
 
 ## Using Tools
@@ -69,7 +65,6 @@ The most common way agents use tools is through natural language requests. The a
 ```
 # Agent decides when to use tools based on the request
 agent("Please read the file at /path/to/file.txt")
-
 ```
 
 ### Direct Method Calls
@@ -79,7 +74,13 @@ Every tool added to an agent also becomes a method accessible directly on the ag
 ```
 # Directly invoke a tool as a method
 result = agent.tool.file_read(path="/path/to/file.txt", mode="view")
+```
 
+When calling tools directly as methods, always use keyword arguments - positional arguments are *not* supported for direct method calls:
+
+```
+# This will NOT work - positional arguments are not supported
+result = agent.tool.file_read("/path/to/file.txt", "view")  # ❌ Don't do this
 ```
 
 If a tool name contains hyphens, you can invoke the tool using underscores instead:
@@ -87,8 +88,29 @@ If a tool name contains hyphens, you can invoke the tool using underscores inste
 ```
 # Directly invoke a tool named "read-all"
 result = agent.tool.read_all(path="/path/to/file.txt")
+```
+
+## Tool Executors
+
+When models return multiple tool requests, you can control whether they execute concurrently or sequentially. Agents use concurrent execution by default, but you can specify sequential execution for cases where order matters:
 
 ```
+from strands import Agent
+from strands.tools.executors import SequentialToolExecutor
+
+# Concurrent execution (default)
+agent = Agent(tools=[weather_tool, time_tool])
+agent("What is the weather and time in New York?")
+
+# Sequential execution
+agent = Agent(
+    tool_executor=SequentialToolExecutor(),
+    tools=[screenshot_tool, email_tool]
+)
+agent("Take a screenshot and email it to my friend")
+```
+
+For more details, see [Tool Executors](../executors/).
 
 ## Building & Loading Tools
 
@@ -149,7 +171,6 @@ async def async_example():
 def main():
     basic_example()
     asyncio.run(async_example())
-
 ```
 
 #### Module-Based Approach
@@ -193,7 +214,6 @@ def weather(tool: ToolUse, **kwargs: Any) -> ToolResult:
         "status": "success",
         "content": [{"text": weather_info}]
     }
-
 ```
 
 And finally our `agent.py` file that demonstrates loading the decorated `get_user_location` tool from a Python module, and the single non-decorated `weather` tool module:
@@ -210,7 +230,6 @@ agent = Agent(tools=[get_user_location, weather])
 
 # Use the agent with the custom tools
 agent("What is the weather like in my location?")
-
 ```
 
 Tool modules can also be loaded by providing their module file paths:
@@ -222,7 +241,6 @@ from strands import Agent
 agent = Agent(tools=["./get_user_location.py", "./weather.py"])
 
 agent("What is the weather like in my location?")
-
 ```
 
 For more details on building custom Python tools, see [Python Tools](../python-tools/).
@@ -249,16 +267,15 @@ with sse_mcp_client:
 
     # Use the agent with MCP tools
     agent("Calculate the square root of 144")
-
 ```
 
 For more information on using MCP tools, see [MCP Tools](../mcp-tools/).
 
-### 3. Example Built-in Tools
+### 3. Community Built Tools
 
-For rapid prototyping and common tasks, Strands offers an optional [example built-in tools package](https://github.com/strands-agents/tools/blob/main) with pre-built tools for development. These tools cover a wide variety of capabilities including File Operations, Shell & Local System control, Web & Network for API calls, and Agents & Workflows for orchestration.
+For rapid prototyping and common tasks, Strands offers a [community-supported tools package](https://github.com/strands-agents/tools/blob/main) with pre-built tools for development. These tools cover a wide variety of capabilities including File Operations, Shell & Local System control, Web & Network for API calls, and Agents & Workflows for orchestration.
 
-For a complete list of available tools and their detailed descriptions, see [Example Built-in Tools](../example-tools-package/).
+For a complete list of available tools and their detailed descriptions, see [Community Tools Package](../community-tools-package/).
 
 ## Tool Design Best Practices
 
@@ -326,5 +343,4 @@ def search_database(query: str, max_results: int = 10) -> list:
 
     # Implementation
     pass
-
 ```

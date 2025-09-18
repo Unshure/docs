@@ -16,7 +16,6 @@ agent = Agent(
         "Always explain your reasoning and cite sources when possible."
     )
 )
-
 ```
 
 If you do not specify a system prompt, the model will behave according to its default settings.
@@ -31,7 +30,6 @@ The simplest way to interact with an agent is through a text prompt:
 
 ```
 response = agent("What is the time in Seattle")
-
 ```
 
 ### Multi-Modal Prompting
@@ -53,7 +51,6 @@ response = agent([
         },
     },
 ])
-
 ```
 
 For a complete list of supported content types, please refer to the [API Reference](../../../../api-reference/types/#strands.types.content.ContentBlock).
@@ -64,7 +61,6 @@ Prompting is a primary functionality of Strands that allows you to invoke tools 
 
 ```
 result = agent.tool.current_time(timezone="US/Pacific")
-
 ```
 
 Direct tool calls bypass the natural language interface and execute the tool using specified parameters. These calls are added to the conversation history by default. However, you can opt out of this behavior by setting `record_direct_tool_call=False`.

@@ -59,7 +59,6 @@ def handler(event: Dict[str, Any], _context) -> str:
 
     response = weather_agent(event.get('prompt'))
     return str(response)
-
 ```
 
 ## Infrastructure
@@ -97,7 +96,6 @@ weatherFunction.addToRolePolicy(
     resources: ["*"],
   }),
 );
-
 ```
 
 The dependencies are packaged and pulled in via a Lambda layer separately from the application code. By separating your dependencies into a layer, your application code remains small and enables you to view or edit your function code directly in the Lambda console.
@@ -113,7 +111,6 @@ pip install -r requirements.txt \
     --platform manylinux2014_aarch64 \
     --target ./packaging/_dependencies \
     --only-binary=:all:
-
 ```
 
 This ensures that all binary dependencies are compatible with the Lambda ARM64 environment regardless of the operating-system used for development.
@@ -150,7 +147,6 @@ def create_lambda_package():
                 file_path = os.path.join(root, file)
                 arcname = os.path.relpath(file_path, app_dir)
                 zipf.write(file_path, arcname)
-
 ```
 
 This approach gives you full control over where your app code lives and how you want to package it.
@@ -166,7 +162,6 @@ python ./bin/package_for_lambda.py
 npx cdk bootstrap
 # Deploy the stack
 npx cdk deploy
-
 ```
 
 Once fully deployed, testing can be done by hitting the lambda using the AWS CLI:
@@ -180,7 +175,6 @@ aws lambda invoke --function-name AgentFunction \
 
 # View the formatted output
 jq -r '.' ./output.json
-
 ```
 
 ## Summary

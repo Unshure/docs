@@ -60,7 +60,7 @@ def multimodal_example():
         age: int
         occupation: str
 
-    with tempfile.NamedTemporaryFile() as person_file:
+    with tempfile.NamedTemporaryFile(delete=False) as person_file:
         person_file.write(b"John Smith is a 30-year old software engineer")
         person_file.flush()
 
@@ -184,7 +184,6 @@ if __name__ == "__main__":
     asyncio.run(async_example())
 
     print("\nExamples completed.")
-
 ```
 
 ## How It Works
