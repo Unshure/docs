@@ -51,7 +51,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@astrojs/starlight": "^0.37.3",
+    "@astrojs/starlight": "^0.38.2",
     "@types/js-yaml": "^4.0.9",
     "@types/mdast": "^4.0.4",
     "@types/node": "^24.10.1",
