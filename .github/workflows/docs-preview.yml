@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Checkout head commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.PR_HEAD_SHA }}
           persist-credentials: false # Don't persist credentials for subsequent actions
